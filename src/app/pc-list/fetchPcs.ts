@@ -1,0 +1,1 @@
+export { fetchPcList } from '../../server/usecase/fetchPcList'
