@@ -55,8 +55,9 @@ export default function PcCard({ pc }: PcCardProps) {
             {pc.ram && <div><strong>RAM:</strong> {pc.ram}GB</div>}
             {pc.rom && <div><strong>ROM:</strong> {pc.rom}GB</div>}
             {pc.display_size && <div><strong>Display:</strong> {pc.display_size} インチ</div>}
-            {pc.battery && <div><strong>Battery:</strong> {pc.battery}</div>}
+            {pc.battery_wh_normalized && <div><strong>Battery:</strong> {pc.battery_wh_normalized}Wh</div>}
             {pc.weight && <div><strong>Weight:</strong> {pc.weight}g</div>}
+            {pc.cores && <div><strong>Cores:</strong> {pc.cores}</div>}
           </div>
 
           {/* 価格 */}

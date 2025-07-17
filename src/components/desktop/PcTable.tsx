@@ -17,8 +17,7 @@ export default function PcTable({ pcs }: PcTableProps) {
           <th style={{border: '1px solid #ddd', padding: '8px'}}>CPU</th>
           <th style={{border: '1px solid #ddd', padding: '8px'}}>RAM</th>
           <th style={{border: '1px solid #ddd', padding: '8px'}}>ROM</th>
-          <th style={{border: '1px solid #ddd', padding: '8px'}}>Battery</th>
-          <th style={{border: '1px solid #ddd', padding: '8px'}}>Battery WH</th>
+          <th style={{border: '1px solid #ddd', padding: '8px'}}>Battery (Wh)</th>
           <th style={{border: '1px solid #ddd', padding: '8px'}}>Weight</th>
           <th style={{border: '1px solid #ddd', padding: '8px'}}>URL</th>
           <th style={{border: '1px solid #ddd', padding: '8px'}}>AF URL</th>
@@ -38,7 +37,6 @@ export default function PcTable({ pcs }: PcTableProps) {
             <td style={{border: '1px solid #ddd', padding: '8px'}}>{pc.cpu}</td>
             <td style={{border: '1px solid #ddd', padding: '8px'}}>{pc.ram}</td>
             <td style={{border: '1px solid #ddd', padding: '8px'}}>{pc.rom}</td>
-            <td style={{border: '1px solid #ddd', padding: '8px'}}>{pc.battery}</td>
             <td style={{border: '1px solid #ddd', padding: '8px'}}>{pc.battery_wh_normalized}</td>
             <td style={{border: '1px solid #ddd', padding: '8px'}}>{pc.weight}</td>
             <td style={{border: '1px solid #ddd', padding: '8px'}}>{pc.url}</td>

@@ -18,3 +18,7 @@ export interface Pc {
   imp_img_url: string | null
   fetched_at: string | null
 }
+
+export interface PcWithCpuSpec extends Pc {
+  cores: number | null
+}

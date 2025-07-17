@@ -1,15 +1,15 @@
-import { Pc } from './pc'
+import { PcWithCpuSpec } from './pc'
 
 export interface PcCardProps {
-  pc: Pc
+  pc: PcWithCpuSpec
 }
 
 export interface PcTableProps {
-  pcs: Pc[]
+  pcs: PcWithCpuSpec[]
 }
 
 export interface PcListProps {
-  pcs: Pc[]
+  pcs: PcWithCpuSpec[]
 }
 
 export interface ImageComponentProps {
