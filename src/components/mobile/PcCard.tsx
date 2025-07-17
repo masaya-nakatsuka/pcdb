@@ -58,6 +58,11 @@ export default function PcCard({ pc }: PcCardProps) {
             {pc.battery_wh_normalized && <div><strong>Battery:</strong> {pc.battery_wh_normalized}Wh</div>}
             {pc.weight && <div><strong>Weight:</strong> {pc.weight}g</div>}
             {pc.cores && <div><strong>Cores:</strong> {pc.cores}</div>}
+            {pc.estimatedBatteryLifeHours && <div><strong>駆動時間(推定):</strong> {pc.estimatedBatteryLifeHours}時間</div>}
+          </div>
+
+          <div style={{ marginTop: '12px', fontSize: '16px', fontWeight: 'bold' }}>
+            {pc.pcScore && <div><strong>スペック評価:</strong> {pc.pcScore / 10}点</div>}
           </div>
 
           {/* 価格 */}

@@ -1,6 +1,6 @@
 import { fetchPcList } from './fetchPcs'
 import { PcWithCpuSpec } from '../../shared/types/pc'
-import PcListContainer from '../../components/PcListContainer'
+import ClientPcList from './ClientPcList'
 
 export default async function PcListPage() {
   let pcs: PcWithCpuSpec[] = []
@@ -14,7 +14,7 @@ export default async function PcListPage() {
   return (
     <div>
       <h1>PC List</h1>
-      <PcListContainer pcs={pcs} />
+      <ClientPcList pcs={pcs} />
     </div>
   )
 }

@@ -21,4 +21,6 @@ export interface Pc {
 
 export interface PcWithCpuSpec extends Pc {
   cores: number | null
+  estimatedBatteryLifeHours: number | null
+  pcScore: number | null
 }
