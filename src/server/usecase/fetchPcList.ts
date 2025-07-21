@@ -3,11 +3,13 @@
 import { fetchAllPcs } from '../infra/pcRepository'
 import { cpuPowerMap } from '../infra/data/cpuSpecMap'
 import { PcWithCpuSpec } from '../domain/models/pc'
+import { UsageCategory } from '../../shared/types/pc'
 import { calculateSystemPowerConsumption, calculateBatteryLifeHours } from '@/shared/utils/powerCalculations'
-import { calculatePcScore } from '../domain/services/pcScore'
+import { calculatePcScore, getUsageWeights } from '../domain/services/pcScore'
 
-export async function fetchPcList(): Promise<PcWithCpuSpec[]> {
+export async function fetchPcList(usageCategory: UsageCategory = 'cafe'): Promise<PcWithCpuSpec[]> {
   const supabasePcs = await fetchAllPcs()
+  const weights = getUsageWeights(usageCategory)
   
   const pcsWithCalculations = supabasePcs.map((pc) => {
     const cpuSpec = cpuPowerMap[pc.cpu ?? '']
@@ -29,13 +31,14 @@ export async function fetchPcList(): Promise<PcWithCpuSpec[]> {
     
     let pcScore: number | null = null
     
-    // スコアの計算
+    // スコアの計算（重み付けを適用）
     if (cpuSpec?.passmarkScore && pc.ram && pc.rom) {
       pcScore = calculatePcScore(
         cpuSpec.passmarkScore,
         pc.ram,
         pc.rom,
-        estimatedBatteryLifeHours
+        estimatedBatteryLifeHours,
+        weights
       )
     }
 

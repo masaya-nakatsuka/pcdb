@@ -24,3 +24,12 @@ export interface PcWithCpuSpec extends Pc {
   estimatedBatteryLifeHours: number | null
   pcScore: number | null
 }
+
+export type UsageCategory = 'mobile' | 'cafe' | 'home'
+
+export interface ScoreWeights {
+  cpuWeight: number
+  ramWeight: number
+  romWeight: number
+  batteryWeight: number
+}

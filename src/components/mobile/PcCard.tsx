@@ -51,18 +51,12 @@ export default function PcCard({ pc }: PcCardProps) {
         {/* PC情報 */}
         <div style={{ flex: 1 }}>
           <div style={{ fontSize: '14px', lineHeight: '1.5' }}>
-            {pc.cpu && <div><strong>CPU:</strong> {pc.cpu}</div>}
-            {pc.ram && <div><strong>RAM:</strong> {pc.ram}GB</div>}
-            {pc.rom && <div><strong>ROM:</strong> {pc.rom}GB</div>}
-            {pc.display_size && <div><strong>Display:</strong> {pc.display_size} インチ</div>}
-            {pc.battery_wh_normalized && <div><strong>Battery:</strong> {pc.battery_wh_normalized}Wh</div>}
-            {pc.weight && <div><strong>Weight:</strong> {pc.weight}g</div>}
-            {pc.cores && <div><strong>Cores:</strong> {pc.cores}</div>}
-            {pc.estimatedBatteryLifeHours && <div><strong>駆動時間(推定):</strong> {pc.estimatedBatteryLifeHours}時間</div>}
-          </div>
-
-          <div style={{ marginTop: '12px', fontSize: '16px', fontWeight: 'bold' }}>
-            {pc.pcScore && <div><strong>スペック評価:</strong> {pc.pcScore / 10}点</div>}
+            {pc.cpu && <div>🔴 CPU：{pc.cpu}</div>}
+            {pc.ram && <div>🔴 メモリ：{pc.ram}GB</div>}
+            {pc.rom && <div style={{ marginBottom: '8px' }}>🔴 ストレージ：{pc.rom}GB</div>}
+            {pc.display_size && <div>画面サイズ：{pc.display_size} インチ</div>}
+            {pc.weight && <div>重さ：{pc.weight}g</div>}
+            {pc.estimatedBatteryLifeHours && <div>駆動時間(推定)：{pc.estimatedBatteryLifeHours}時間</div>}
           </div>
 
           {/* 価格 */}
@@ -80,6 +74,10 @@ export default function PcCard({ pc }: PcCardProps) {
                 ¥{pc.real_price.toLocaleString()}
               </span>
             )}
+          </div>
+
+          <div style={{ marginTop: '12px', fontSize: '16px', fontWeight: 'bold' }}>
+            {pc.pcScore && <div><strong>スペック評価:</strong> {pc.pcScore / 10}点</div>}
           </div>
 
           {pc.fetched_at && (

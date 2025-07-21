@@ -6,14 +6,13 @@ export default async function PcListPage() {
   let pcs: PcWithCpuSpec[] = []
 
   try {
-    pcs = await fetchPcList()
+    pcs = await fetchPcList('cafe')
   } catch (error) {
     console.error('Failed to fetch PCs:', error)
   }
 
   return (
     <div>
-      <h1>PC List</h1>
       <ClientPcList pcs={pcs} />
     </div>
   )

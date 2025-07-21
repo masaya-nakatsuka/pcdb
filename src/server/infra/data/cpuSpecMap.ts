@@ -1,84 +1,68 @@
 import { CpuSpec } from '@/server/domain/models/cpu'
 
 export const cpuPowerMap: Record<string, CpuSpec> = {
-  'Celeron J3455': {
+  'Celeron J3455': {  // OK
     cores: 4,
     threads: 4,
     baseClockGHz: 1.5,
     boostClockGHz: 2.3,
     tdpW: 10,
-    minPowerW: 6,
-    maxPowerW: 12,
-    passmarkScore: 2514,
+    passmarkScore: 2246,
   },
-  'Celeron N4020': {
+  'Celeron N4020': {  // OK
     cores: 2,
     threads: 2,
     baseClockGHz: 1.1,
     boostClockGHz: 2.8,
     tdpW: 6,
-    minPowerW: 4,
-    maxPowerW: 6,
-    passmarkScore: 1603,
+    passmarkScore: 1543,
   },
-  'Celeron N5095': {
+  'Celeron N5095': {  // OK
     cores: 4,
     threads: 4,
     baseClockGHz: 2.0,
     boostClockGHz: 2.9,
     tdpW: 15,
-    minPowerW: 10,
-    maxPowerW: 20,
-    passmarkScore: 3917,
+    passmarkScore: 4042,
   },
-  'Celeron N5105': {
+  'Celeron N5105': {  // OK
     cores: 4,
     threads: 4,
     baseClockGHz: 2.0,
     boostClockGHz: 2.9,
     tdpW: 10,
-    minPowerW: 6,
-    maxPowerW: 15,
-    passmarkScore: 4040,
+    passmarkScore: 4018,
   },
-  'Core m3-8100Y': {
+  'Core m3-8100Y': {  // OK
     cores: 2,
     threads: 4,
     baseClockGHz: 1.1,
     boostClockGHz: 3.4,
     tdpW: 5,
-    minPowerW: 4.5,
-    maxPowerW: 7,
-    passmarkScore: 2735,
+    passmarkScore: 2752,
   },
-  'N100': {
+  'N100': {  // OK
+    cores: 4,
+    threads: 4,
+    baseClockGHz: 0.7,
+    boostClockGHz: 3.4,
+    tdpW: 6,
+    passmarkScore: 5390,
+  },
+  'N150': {  // OK
     cores: 4,
     threads: 4,
     baseClockGHz: 0.8,
-    boostClockGHz: 3.4,
+    boostClockGHz: 3.6,
     tdpW: 6,
-    minPowerW: 4,
-    maxPowerW: 9,
-    passmarkScore: 5395,
+    passmarkScore: 5482,
   },
-  'N150': {
-    cores: 4,
-    threads: 4,
-    baseClockGHz: 1.0,
-    boostClockGHz: 3.4,
-    tdpW: 6,
-    minPowerW: 4,
-    maxPowerW: 9,
-    passmarkScore: 5633,
-  },
-  'N95': {
+  'N95': {  // OK
     cores: 4,
     threads: 4,
     baseClockGHz: 1.7,
     boostClockGHz: 3.4,
     tdpW: 15,
-    minPowerW: 10,
-    maxPowerW: 20,
-    passmarkScore: 4765,
+    passmarkScore: 5344,
   },
 }
