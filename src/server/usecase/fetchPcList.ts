@@ -5,11 +5,10 @@ import { cpuPowerMap } from '../infra/data/cpuSpecMap'
 import { PcWithCpuSpec } from '../domain/models/pc'
 import { ServerUsageCategory as UsageCategory } from '../types'
 import { calculateSystemPowerConsumption, calculateBatteryLifeHours } from '../utils/powerCalculations'
-import { calculatePcScore, getUsageWeights } from '../domain/services/pcScore'
+import { calculateRelativeRanking } from '../domain/services/relativePcScore'
 
 export async function fetchPcList(usageCategory: UsageCategory = 'cafe'): Promise<PcWithCpuSpec[]> {
   const supabasePcs = await fetchAllPcs()
-  const weights = getUsageWeights(usageCategory)
   
   const pcsWithCalculations = supabasePcs.map((pc) => {
     const cpuSpec = cpuPowerMap[pc.cpu ?? '']
@@ -28,30 +27,42 @@ export async function fetchPcList(usageCategory: UsageCategory = 'cafe'): Promis
         powerConsumption.totalPowerW
       ) * 10) / 10
     }
-    
-    let pcScore: number | null = null
-    
-    // スコアの計算（重み付けを適用）
-    if (cpuSpec?.passmarkScore && pc.ram && pc.rom) {
-      pcScore = calculatePcScore(
-        cpuSpec.passmarkScore,
-        pc.ram,
-        pc.rom,
-        estimatedBatteryLifeHours,
-        weights
-      )
-    }
 
     return {
       ...pc,
       cores: cpuSpec?.cores ?? null,
       estimatedBatteryLifeHours,
-      pcScore,
+      cpuSpec,
+    }
+  })
+
+  // 相対ランキング用のデータ変換
+  const pcSpecsForRanking = pcsWithCalculations
+    .filter(pc => pc.cpuSpec?.passmarkScore && pc.ram && pc.rom && pc.estimatedBatteryLifeHours && pc.display_size && pc.weight)
+    .map(pc => ({
+      id: pc.id,
+      cpuPassmark: pc.cpuSpec!.passmarkScore,
+      ramGB: pc.ram!,
+      romGB: pc.rom!,
+      batteryLifeHours: pc.estimatedBatteryLifeHours!,
+      screenSizeInch: pc.display_size!,
+      deviceWeight: pc.weight!,
+    }))
+
+  // 相対ランキングを計算
+  const rankedSpecs = calculateRelativeRanking(pcSpecsForRanking, usageCategory)
+  
+  // ランキング結果をマージしてソート
+  const pcsWithRelativeScore = pcsWithCalculations.map(pc => {
+    const ranking = rankedSpecs.find(ranked => ranked.id === pc.id)
+    return {
+      ...pc,
+      pcScore: ranking?.relativeScore ?? null,
     }
   })
   
   // スコア降順に並び替え
-  return pcsWithCalculations.sort((a, b) => {
+  return pcsWithRelativeScore.sort((a, b) => {
     if (a.pcScore === null) return 1
     if (b.pcScore === null) return -1
     return b.pcScore - a.pcScore

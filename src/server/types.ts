@@ -28,8 +28,8 @@ export interface ServerPcWithCpuSpec extends ServerPc {
 export type ServerUsageCategory = 'mobile' | 'cafe' | 'home'
 
 export interface ServerScoreWeights {
-  cpuWeight: number
-  ramWeight: number
-  romWeight: number
-  batteryWeight: number
+  cpuScoreWeight: number
+  ramScoreWeight: number
+  romScoreWeight: number
+  batteryScoreWeight: number
 }
