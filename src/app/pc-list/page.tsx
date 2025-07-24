@@ -1,9 +1,9 @@
 import { fetchPcList } from './fetchPcs'
-import { PcWithCpuSpec } from '../../shared/types/pc'
+import { ClientPcWithCpuSpec } from '../../components/types'
 import ClientPcList from './ClientPcList'
 
 export default async function PcListPage() {
-  let pcs: PcWithCpuSpec[] = []
+  let pcs: ClientPcWithCpuSpec[] = []
 
   try {
     pcs = await fetchPcList('cafe')

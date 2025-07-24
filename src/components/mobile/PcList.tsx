@@ -1,32 +1,61 @@
 'use client'
 
-import { useState } from 'react'
-import { PcListProps } from '../../shared/types/components'
-import { PcWithCpuSpec, UsageCategory } from '../../shared/types/pc'
+import { useState, useEffect } from 'react'
+import { PcListProps, ClientPcWithCpuSpec, ClientUsageCategory, ClientSortField, ClientSortOrder, ClientSortOptions } from '../types'
 import { fetchPcList } from '../../app/pc-list/fetchPcs'
+import { fetchCpuList } from '../../server/usecase/fetchCpuList'
+import { sortPcs } from '../utils/pcSort'
 import PcCard from './PcCard'
 
 interface PcListWithUsageProps extends PcListProps {
-  initialPcs: PcWithCpuSpec[]
+  initialPcs: ClientPcWithCpuSpec[]
 }
 
-export default function PcList({ pcs: initialPcs }: { pcs: PcWithCpuSpec[] }) {
-  const [selectedUsage, setSelectedUsage] = useState<UsageCategory>('cafe')
-  const [pcs, setPcs] = useState<PcWithCpuSpec[]>(initialPcs)
+export default function PcList({ pcs: initialPcs }: { pcs: ClientPcWithCpuSpec[] }) {
+  const [selectedUsage, setSelectedUsage] = useState<ClientUsageCategory>('cafe')
+  const [pcs, setPcs] = useState<ClientPcWithCpuSpec[]>(initialPcs)
   const [loading, setLoading] = useState(false)
+  const [sortOptions, setSortOptions] = useState<ClientSortOptions>({ field: 'pcScore', order: 'desc' })
+  const [cpuOrderList, setCpuOrderList] = useState<string[]>([])
 
-  const handleUsageChange = async (usage: UsageCategory) => {
+  // ページ読み込み時にCPUリストを取得
+  useEffect(() => {
+    const loadCpuList = async () => {
+      try {
+        const cpuList = await fetchCpuList()
+        setCpuOrderList(cpuList)
+      } catch (error) {
+        console.error('Failed to fetch CPU list:', error)
+      }
+    }
+    
+    loadCpuList()
+  }, [])
+
+  const handleUsageChange = async (usage: ClientUsageCategory) => {
     setLoading(true)
     try {
       const newPcs = await fetchPcList(usage)
       setPcs(newPcs)
       setSelectedUsage(usage)
+      // ソート状態をリセット（バックエンドのデフォルト順序を維持）
+      setSortOptions({ field: 'pcScore', order: 'desc' })
     } catch (error) {
       console.error('Failed to fetch PCs for usage:', usage, error)
     } finally {
       setLoading(false)
     }
   }
+
+  const handleSortChange = async (field: ClientSortField) => {
+    const newOrder: ClientSortOrder = sortOptions.field === field && sortOptions.order === 'desc' ? 'asc' : 'desc'
+    const newSortOptions = { field, order: newOrder }
+    setSortOptions(newSortOptions)
+    
+    const sortedPcs = await sortPcs(pcs, newSortOptions, cpuOrderList)
+    setPcs(sortedPcs)
+  }
+
   return (
     <>
       <h1 style={{ paddingLeft: '16px', fontSize: '24px', color: '#333', margin: '16px 0' }}>PC List</h1>
@@ -179,6 +208,57 @@ export default function PcList({ pcs: initialPcs }: { pcs: PcWithCpuSpec[] }) {
             }}>
             🏠 家でじっくり作業
           </button>
+        </div>
+      </div>
+
+      {/* ソート機能 */}
+      <div style={{ padding: '0 16px 16px 16px' }}>
+        <h3 style={{ fontSize: '16px', color: '#333', marginBottom: '12px', textAlign: 'center' }}>並び替え</h3>
+        <div style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          gap: '8px',
+          justifyContent: 'center'
+        }}>
+          {[
+            { field: 'pcScore' as ClientSortField, label: 'スコア' },
+            { field: 'cpu' as ClientSortField, label: 'CPU' },
+            { field: 'ram' as ClientSortField, label: 'メモリ' },
+            { field: 'rom' as ClientSortField, label: 'ストレージ' },
+            { field: 'display_size' as ClientSortField, label: '画面サイズ' },
+            { field: 'estimatedBatteryLifeHours' as ClientSortField, label: '駆動時間' },
+            { field: 'weight' as ClientSortField, label: '重量' },
+            { field: 'price' as ClientSortField, label: '価格' }
+          ].map(({ field, label }) => {
+            const isActive = sortOptions.field === field
+            const isDesc = isActive && sortOptions.order === 'desc'
+            
+            return (
+              <button
+                key={field}
+                onClick={() => handleSortChange(field)}
+                style={{
+                  padding: '8px 12px',
+                  borderRadius: '12px',
+                  border: '1px solid #ddd',
+                  backgroundColor: isActive ? '#f0f0f0' : 'white',
+                  color: '#333',
+                  fontSize: '12px',
+                  fontWeight: isActive ? '600' : '500',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px'
+                }}
+              >
+                {label}
+                <span style={{ fontSize: '10px' }}>
+                  {isActive ? (isDesc ? '↓' : '↑') : ''}
+                </span>
+              </button>
+            )
+          })}
         </div>
       </div>
 

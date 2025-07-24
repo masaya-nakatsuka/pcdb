@@ -1,6 +1,6 @@
 'use client'
 
-import { PcCardProps } from '../../shared/types/components'
+import { PcCardProps } from '../types'
 import ImageComponent from './ImageComponent'
 
 export default function PcCard({ pc }: PcCardProps) {

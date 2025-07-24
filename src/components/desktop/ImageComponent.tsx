@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { ImageComponentProps } from '../../shared/types/components'
+import { ImageComponentProps } from '../types'
 
 export default function ImageComponent({ src, alt, style }: ImageComponentProps) {
   const [hasError, setHasError] = useState(false)

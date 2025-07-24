@@ -1,0 +1,1 @@
+export { fetchCpuList } from '../../../server/usecase/fetchCpuList'

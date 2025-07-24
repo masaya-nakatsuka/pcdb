@@ -1,4 +1,4 @@
-import { UsageCategory, ScoreWeights } from '../../../shared/types/pc'
+import { ServerUsageCategory as UsageCategory, ServerScoreWeights as ScoreWeights } from '../../types'
 
 export function calculatePcScore(
   cpuPassmark: number,

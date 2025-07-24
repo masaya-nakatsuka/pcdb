@@ -1,12 +1,12 @@
 'use client'
 
-import { PcWithCpuSpec } from '../../shared/types/pc'
+import { ClientPcWithCpuSpec } from '../../components/types'
 import { useDeviceDetection } from '../../hooks/useDeviceDetection'
 import PcTable from '../../components/desktop/PcTable'
 import PcList from '../../components/mobile/PcList'
 
 interface ClientPcListProps {
-  pcs: PcWithCpuSpec[]
+  pcs: ClientPcWithCpuSpec[]
 }
 
 export default function ClientPcList({ pcs }: ClientPcListProps) {

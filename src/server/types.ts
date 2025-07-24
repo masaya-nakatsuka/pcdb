@@ -1,4 +1,4 @@
-export interface Pc {
+export interface ServerPc {
   id: number
   form_factor: string | null
   display_size: number | null
@@ -19,15 +19,15 @@ export interface Pc {
   fetched_at: string | null
 }
 
-export interface PcWithCpuSpec extends Pc {
+export interface ServerPcWithCpuSpec extends ServerPc {
   cores: number | null
   estimatedBatteryLifeHours: number | null
   pcScore: number | null
 }
 
-export type UsageCategory = 'mobile' | 'cafe' | 'home'
+export type ServerUsageCategory = 'mobile' | 'cafe' | 'home'
 
-export interface ScoreWeights {
+export interface ServerScoreWeights {
   cpuWeight: number
   ramWeight: number
   romWeight: number

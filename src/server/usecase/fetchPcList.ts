@@ -3,8 +3,8 @@
 import { fetchAllPcs } from '../infra/pcRepository'
 import { cpuPowerMap } from '../infra/data/cpuSpecMap'
 import { PcWithCpuSpec } from '../domain/models/pc'
-import { UsageCategory } from '../../shared/types/pc'
-import { calculateSystemPowerConsumption, calculateBatteryLifeHours } from '@/shared/utils/powerCalculations'
+import { ServerUsageCategory as UsageCategory } from '../types'
+import { calculateSystemPowerConsumption, calculateBatteryLifeHours } from '../utils/powerCalculations'
 import { calculatePcScore, getUsageWeights } from '../domain/services/pcScore'
 
 export async function fetchPcList(usageCategory: UsageCategory = 'cafe'): Promise<PcWithCpuSpec[]> {
