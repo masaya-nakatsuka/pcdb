@@ -20,7 +20,6 @@ export interface ServerPc {
 }
 
 export interface ServerPcWithCpuSpec extends ServerPc {
-  cores: number | null
   estimatedBatteryLifeHours: number | null
   pcScore: number | null
 }

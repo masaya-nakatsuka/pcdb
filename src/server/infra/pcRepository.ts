@@ -10,5 +10,9 @@ export async function fetchAllPcs(): Promise<Pc[]> {
     throw new Error(`Failed to fetch PCs: ${error.message}`)
   }
 
-  return data || []
+  if (!data) {
+    throw new Error('No PCs found')
+  }
+
+  return data
 }
