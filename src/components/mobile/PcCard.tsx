@@ -77,7 +77,7 @@ export default function PcCard({ pc }: PcCardProps) {
           </div>
 
           <div style={{ marginTop: '12px', fontSize: '16px', fontWeight: 'bold' }}>
-            {pc.pcScore && <div><strong>スペック評価:</strong> {pc.pcScore / 10}点</div>}
+            {pc.pcScore && <div><strong>スペック評価:</strong> {pc.pcScore}点</div>}
           </div>
 
           {pc.fetched_at && (

@@ -118,7 +118,7 @@ export function calculateRelativePcScore(
    * 総合スコア
    */
   const totalScore = cpuScore + ramScore + romScore + batteryScore + screenScore + deviceWeightScore
-  
+    
   /**
    * 最大可能スコア
    */
@@ -137,30 +137,30 @@ export function getRelativeUsageScoreWeights(category: UsageCategory): RelativeS
   switch (category) {
     case 'mobile':
       return {
-        cpuScoreWeight: 1,
-        ramScoreWeight: 1,
-        romScoreWeight: 1,
-        batteryScoreWeight: 2,
-        screenScoreWeight: 1,
-        deviceWeightScoreWeight: 1
+        cpuScoreWeight: 10,
+        ramScoreWeight: 10,
+        romScoreWeight: 5,
+        batteryScoreWeight: 14,
+        screenScoreWeight: 10,
+        deviceWeightScoreWeight: 12
       }
     case 'cafe':
       return {
-        cpuScoreWeight: 10000,
-        ramScoreWeight: 1,
-        romScoreWeight: 1,
-        batteryScoreWeight: 1.5,
-        screenScoreWeight: 1,
-        deviceWeightScoreWeight: 0.7
+        cpuScoreWeight: 10,
+        ramScoreWeight: 10,
+        romScoreWeight: 8,
+        batteryScoreWeight: 12,
+        screenScoreWeight: 10,
+        deviceWeightScoreWeight: 10
       }
     case 'home':
       return {
-        cpuScoreWeight: 1,
-        ramScoreWeight: 10000000,
-        romScoreWeight: 1,
-        batteryScoreWeight: 0,
-        screenScoreWeight: 1,
-        deviceWeightScoreWeight: 1
+        cpuScoreWeight: 15,
+        ramScoreWeight: 15,
+        romScoreWeight: 10,
+        batteryScoreWeight: 2,
+        screenScoreWeight: 10,
+        deviceWeightScoreWeight: 5
       }
     default:
       throw new Error(`Invalid category: ${category}`)
