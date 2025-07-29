@@ -16,6 +16,7 @@ export default function ImageComponent({ src, alt, style }: ImageComponentProps)
       alt={alt}
       style={style}
       onError={() => setHasError(true)}
+      loading="lazy"
     />
   )
 }

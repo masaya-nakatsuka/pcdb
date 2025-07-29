@@ -21,7 +21,7 @@ export default function PcCard({ pc }: PcCardProps) {
       </div>
     
       {/* カードボディ */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px' }}>
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'flex-start', gap: '16px' }}>
 
         {/* カード画像 */}
         <div style={{ flexShrink: 0 }}>
@@ -49,7 +49,7 @@ export default function PcCard({ pc }: PcCardProps) {
         </div>
 
         {/* PC情報 */}
-        <div style={{ flex: 1 }}>
+        <div>
           <div style={{ fontSize: '14px', lineHeight: '1.5' }}>
             {pc.cpu && <div>🔴 CPU：{pc.cpu}</div>}
             {pc.ram && <div>🔴 メモリ：{pc.ram}GB</div>}
@@ -91,6 +91,46 @@ export default function PcCard({ pc }: PcCardProps) {
           )}
         </div>
       </div>
+
+      {/* インプレッション計測用1pxトラッキング画像 */}
+      {pc.imp_img_url && (
+        <img 
+          src={pc.imp_img_url} 
+          alt="" 
+          style={{
+            width: '1px', 
+            height: '1px', 
+            position: 'absolute',
+            opacity: 0,
+            pointerEvents: 'none'
+          }} 
+        />
+      )}
+
+      {/* af_url/url遷移ボタン */}
+      {(pc.af_url || pc.url) && (
+        <div style={{ marginTop: '16px', textAlign: 'center' }}>
+          <a 
+            href={pc.af_url || pc.url || '#'} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            style={{
+              display: 'inline-block',
+              margin: '6px 0',
+              padding: '12px 36px',
+              backgroundColor: '#ee5a24',
+              color: 'white',
+              textDecoration: 'none',
+              borderRadius: '100px',
+              fontSize: '14px',
+              fontWeight: 'bold',
+              cursor: 'pointer'
+            }}
+          >
+            詳細を見る
+          </a>
+        </div>
+      )}
     </div>
   )
 }
