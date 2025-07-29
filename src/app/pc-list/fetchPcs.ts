@@ -1,9 +1,9 @@
-import { ServerUsageCategory as UsageCategory } from '../../server/types'
+import { ClientUsageCategory } from '../../components/types'
 
 /**
  * API Route経由でPC一覧取得（レート制限付き）
  */
-export async function fetchPcList(usageCategory: UsageCategory = 'cafe') {
+export async function fetchPcList(usageCategory: ClientUsageCategory = 'cafe') {
   try {
     const response = await fetch(`/api/pc-list?category=${usageCategory}`, {
       method: 'GET',

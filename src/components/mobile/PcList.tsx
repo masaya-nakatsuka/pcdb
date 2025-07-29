@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import { PcListProps, ClientPcWithCpuSpec, ClientUsageCategory, ClientSortField, ClientSortOrder, ClientSortOptions } from '../types'
 import { fetchPcList } from '../../app/pc-list/fetchPcs'
-import { fetchCpuList } from '../../server/usecase/fetchCpuList'
 import { sortPcs } from '../utils/pcSort'
 import PcCard from './PcCard'
 
@@ -27,8 +26,13 @@ export default function PcList({ pcs: initialPcs }: { pcs: ClientPcWithCpuSpec[]
   useEffect(() => {
     const loadCpuList = async () => {
       try {
-        const cpuList = await fetchCpuList()
-        setCpuOrderList(cpuList)
+        const response = await fetch('/api/cpu-list')
+        if (response.ok) {
+          const cpuList = await response.json()
+          setCpuOrderList(cpuList)
+        } else {
+          console.error('Failed to fetch CPU list:', response.status)
+        }
       } catch (error) {
         console.error('Failed to fetch CPU list:', error)
       }
@@ -52,12 +56,12 @@ export default function PcList({ pcs: initialPcs }: { pcs: ClientPcWithCpuSpec[]
     }
   }
 
-  const handleSortChange = async (field: ClientSortField) => {
+  const handleSortChange = (field: ClientSortField) => {
     const newOrder: ClientSortOrder = sortOptions.field === field && sortOptions.order === 'desc' ? 'asc' : 'desc'
     const newSortOptions = { field, order: newOrder }
     setSortOptions(newSortOptions)
     
-    const sortedPcs = await sortPcs(pcs, newSortOptions, cpuOrderList)
+    const sortedPcs = sortPcs(pcs, newSortOptions, cpuOrderList)
     setPcs(sortedPcs)
   }
 

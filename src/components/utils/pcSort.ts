@@ -1,10 +1,10 @@
 import { ClientPcWithCpuSpec, ClientSortOptions } from '../types'
 
-export async function sortPcs(
+export function sortPcs(
   pcsToSort: ClientPcWithCpuSpec[], 
   options: ClientSortOptions,
   cpuOrderList?: string[]
-): Promise<ClientPcWithCpuSpec[]> {
+): ClientPcWithCpuSpec[] {
   // CPU名でソートする場合は事前取得したCPUリストを使用
   if (options.field === 'cpu') {
     if (cpuOrderList && cpuOrderList.length > 0) {
