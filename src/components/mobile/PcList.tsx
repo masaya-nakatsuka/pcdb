@@ -18,6 +18,11 @@ export default function PcList({ pcs: initialPcs }: { pcs: ClientPcWithCpuSpec[]
   const [sortOptions, setSortOptions] = useState<ClientSortOptions>({ field: 'pcScore', order: 'desc' })
   const [cpuOrderList, setCpuOrderList] = useState<string[]>([])
 
+  // initialPcsが変更されたときにpcsを更新
+  useEffect(() => {
+    setPcs(initialPcs)
+  }, [initialPcs])
+
   // ページ読み込み時にCPUリストを取得
   useEffect(() => {
     const loadCpuList = async () => {
@@ -275,7 +280,7 @@ export default function PcList({ pcs: initialPcs }: { pcs: ClientPcWithCpuSpec[]
             読み込み中...
           </div>
         )}
-        {!loading && pcs.map((pc) => (
+        {!loading && pcs && pcs.map((pc) => (
           <PcCard key={pc.id} pc={pc} />
         ))}
       </div>

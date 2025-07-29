@@ -32,11 +32,20 @@ function BackLink() {
 
 export default function PcListPage() {
   const [pcs, setPcs] = useState<ClientPcWithCpuSpec[]>([])
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     fetchPcList('cafe')
-      .then(setPcs)
-      .catch(error => console.error('Failed to fetch PCs:', error))
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setPcs(data)
+        } else {
+          setError('データの形式が正しくありません')
+        }
+      })
+      .catch(error => {
+        setError(error.message || 'PC一覧の取得に失敗しました')
+      })
   }, [])
 
   return (
@@ -54,7 +63,13 @@ export default function PcListPage() {
           <BackLink />
         </div>
       </div>
-      <ClientPcList pcs={pcs} />
+      {error ? (
+        <div style={{ padding: '20px', color: 'red', textAlign: 'center' }}>
+          エラー: {error}
+        </div>
+      ) : (
+        <ClientPcList pcs={pcs} />
+      )}
     </div>
   )
 }
