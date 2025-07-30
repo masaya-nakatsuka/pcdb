@@ -13,6 +13,7 @@ export default function HomePage() {
     }}>
       {/* メインコンテンツ */}
       <div style={{
+        minHeight: '90vh',
         flex: 1,
         display: 'flex',
         flexDirection: 'column',
