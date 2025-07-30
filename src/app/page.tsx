@@ -9,16 +9,23 @@ export default function HomePage() {
       background: 'linear-gradient(135deg, #1e293b 0%, #334155 100%)',
       display: 'flex',
       flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '16px',
-      gap: '24px'
+      position: 'relative'
     }}>
+      {/* メインコンテンツ */}
       <div style={{
-        textAlign: 'center',
-        color: 'white',
-        marginBottom: '32px'
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '16px',
+        gap: '24px'
       }}>
+        <div style={{
+          textAlign: 'center',
+          color: 'white',
+          marginBottom: '32px'
+        }}>
         <h1 style={{
           fontSize: '48px',
           fontWeight: 'bold',
@@ -108,6 +115,222 @@ export default function HomePage() {
         >
           ブログ記事を見る
         </Link>
+
+        <Link 
+          href="https://sesera231.com"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '16px 32px',
+            fontSize: '18px',
+            fontWeight: '600',
+            color: 'white',
+            background: 'linear-gradient(135deg,rgb(59, 217, 6) 0%,rgb(126, 220, 38) 100%)',
+            borderRadius: '16px',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.1)',
+            textDecoration: 'none',
+            transition: 'all 0.3s ease',
+            position: 'relative',
+            overflow: 'hidden'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'scale(1.05)'
+            e.currentTarget.style.background = 'linear-gradient(135deg,rgb(59, 217, 6) 0%,rgb(126, 220, 38) 100%)'
+            e.currentTarget.style.boxShadow = '0 32px 64px -12px rgba(59, 217, 6, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1)'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'scale(1)'
+            e.currentTarget.style.background = 'linear-gradient(135deg,rgb(59, 217, 6) 0%,rgb(126, 220, 38) 100%)'
+            e.currentTarget.style.boxShadow = '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.1)'
+          }}
+        >
+          同一運営者のブログ
+        </Link>
+        </div>
+      </div>
+
+      {/* フッターセクション */}
+      <div style={{
+        backgroundColor: 'rgba(30, 41, 59, 0.8)',
+        borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+        padding: '40px 20px',
+        textAlign: 'center'
+      }}>
+        <div style={{
+          maxWidth: '1200px',
+          margin: '0 auto'
+        }}>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+            gap: '32px',
+            marginBottom: '32px'
+          }}>
+            {/* お問い合わせフォーム */}
+            <div style={{
+              backgroundColor: 'rgba(255, 255, 255, 0.05)',
+              borderRadius: '12px',
+              padding: '24px',
+              border: '1px solid rgba(255, 255, 255, 0.1)'
+            }}>
+              <h3 style={{
+                color: 'white',
+                fontSize: '18px',
+                fontWeight: '600',
+                marginBottom: '16px',
+                margin: '0 0 16px 0'
+              }}>
+                お問い合わせ
+              </h3>
+              <p style={{
+                color: 'rgba(255, 255, 255, 0.8)',
+                fontSize: '14px',
+                marginBottom: '16px',
+                lineHeight: '1.6',
+                margin: '0 0 16px 0'
+              }}>
+                ご質問やご要望がございましたら、お気軽にお問い合わせください。
+              </p>
+              <a
+                href="mailto:contact@specsy-hub.com"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: '8px 16px',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  color: 'white',
+                  backgroundColor: 'rgba(59, 130, 246, 0.8)',
+                  borderRadius: '8px',
+                  textDecoration: 'none',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = 'rgba(59, 130, 246, 1)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'rgba(59, 130, 246, 0.8)'
+                }}
+              >
+                メールで問い合わせ
+              </a>
+            </div>
+
+            {/* 運営者情報 */}
+            <div style={{
+              backgroundColor: 'rgba(255, 255, 255, 0.05)',
+              borderRadius: '12px',
+              padding: '24px',
+              border: '1px solid rgba(255, 255, 255, 0.1)'
+            }}>
+              <h3 style={{
+                color: 'white',
+                fontSize: '18px',
+                fontWeight: '600',
+                marginBottom: '16px',
+                margin: '0 0 16px 0'
+              }}>
+                運営者情報
+              </h3>
+              <p style={{
+                color: 'rgba(255, 255, 255, 0.8)',
+                fontSize: '14px',
+                marginBottom: '16px',
+                lineHeight: '1.6',
+                margin: '0 0 16px 0'
+              }}>
+                サイトの運営者情報や免責事項について詳しくご確認いただけます。
+              </p>
+              <Link
+                href="/about"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: '8px 16px',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  color: 'white',
+                  backgroundColor: 'rgba(139, 92, 246, 0.8)',
+                  borderRadius: '8px',
+                  textDecoration: 'none',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = 'rgba(139, 92, 246, 1)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'rgba(139, 92, 246, 0.8)'
+                }}
+              >
+                詳細を見る
+              </Link>
+            </div>
+
+            {/* プライバシーポリシー */}
+            <div style={{
+              backgroundColor: 'rgba(255, 255, 255, 0.05)',
+              borderRadius: '12px',
+              padding: '24px',
+              border: '1px solid rgba(255, 255, 255, 0.1)'
+            }}>
+              <h3 style={{
+                color: 'white',
+                fontSize: '18px',
+                fontWeight: '600',
+                marginBottom: '16px',
+                margin: '0 0 16px 0'
+              }}>
+                プライバシーポリシー
+              </h3>
+              <p style={{
+                color: 'rgba(255, 255, 255, 0.8)',
+                fontSize: '14px',
+                marginBottom: '16px',
+                lineHeight: '1.6',
+                margin: '0 0 16px 0'
+              }}>
+                個人情報の取り扱いやCookie使用について詳しく説明しています。
+              </p>
+              <Link
+                href="/privacy"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: '8px 16px',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  color: 'white',
+                  backgroundColor: 'rgba(245, 158, 11, 0.8)',
+                  borderRadius: '8px',
+                  textDecoration: 'none',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = 'rgba(245, 158, 11, 1)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'rgba(245, 158, 11, 0.8)'
+                }}
+              >
+                ポリシーを見る
+              </Link>
+            </div>
+          </div>
+
+          {/* コピーライト */}
+          <div style={{
+            borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+            paddingTop: '24px',
+            color: 'rgba(255, 255, 255, 0.6)',
+            fontSize: '14px'
+          }}>
+            © 2025 Specsy. All rights reserved.
+          </div>
+        </div>
       </div>
     </div>
   )
