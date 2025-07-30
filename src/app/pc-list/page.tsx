@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
+import Head from 'next/head'
 import { fetchPcList } from './fetchPcs'
 import { ClientPcWithCpuSpec } from '../../components/types'
 import ClientPcList from './ClientPcList'
@@ -49,7 +50,12 @@ export default function PcListPage() {
   }, [])
 
   return (
-    <div>
+    <>
+      <Head>
+        <title>PC一覧 - スペクシーハブ</title>
+        <meta name="description" content="用途別にPCを比較。スペック評価、価格、バッテリー性能でパソコンを選ぼう。" />
+      </Head>
+      <div>
       <div style={{
         backgroundColor: 'white',
         boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
@@ -70,6 +76,7 @@ export default function PcListPage() {
       ) : (
         <ClientPcList pcs={pcs} />
       )}
-    </div>
+      </div>
+    </>
   )
 }
