@@ -111,7 +111,7 @@ export default function PcCard({ pc }: PcCardProps) {
       {(pc.af_url || pc.url) && (
         <div style={{ marginTop: '16px', textAlign: 'center' }}>
           <a 
-            href={pc.af_url || pc.url || '#'} 
+            href={pc.url || '#'} // af_urlは使用しない
             target="_blank" 
             rel="noopener noreferrer"
             style={{
