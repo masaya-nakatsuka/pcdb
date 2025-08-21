@@ -322,6 +322,23 @@ export default function HomePage() {
             </div>
           </div>
 
+          {/* アフィリエイト開示 */}
+          <div style={{
+            borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+            paddingTop: '24px',
+            marginBottom: '16px',
+            color: 'rgba(255, 255, 255, 0.7)',
+            fontSize: '14px',
+            lineHeight: '1.5'
+          }}>
+            <p style={{ margin: '0 0 8px 0' }}>
+              Amazonのアソシエイトとして、当メディアは適格販売により収入を得ています。
+            </p>
+            <p style={{ margin: '0' }}>
+              このサイトはアフィリエイト広告（Amazonアソシエイト含む）を掲載しています。
+            </p>
+          </div>
+
           {/* コピーライト */}
           <div style={{
             borderTop: '1px solid rgba(255, 255, 255, 0.1)',

@@ -147,6 +147,30 @@ export default function AboutPage() {
             </ul>
           </div>
 
+          <div style={{ marginBottom: '32px' }}>
+            <h2 style={{
+              fontSize: '24px',
+              fontWeight: '600',
+              marginTop: '40px',
+              marginBottom: '20px',
+              color: '#333'
+            }}>
+              アフィリエイト広告について
+            </h2>
+            <p style={{ marginBottom: '20px' }}>
+              当サイトでは、ユーザーの皆様により良い商品情報を提供するため、アフィリエイトプログラムを利用しています。
+            </p>
+            <p style={{ marginBottom: '20px' }}>
+              <strong>Amazonのアソシエイトとして、当メディアは適格販売により収入を得ています。</strong>
+            </p>
+            <p style={{ marginBottom: '20px' }}>
+              このサイトはアフィリエイト広告（Amazonアソシエイト含む）を掲載しています。商品の価格や在庫状況は常に変動するため、最新の情報は各販売サイトでご確認ください。
+            </p>
+            <p style={{ marginBottom: '0' }}>
+              アフィリエイトリンクを経由して商品をご購入いただいた場合、当サイトに一定の手数料が発生しますが、お客様の購入価格に影響することはありません。
+            </p>
+          </div>
+
           <div>
             <h2 style={{
               fontSize: '24px',
