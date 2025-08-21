@@ -52,6 +52,45 @@ export default function BlogPage() {
           ))}
         </div>
       </div>
+
+      {/* フッター */}
+      <div style={{
+        backgroundColor: '#f8f9fa',
+        borderTop: '1px solid #e9ecef',
+        padding: '40px 20px',
+        marginTop: '60px'
+      }}>
+        <div style={{
+          maxWidth: '1200px',
+          margin: '0 auto',
+          textAlign: 'center'
+        }}>
+          {/* アフィリエイト開示 */}
+          <div style={{
+            marginBottom: '24px',
+            color: '#6c757d',
+            fontSize: '14px',
+            lineHeight: '1.5'
+          }}>
+            <p style={{ margin: '0 0 8px 0' }}>
+              Amazonのアソシエイトとして、当メディアは適格販売により収入を得ています。
+            </p>
+            <p style={{ margin: '0' }}>
+              このサイトはアフィリエイト広告（Amazonアソシエイト含む）を掲載しています。
+            </p>
+          </div>
+
+          {/* コピーライト */}
+          <div style={{
+            borderTop: '1px solid #e9ecef',
+            paddingTop: '24px',
+            color: '#6c757d',
+            fontSize: '14px'
+          }}>
+            © 2025 Specsy. All rights reserved.
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
