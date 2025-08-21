@@ -68,7 +68,7 @@ export default function Article9Page() {
 
           <BlogSection title="UMPCの&quot;2面性&quot;を活かす工夫">
             <BlogParagraph>
-              家でも外でもUMPCをフル活用するためには、ちょっとした環境づくりがカギ。
+              家でも外でもUMPCをフル活用するためには、ちょっとした環境づくりがカギです。
             </BlogParagraph>
             <BlogList>
               <li>Type-Cドックを常設して「1本挿すだけ」で据え置き化</li>
