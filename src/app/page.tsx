@@ -146,7 +146,7 @@ export default function HomePage() {
             e.currentTarget.style.boxShadow = '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.1)'
           }}
         >
-          同一運営者のブログ
+          同一運営者の雑多ブログ
         </Link>
         </div>
       </div>

@@ -3,7 +3,7 @@
 import Link from 'next/link'
 
 interface BlogCardProps {
-  id: string
+  id: number
   title: string
   description: string
   date: string
@@ -29,7 +29,7 @@ export default function BlogCard({ id, title, description, date }: BlogCardProps
         e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)'
       }}
     >
-      <Link href={`/blog/${id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+      <Link href={`/blog/article${id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
         <div>
           <div style={{
             fontSize: '12px',

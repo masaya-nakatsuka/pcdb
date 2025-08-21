@@ -4,70 +4,7 @@ import BlogLayout from '../../../components/blog/BlogLayout'
 import { BlogArticle, BlogContent, BlogSection, BlogParagraph, BlogList, BlogCallout, BlogTable, BlogTableHeader, BlogTableCell, BlogTableRow } from '@/components/blog/BlogArticle'
 import { blogArticles } from '../../../lib/blogMetadata'
 
-const articleData = blogArticles.find(article => article.id === 'article2')!
-
-/**
- * 
-用途ごとのPassmarkスコア目安：自分に合ったPC選びのために
-パソコン選びで悩んだとき、客観的な指標として活用できるのが「Passmarkスコア」です。Passmarkは、CPUの処理能力を数値化したベンチマークで、PCのパフォーマンスを見極めるうえで非常に参考になります。しかし、用途に応じて必要なスコアは異なるため、自分の目的に合った目安を把握することが重要です。この記事では、用途別に推奨されるPassmarkスコアと代表的なCPUを紹介します。
-
-1. オフィス作業・ブラウジング
-WordやExcelを使った文書作成、Google Chromeによるウェブ閲覧、YouTubeでの動画視聴といった基本的な用途であれば、比較的低めのスコアでも快適に動作します。
-
-快適に使える目安：3,000〜5,000点
-
-最低限の使用レベル：2,000〜3,000点
-
-代表的なCPU：
-
-Intel N100（約4,500点）：消費電力も低く、静音性に優れる
-
-Celeron N4020（約2,200点）：価格重視の最低ライン
-
-このレベルであれば、メールや書類仕事、ウェブ会議にも問題なく対応できます。ただし複数タブを開いて作業する場合は、4,000点以上を選んだほうが快適です。
-
-2. 動画視聴・軽い画像編集
-高解像度動画や簡単な画像編集を行う場合は、やや高めのCPU性能が求められます。
-
-4K動画視聴：5,000〜8,000点
-
-軽い画像編集（CanvaやLightroomなど）：6,000〜10,000点
-
-代表的なCPU：
-
-Core i3-1115G4（約7,500点）：第11世代のCoreシリーズでコスパ良好
-
-Ryzen 5 5500U（約13,000点）：マルチスレッド性能も高く快適
-
-このクラスになると、写真のトリミングや色調補正などもスムーズにこなせるようになります。動画視聴や家庭での軽作業には最適なレンジです。
-
-3. 動画編集・プログラミング
-本格的な用途では、より高いPassmarkスコアが必要です。特に動画編集や重めの開発環境では、CPU性能が作業効率に直結します。
-
-フルHD動画編集：10,000〜15,000点
-
-4K動画編集や3Dモデリング：20,000点以上推奨
-
-代表的なCPU：
-
-Core i7-1165G7（約10,500点）：薄型ノート向けでも強力
-
-Ryzen 7 5700U（約16,000点）：マルチコア活用で動画処理に強い
-
-また、プログラミングにおいても、仮想環境や複数ツールを同時に動かすケースでは、10,000点を超えるCPUが望ましいです。
-
-まとめ
-Passmarkスコアは、CPUの処理性能を視覚的に理解するための強力な指標です。下記のように、自分の用途に応じたスコアを目安にすれば、コストと性能のバランスを最適化できます。
-
-用途	推奨スコア	代表的なCPU
-オフィス・Web	3,000〜5,000	Intel N100, Celeron N4020
-動画視聴・軽編集	5,000〜10,000	Core i3-1115G4, Ryzen 5 5500U
-本格作業	10,000〜20,000+	Core i7-1165G7, Ryzen 7 5700U
-
-購入時には、価格だけでなく、Passmarkスコアという“見える指標”を参考にして、自分にピッタリな1台を選びましょう。
-
-必要に応じて画像や表などを追加すれば、より視覚的に伝わる記事になります。構成やトーンなどの調整も可能ですので、ご希望があればお知らせください。
- */
+const articleData = blogArticles.find(article => article.id === 2)!
 
 export default function Article2Page() {
   return (
@@ -78,12 +15,20 @@ export default function Article2Page() {
       >
         <BlogContent>
           <BlogParagraph>
-            パソコン選びで悩んだとき、客観的な指標として活用できるのが「Passmarkスコア」です。Passmarkは、CPUの処理能力を数値化したベンチマークで、PCのパフォーマンスを見極めるうえで非常に参考になります。しかし、用途に応じて必要なスコアは異なるため、自分の目的に合った目安を把握することが重要です。この記事では、用途別に推奨されるPassmarkスコアと代表的なCPUを紹介します。
+            パソコンを選ぶときって、正直スペック表を見てもピンとこないことってありますよね。そんなときに参考になるのが「Passmarkスコア」です。これはCPUの処理性能を数値で表したベンチマークで、「この数値ならどれくらいの作業が快適か」という目安になります。
+          </BlogParagraph>
+
+          <BlogParagraph>
+            ただし、必要なスコアは人それぞれ。メールやブラウジングがメインの人と、動画編集をする人では求める性能がまったく違います。今回は、用途別にどのくらいのスコアを目安にすればいいのかをまとめてみました。
           </BlogParagraph>
 
           <BlogSection title="1. オフィス作業・ブラウジング">
             <BlogParagraph>
-              WordやExcelを使った文書作成、Google Chromeによるウェブ閲覧、YouTubeでの動画視聴といった基本的な用途であれば、比較的低めのスコアでも快適に動作します。
+              WordやExcelで書類を作ったり、Google Chromeでネット検索したり、YouTubeを見たり。こういう軽めの用途なら、そこまで高いスコアは必要ありません。
+            </BlogParagraph>
+
+            <BlogParagraph>
+              私も以前、サブPCとして低めのスコアのノートを使っていましたが、メールや会議資料のチェック程度なら問題なかったです。ただ、Chromeでタブを10個以上開くと、ちょっともたつくこともありました。
             </BlogParagraph>
 
             <BlogList>
@@ -98,34 +43,42 @@ export default function Article2Page() {
             </BlogCallout>
 
             <BlogParagraph>
-              このレベルであれば、メールや書類仕事、ウェブ会議にも問題なく対応できます。ただし複数タブを開いて作業する場合は、4,000点以上を選んだほうが快適です。
+              複数のタブを開く人や、ウェブ会議をよくする人は、できれば4,000点以上を狙ったほうが安心かなと思います。
             </BlogParagraph>
 
             <BlogSection title="2. 動画視聴・軽い画像編集">
               <BlogParagraph>
-                高解像度動画や簡単な画像編集を行う場合は、やや高めのCPU性能が求められます。
+                「4K動画をスムーズに見たい」「ちょっとした写真加工をしたい」という人は、もう少しスコアが必要になります。
               </BlogParagraph>
+
+            <BlogParagraph>
+              例えば旅行の写真をCanvaで編集したり、Lightroomで色味を変えたりするくらいなら、6,000〜10,000点くらいあると快適です。私の感覚だと、5,000点台でも4K動画は見られますが、編集作業では待ち時間が増えてくる印象です。
+            </BlogParagraph>
 
               <BlogList>
                 <li>4K動画視聴：5,000〜8,000点</li>
-                <li>軽い画像編集（CanvaやLightroomなど）：6,000〜10,000点</li>
+                <li>軽い画像編集：6,000〜10,000点</li>
               </BlogList>
 
               <BlogCallout>
                 代表的なCPU：
-                Core i3-1115G4（約7,500点）：第11世代のCoreシリーズでコスパ良好
-                Ryzen 5 5500U（約13,000点）：マルチスレッド性能も高く快適
+                Core i3-1115G4（約7,500点）：コスパが良い第11世代Core
+                Ryzen 5 5500U（約13,000点）：マルチタスクに強い
               </BlogCallout>
 
               <BlogParagraph>
-                このクラスになると、写真のトリミングや色調補正などもスムーズにこなせるようになります。動画視聴や家庭での軽作業には最適なレンジです。
+                このクラスになると、趣味での動画鑑賞や写真加工はかなり快適になりますね。
               </BlogParagraph>
             </BlogSection>
 
             <BlogSection title="3. 動画編集・プログラミング">
               <BlogParagraph>
-                本格的な用途では、より高いPassmarkスコアが必要です。特に動画編集や重めの開発環境では、CPU性能が作業効率に直結します。
+                ここからは、本格的な作業をする人向けです。特に動画編集や3Dモデリング、開発環境を複数立ち上げるような使い方では、CPU性能が作業効率に直結します。
               </BlogParagraph>
+
+            <BlogParagraph>
+              私も以前、スコアが1万点を超えるノートPCで動画編集をしたことがありますが、書き出しの速さにかなり差を感じました。
+            </BlogParagraph>
 
               <BlogList>
                 <li>フルHD動画編集：10,000〜15,000点</li>
@@ -134,18 +87,18 @@ export default function Article2Page() {
 
               <BlogCallout>
                 代表的なCPU：
-                Core i7-1165G7（約10,500点）：薄型ノート向けでも強力
-                Ryzen 7 5700U（約16,000点）：マルチコア活用で動画処理に強い
+                Core i7-1165G7（約10,500点）：薄型ノートでもパワフル
+                Ryzen 7 5700U（約16,000点）：動画処理やマルチスレッドに強い
               </BlogCallout>
 
               <BlogParagraph>
-                また、プログラミングにおいても、仮想環境や複数ツールを同時に動かすケースでは、10,000点を超えるCPUが望ましいです。
+                プログラミングでも、仮想マシンやDockerを多用する人は1万点以上を選ぶと余裕があります。
               </BlogParagraph>
             </BlogSection>
 
             <BlogSection title="まとめ">
               <BlogParagraph>
-                Passmarkスコアは、CPUの処理性能を視覚的に理解するための強力な指標です。下記のように、自分の用途に応じたスコアを目安にすれば、コストと性能のバランスを最適化できます。
+                Passmarkスコアは「性能の見える化」にとても役立つ指標です。もちろん、GPUやメモリも重要ですが、まずはCPU性能の目安を押さえておくと失敗しづらいです。
               </BlogParagraph>
 
               <BlogTable>
@@ -174,7 +127,7 @@ export default function Article2Page() {
               </BlogTable>
 
               <BlogParagraph>
-                購入時には、価格だけでなく、Passmarkスコアという“見える指標”を参考にして、自分にピッタリな1台を選びましょう。
+                パソコン選びで迷ったら、「用途」と「スコア」をセットで考えると、自分にちょうどいい1台に出会えるはずですよ。
               </BlogParagraph>
             </BlogSection>
           </BlogSection>

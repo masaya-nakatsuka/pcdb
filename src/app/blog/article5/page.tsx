@@ -4,7 +4,7 @@ import BlogLayout from '../../../components/blog/BlogLayout'
 import { BlogArticle, BlogContent, BlogSection, BlogParagraph, BlogList, BlogCallout, BlogTable, BlogTableHeader, BlogTableCell, BlogTableRow } from '@/components/blog/BlogArticle'
 import { blogArticles } from '../../../lib/blogMetadata'
 
-const articleData = blogArticles.find(article => article.id === 'article5')!
+const articleData = blogArticles.find(article => article.id === 5)!
 
 /**
 [h2]AMDはN100対抗CPUを出してこないのか？ローエンド市場における静かな駆け引き[/h2]

@@ -4,7 +4,7 @@ import BlogLayout from '../../../components/blog/BlogLayout'
 import { BlogArticle, BlogContent, BlogSection, BlogParagraph, BlogList, BlogCallout, BlogTable, BlogTableHeader, BlogTableCell, BlogTableRow } from '@/components/blog/BlogArticle'
 import { blogArticles } from '../../../lib/blogMetadata'
 
-const articleData = blogArticles.find(article => article.id === 'article4')!
+const articleData = blogArticles.find(article => article.id === 4)!
 
 /**
 [h2]N100はなぜ生まれたのか？ 軽量・省電力CPUの背景と狙い[/h2]
