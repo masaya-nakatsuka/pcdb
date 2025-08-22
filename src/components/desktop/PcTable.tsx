@@ -215,6 +215,18 @@ export default function PcTable({ pcs: initialPcs }: PcTableProps) {
         <tr style={{ backgroundColor: '#f8f9fa' }}>
           <th style={{
             border: '1px solid #dee2e6', 
+            padding: '12px 8px', 
+            cursor: 'pointer',
+            backgroundColor: sortOptions.field === 'pcScore' ? '#e9ecef' : 'transparent',
+            fontWeight: '600',
+            color: '#495057',
+            transition: 'background-color 0.2s ease',
+            minWidth: '100px'
+          }} onClick={() => handleSortChange('pcScore')}>
+            スペック評価{getSortIcon('pcScore')}
+          </th>
+          <th style={{
+            border: '1px solid #dee2e6', 
             padding: '12px 8px',
             fontWeight: '600',
             color: '#495057',
@@ -313,18 +325,6 @@ export default function PcTable({ pcs: initialPcs }: PcTableProps) {
           </th>
           <th style={{
             border: '1px solid #dee2e6', 
-            padding: '12px 8px', 
-            cursor: 'pointer',
-            backgroundColor: sortOptions.field === 'pcScore' ? '#e9ecef' : 'transparent',
-            fontWeight: '600',
-            color: '#495057',
-            transition: 'background-color 0.2s ease',
-            minWidth: '100px'
-          }} onClick={() => handleSortChange('pcScore')}>
-            スペック評価{getSortIcon('pcScore')}
-          </th>
-          <th style={{
-            border: '1px solid #dee2e6', 
             padding: '12px 8px',
             fontWeight: '600',
             color: '#495057',
@@ -336,6 +336,13 @@ export default function PcTable({ pcs: initialPcs }: PcTableProps) {
       <tbody>
         {pcs.map((pc) => (
           <tr key={pc.id}>
+            <td style={{border: '1px solid #ddd', padding: '8px', textAlign: 'center'}}>
+              {pc.pcScore && (
+                <span style={{ fontWeight: 'bold', fontSize: '14px' }}>
+                  {pc.pcScore}点
+                </span>
+              )}
+            </td>
             <td style={{border: '1px solid #ddd', padding: '8px', textAlign: 'center'}}>
               {pc.img_url ? (
                 <ImageComponent 
@@ -402,13 +409,6 @@ export default function PcTable({ pcs: initialPcs }: PcTableProps) {
                     </div>
                   )}
                 </div>
-              )}
-            </td>
-            <td style={{border: '1px solid #ddd', padding: '8px', textAlign: 'center'}}>
-              {pc.pcScore && (
-                <span style={{ fontWeight: 'bold', fontSize: '14px' }}>
-                  {pc.pcScore}点
-                </span>
               )}
             </td>
             <td style={{border: '1px solid #ddd', padding: '8px', textAlign: 'center'}}>
