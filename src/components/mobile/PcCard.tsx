@@ -93,7 +93,7 @@ export default function PcCard({ pc }: PcCardProps) {
       </div>
 
       {/* インプレッション計測用1pxトラッキング画像 */}
-      {/* {pc.imp_img_url && ( TODO: インプレッション計測画像を追加
+      {pc.imp_img_url && (
         <img 
           src={pc.imp_img_url} 
           alt="" 
@@ -105,13 +105,13 @@ export default function PcCard({ pc }: PcCardProps) {
             pointerEvents: 'none'
           }} 
         />
-      )} */}
+      )}
 
       {/* af_url/url遷移ボタン */}
       {(pc.af_url || pc.url) && (
         <div style={{ marginTop: '16px', textAlign: 'center' }}>
           <a 
-            href={pc.url || '#'} // TODO: af_urlに変更
+            href={pc.af_url || pc.url || '#'}
             target="_blank" 
             rel="noopener noreferrer"
             style={{

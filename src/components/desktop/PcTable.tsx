@@ -371,7 +371,7 @@ export default function PcTable({ pcs: initialPcs }: PcTableProps) {
                 {pc.brand} / {pc.name || 'Unnamed PC'}
               </div>
               {/* インプレッション計測用1pxトラッキング画像 */}
-              {/* {pc.imp_img_url && ( TODO: インプレッション計測画像
+              {pc.imp_img_url && (
                 <img 
                   src={pc.imp_img_url} 
                   alt="" 
@@ -383,7 +383,7 @@ export default function PcTable({ pcs: initialPcs }: PcTableProps) {
                     pointerEvents: 'none'
                   }} 
                 />
-              )} */}
+              )}
             </td>
             <td style={{border: '1px solid #ddd', padding: '8px', fontSize: '12px'}}>{pc.cpu}</td>
             <td style={{border: '1px solid #ddd', padding: '8px', fontSize: '12px'}}>{pc.ram}GB</td>
@@ -412,9 +412,9 @@ export default function PcTable({ pcs: initialPcs }: PcTableProps) {
               )}
             </td>
             <td style={{border: '1px solid #ddd', padding: '8px', textAlign: 'center'}}>
-              {(pc.af_url || pc.url) && (
-                <a 
-                  href={pc.url || '#'} // TODO: af_urlに変更
+                      {(pc.af_url || pc.url) && (
+          <a
+            href={pc.af_url || pc.url || '#'}
                   target="_blank" 
                   rel="noopener noreferrer"
                   style={{

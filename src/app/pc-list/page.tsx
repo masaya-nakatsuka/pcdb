@@ -34,8 +34,10 @@ function BackLink() {
 export default function PcListPage() {
   const [pcs, setPcs] = useState<ClientPcWithCpuSpec[]>([])
   const [error, setError] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
+    setIsLoading(true)
     fetchPcList('cafe')
       .then((data) => {
         if (Array.isArray(data)) {
@@ -46,6 +48,9 @@ export default function PcListPage() {
       })
       .catch(error => {
         setError(error.message || 'PC一覧の取得に失敗しました')
+      })
+      .finally(() => {
+        setIsLoading(false)
       })
   }, [])
 
@@ -69,7 +74,38 @@ export default function PcListPage() {
           <BackLink />
         </div>
       </div>
-      {error ? (
+      {isLoading ? (
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'center', 
+          minHeight: '400px',
+          flexDirection: 'column',
+          gap: '16px'
+        }}>
+          <div style={{
+            width: '40px',
+            height: '40px',
+            border: '4px solid #f3f3f3',
+            borderTop: '4px solid #3b82f6',
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite'
+          }}></div>
+          <div style={{
+            color: '#6b7280',
+            fontSize: '16px',
+            fontWeight: '500'
+          }}>
+            PCデータを読み込み中...
+          </div>
+          <style jsx>{`
+            @keyframes spin {
+              0% { transform: rotate(0deg); }
+              100% { transform: rotate(360deg); }
+            }
+          `}</style>
+        </div>
+      ) : error ? (
         <div style={{ padding: '20px', color: 'red', textAlign: 'center' }}>
           エラー: {error}
         </div>
