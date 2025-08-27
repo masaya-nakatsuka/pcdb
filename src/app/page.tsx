@@ -118,6 +118,38 @@ export default function HomePage() {
         </Link>
 
         <Link 
+          href="/tts"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '16px 32px',
+            fontSize: '18px',
+            fontWeight: '600',
+            color: 'white',
+            background: 'linear-gradient(135deg, #10b981 0%, #06b6d4 100%)',
+            borderRadius: '16px',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.1)',
+            textDecoration: 'none',
+            transition: 'all 0.3s ease',
+            position: 'relative',
+            overflow: 'hidden'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'scale(1.05)'
+            e.currentTarget.style.background = 'linear-gradient(135deg, #059669 0%, #0891b2 100%)'
+            e.currentTarget.style.boxShadow = '0 32px 64px -12px rgba(16, 185, 129, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1)'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'scale(1)'
+            e.currentTarget.style.background = 'linear-gradient(135deg, #10b981 0%, #06b6d4 100%)'
+            e.currentTarget.style.boxShadow = '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.1)'
+          }}
+        >
+          テキストを音声で再生
+        </Link>
+
+        <Link 
           href="https://sesera231.com"
           style={{
             display: 'inline-flex',
