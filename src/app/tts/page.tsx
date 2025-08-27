@@ -27,6 +27,11 @@ export default function TtsPage() {
   const isCancelledRef = useRef<boolean>(false)
 
   const isSupported = typeof window !== 'undefined' && 'speechSynthesis' in window
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+  const uiSupported = mounted ? isSupported : true
 
   // 初期化: 既存の保存データを読み込み（自動作成はしない）
   useEffect(() => {
@@ -296,7 +301,7 @@ export default function TtsPage() {
           WebkitTextFillColor: 'transparent',
           backgroundClip: 'text'
         }}>テキストを音声で再生</h1>
-        {!isSupported && (
+        {mounted && !isSupported && (
           <div style={{
             backgroundColor: 'rgba(239, 68, 68, 0.15)',
             border: '1px solid rgba(239, 68, 68, 0.35)',
@@ -407,7 +412,7 @@ export default function TtsPage() {
               type="button"
               aria-label="ページ再生"
               onClick={handlePlay}
-              disabled={!isSupported || isSpeaking || !text.trim()}
+              disabled={!uiSupported || isSpeaking || !text.trim()}
               style={{
                 flex: 1,
                 padding: '12px 16px',
@@ -423,7 +428,7 @@ export default function TtsPage() {
               type="button"
               aria-label="ブック再生"
               onClick={handlePlayBook}
-              disabled={!isSupported || isSpeaking || !(currentBook && currentBook.pages.some(p => (p.content || '').trim()))}
+              disabled={!uiSupported || isSpeaking || !(currentBook && currentBook.pages.some(p => (p.content || '').trim()))}
               style={{
                 flex: 1,
                 padding: '12px 16px',
@@ -443,7 +448,7 @@ export default function TtsPage() {
               type="button"
               aria-label="再生/再開"
               onClick={handlePlay}
-              disabled={!isSupported || (!isPaused && (!text.trim() || isSpeaking))}
+              disabled={!uiSupported || (!isPaused && (!text.trim() || isSpeaking))}
               style={{
                 flex: 1,
                 padding: '12px 16px',
@@ -459,7 +464,7 @@ export default function TtsPage() {
               type="button"
               aria-label="一時停止"
               onClick={handlePause}
-              disabled={!isSupported || !isSpeaking || isPaused}
+              disabled={!uiSupported || !isSpeaking || isPaused}
               style={{
                 flex: 1,
                 padding: '12px 16px',
