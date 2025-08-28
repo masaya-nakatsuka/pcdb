@@ -36,7 +36,7 @@ export default function BlogCard({ id, title, description, date }: BlogCardProps
             color: '#666',
             marginBottom: '8px'
           }}>
-            {date}
+            <span style={{ fontWeight: 700, color: '#334155', marginRight: '8px' }}>{`article${id}`}</span>{date}
           </div>
           <h2 style={{
             fontSize: '20px',

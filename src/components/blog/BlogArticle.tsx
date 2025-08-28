@@ -111,6 +111,14 @@ export function BlogTableRow({ children }: { children: ReactNode }) {
   )
 }
 
+export function BlogTableBody({ children }: { children: ReactNode }) {
+  return (
+    <tbody>
+      {children}
+    </tbody>
+  )
+}
+
 export function BlogTableCell({ children, isHeader = false }: { children: ReactNode, isHeader?: boolean }) {
   const Tag = isHeader ? 'th' : 'td'
   return (
