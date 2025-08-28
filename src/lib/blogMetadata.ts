@@ -126,4 +126,16 @@ export const blogArticles: ArticleMetadata[] = [
     description: 'クリエイター向けPCの選定。デザインや写真RAW現像に必要な要素を整理。',
     date: '2025-08-10'
   }
+  ,{
+    id: 21,
+    title: 'コスパ最強 ノートPC おすすめ【2025年最新】価格別ベストバイガイド',
+    description: '価格帯別に最適なノートPCの選び方を解説。長期使用視点のコスパ重視で判断。',
+    date: '2025-08-28'
+  }
+  ,{
+    id: 22,
+    title: '高性能 ビジネスPC おすすめ【2025年最新】プロフェッショナル向け最強ワークステーション',
+    description: 'プロ用途向け高性能ビジネスPCの選定基準。業務別の要件と投資判断を整理。',
+    date: '2025-08-28'
+  }
 ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
