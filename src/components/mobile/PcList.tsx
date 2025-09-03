@@ -67,7 +67,7 @@ export default function PcList({ pcs: initialPcs }: { pcs: ClientPcWithCpuSpec[]
 
   return (
     <>
-      <h1 style={{ paddingLeft: '16px', fontSize: '24px', color: '#333', margin: '16px 0' }}>Amazon販売 PC 一覧スコア比較　　　</h1>
+      <h1 style={{ paddingLeft: '16px', fontSize: '24px', color: '#333', margin: '16px 0' }}>Amazon販売 PC 一覧スコア比較</h1>
       
       {/* 用途選択ボタン */}
       <div style={{ padding: '0 16px 16px 16px' }}>

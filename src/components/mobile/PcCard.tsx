@@ -82,9 +82,9 @@ export default function PcCard({ pc }: PcCardProps) {
 
           {pc.fetched_at && (
             <div style={{ 
-              fontSize: '12px', 
+              fontSize: '10px', 
               color: '#666', 
-              marginTop: '8px' 
+              marginTop: '2px' 
             }}>
               データ取得: {pc.fetched_at}
             </div>
