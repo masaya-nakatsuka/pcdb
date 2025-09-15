@@ -138,4 +138,16 @@ export const blogArticles: ArticleMetadata[] = [
     description: 'プロ用途向け高性能ビジネスPCの選定基準。業務別の要件と投資判断を整理。',
     date: '2025-08-28'
   }
+  ,{
+    id: 29,
+    title: '総合スコア順 小型ノート おすすめ 2025｜数値で比較して選ぶ',
+    description: 'pcScoreを軸に小型ノートを数値で比較。重量・推定駆動・16GB/512GBの現実基準で後悔しない選び方。',
+    date: '2025-09-03'
+  }
+  ,{
+    id: 28,
+    title: '軽量モバイルノート おすすめ 2025｜“持続×軽さ×実用”の最適点',
+    description: '通学・通勤やカフェ学習向け。1.3kg以下・推定8〜10時間・16GB/512GBを基準に最適解を整理。',
+    date: '2025-08-31'
+  }
 ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())

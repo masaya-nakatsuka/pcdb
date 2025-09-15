@@ -1,5 +1,8 @@
 # 記事作成チェックリスト（SEO最適化・ブロガー調）
 
+本ドキュメントは「ガイドライン」と「テンプレート」を扱います。作業フローや確認ゲートは `docs_master.md` を参照してください。
+
+参照: ./docs_master.md
 ## 【必須】記事作成前チェック
 
 - [ ] **キーワード重複確認**: 既存記事のタイトル・主要キーワードと被らないことを確認
@@ -11,7 +14,7 @@
 
 - [ ] **React import**: useEffect, useState, ClientPcList, fetchPcList, ClientPcWithCpuSpecをimport
 - [ ] **状態管理**: pcs, isLoading, error のstate設定
-- [ ] **データ取得**: useEffectでfetchPcList('cafe')を実行
+- [ ] **データ取得**: useEffectでfetchPcList('cafe')を実行（記事文脈に合わせてcontextを選択）
 - [ ] **Blogコンポーネント**: BlogParagraph, BlogList, BlogSection, BlogTable系のみ使用（生HTML禁止）
 
 ## 【必須】コンテンツ構造チェック
@@ -34,6 +37,7 @@
 ## 【最重要】CTA実装チェック
 
 - [ ] **埋め込みPCリスト**: 記事最後にClientPcListコンポーネントを配置（リンク禁止）
+- [ ] **最終セクション配置**: セクション名は「次のアクション」を推奨
 - [ ] **ローディング状態**: isLoading時のスピナー表示を実装
 - [ ] **エラーハンドリング**: error時のエラーメッセージ表示を実装
 - [ ] **実装コード確認**: 以下のJSXコードを最終セクション内に配置
