@@ -26,6 +26,7 @@ export default function NoteHomePage() {
   // Google認証後のリダイレクト先URLを生成（SSR対応）
   const redirectTo = useMemo(() => {
     if (typeof window === 'undefined') return undefined
+    // 現在のドメインを使用（localhostか本番ドメインか自動判定）
     return `${window.location.origin}/note`
   }, [])
 

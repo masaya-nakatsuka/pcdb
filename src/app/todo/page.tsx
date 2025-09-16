@@ -42,7 +42,11 @@ export default function TodoPage() {
 
   const redirectTo = useMemo(() => {
     if (typeof window === 'undefined') return undefined
-    return `${window.location.origin}/todo`
+    // 本番環境では環境変数を使用、開発環境ではlocalhost
+    const baseUrl = process.env.NODE_ENV === 'production' 
+      ? process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
+      : window.location.origin
+    return `${baseUrl}/todo`
   }, [])
 
   useEffect(() => {

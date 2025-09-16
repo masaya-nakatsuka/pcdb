@@ -26,6 +26,7 @@ export default function PageEditor() {
   const [navigatingTo, setNavigatingTo] = useState<string | null>(null)
   const redirectTo = useMemo(() => {
     if (typeof window === 'undefined') return undefined
+    // 現在のドメインを使用（localhostか本番ドメインか自動判定）
     return `${window.location.origin}/note/${bookId}/${pageId}`
   }, [bookId, pageId])
 
