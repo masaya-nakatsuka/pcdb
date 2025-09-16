@@ -42,12 +42,16 @@ export default function TodoPage() {
 
   const redirectTo = useMemo(() => {
     if (typeof window === 'undefined') return undefined
-    // localhostの場合は開発環境、それ以外は本番環境として判定
-    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-    const baseUrl = isLocalhost 
-      ? window.location.origin
-      : process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
-    return `${baseUrl}/todo`
+    // 現在のページの完全なURLを使用
+    const currentUrl = window.location.href
+    console.log('Debug redirect URL:', {
+      currentUrl,
+      hostname: window.location.hostname,
+      origin: window.location.origin,
+      pathname: window.location.pathname,
+      NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL
+    })
+    return currentUrl
   }, [])
 
   useEffect(() => {
