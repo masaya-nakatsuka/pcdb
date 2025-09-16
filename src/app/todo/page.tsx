@@ -44,13 +44,6 @@ export default function TodoPage() {
     if (typeof window === 'undefined') return undefined
     // 現在のページの完全なURLを使用
     const currentUrl = window.location.href
-    console.log('Debug redirect URL:', {
-      currentUrl,
-      hostname: window.location.hostname,
-      origin: window.location.origin,
-      pathname: window.location.pathname,
-      NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL
-    })
     return currentUrl
   }, [])
 
