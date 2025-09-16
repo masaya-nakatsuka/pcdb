@@ -2,7 +2,7 @@ export interface TodoItem {
   id: string
   user_id: string
   title: string
-  status: '未着手' | '開発中' | 'PR中' | 'QA待ち' | '完了'
+  status: '未着手' | '着手中' | '完了'
   priority: 'low' | 'medium' | 'high' | null
   tags: string[]
   branch_names: string[]

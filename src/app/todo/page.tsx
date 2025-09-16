@@ -317,8 +317,6 @@ export default function TodoPage() {
     switch (status) {
       case '未着手': return '#999999'
       case '着手中': return '#3498db'
-      case 'PR中': return '#f39c12'
-      case 'QA待ち': return '#e74c3c'
       case '完了': return '#2ecc71'
       default: return '#999999'
     }
@@ -819,7 +817,7 @@ export default function TodoPage() {
                 }}
               >
                 <option value="未着手">未着手</option>
-                <option value="開発中">開発中</option>
+                <option value="着手中">着手中</option>
                 <option value="完了">完了</option>
               </select>
 
