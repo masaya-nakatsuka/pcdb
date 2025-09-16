@@ -26,8 +26,12 @@ export default function PageEditor() {
   const [navigatingTo, setNavigatingTo] = useState<string | null>(null)
   const redirectTo = useMemo(() => {
     if (typeof window === 'undefined') return undefined
-    // 現在のドメインを使用（localhostか本番ドメインか自動判定）
-    return `${window.location.origin}/note/${bookId}/${pageId}`
+    // localhostの場合は開発環境、それ以外は本番環境として判定
+    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    const baseUrl = isLocalhost 
+      ? window.location.origin
+      : process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
+    return `${baseUrl}/note/${bookId}/${pageId}`
   }, [bookId, pageId])
 
   useEffect(() => {

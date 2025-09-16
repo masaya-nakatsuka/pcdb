@@ -42,10 +42,11 @@ export default function TodoPage() {
 
   const redirectTo = useMemo(() => {
     if (typeof window === 'undefined') return undefined
-    // 本番環境では環境変数を使用、開発環境ではlocalhost
-    const baseUrl = process.env.NODE_ENV === 'production' 
-      ? process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
-      : window.location.origin
+    // localhostの場合は開発環境、それ以外は本番環境として判定
+    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    const baseUrl = isLocalhost 
+      ? window.location.origin
+      : process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
     return `${baseUrl}/todo`
   }, [])
 
