@@ -19,10 +19,12 @@ export default function TodoPage() {
   const [tempMarkdown, setTempMarkdown] = useState<string>("")
   const [deletingTodos, setDeletingTodos] = useState<Set<string>>(new Set())
   const [newlyCreatedTodos, setNewlyCreatedTodos] = useState<Set<string>>(new Set())
+  const [sortField, setSortField] = useState<string>('created_at')
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
 
   const [editForm, setEditForm] = useState<{
     title: string
-    status: '未着手' | '開発中' | 'PR中' | 'QA待ち' | '完了'
+    status: '未着手' | '着手中' | '完了'
     priority: 'low' | 'medium' | 'high' | null
     tags: string
     branch_names: string
@@ -257,7 +259,7 @@ export default function TodoPage() {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [editingTodo, showNewTodo, editForm.title, editingMarkdown, saveTodo, saveMarkdown])
 
-  async function updateTodoStatus(todoId: string, status: '未着手' | '開発中' | 'PR中' | 'QA待ち' | '完了') {
+  async function updateTodoStatus(todoId: string, status: '未着手' | '着手中' | '完了') {
     if (updatingTodo) return
 
     setUpdatingTodo(todoId)
@@ -314,7 +316,7 @@ export default function TodoPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case '未着手': return '#999999'
-      case '開発中': return '#3498db'
+      case '着手中': return '#3498db'
       case 'PR中': return '#f39c12'
       case 'QA待ち': return '#e74c3c'
       case '完了': return '#2ecc71'
@@ -343,6 +345,52 @@ export default function TodoPage() {
     })
   }
 
+  const handleSort = (field: string) => {
+    if (sortField === field) {
+      setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc')
+    } else {
+      setSortField(field)
+      setSortDirection('asc')
+    }
+  }
+
+  const getSortedTodos = () => {
+    return [...todos].sort((a, b) => {
+      let aValue: any, bValue: any
+
+      switch (sortField) {
+        case 'priority':
+          const priorityOrder = { 'high': 3, 'medium': 2, 'low': 1, null: 0 }
+          aValue = priorityOrder[a.priority as keyof typeof priorityOrder] || 0
+          bValue = priorityOrder[b.priority as keyof typeof priorityOrder] || 0
+          break
+        case 'status':
+          const statusOrder = { '未着手': 1, '着手中': 2, '完了': 3 }
+          aValue = statusOrder[a.status as keyof typeof statusOrder] || 0
+          bValue = statusOrder[b.status as keyof typeof statusOrder] || 0
+          break
+        case 'title':
+          aValue = a.title.toLowerCase()
+          bValue = b.title.toLowerCase()
+          break
+        case 'done_date':
+          aValue = a.done_date ? new Date(a.done_date).getTime() : 0
+          bValue = b.done_date ? new Date(b.done_date).getTime() : 0
+          break
+        case 'created_at':
+          aValue = a.created_at ? new Date(a.created_at).getTime() : 0
+          bValue = b.created_at ? new Date(b.created_at).getTime() : 0
+          break
+        default:
+          return 0
+      }
+
+      if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1
+      if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1
+      return 0
+    })
+  }
+
   if (loading) return <LoadingOverlay message="読み込み中..." />
 
   if (!userId) {
@@ -362,7 +410,7 @@ export default function TodoPage() {
         <button onClick={handleSignOut}>ログアウト</button>
       </div>
 
-      <div style={{ border: '1px solid #e0e0e0', borderRadius: 8, overflow: 'hidden' }}>
+      <div style={{ borderRadius: 8, overflow: 'hidden' }}>
         <style jsx>{`
           @keyframes slideInFromBottom {
             from {
@@ -392,21 +440,45 @@ export default function TodoPage() {
           gap: 8,
           padding: '12px 16px',
           backgroundColor: '#f8f9fa',
-          borderBottom: '1px solid #e0e0e0',
           fontSize: '0.9em',
           fontWeight: 'bold',
           color: '#666'
         }}>
-          <div>優先度</div>
-          <div>状況</div>
+          <div
+            onClick={() => handleSort('priority')}
+            style={{ cursor: 'pointer', userSelect: 'none', display: 'flex', alignItems: 'center', gap: 4 }}
+          >
+            優先度 {sortField === 'priority' && (sortDirection === 'asc' ? '↑' : '↓')}
+          </div>
+          <div
+            onClick={() => handleSort('status')}
+            style={{ cursor: 'pointer', userSelect: 'none', display: 'flex', alignItems: 'center', gap: 4 }}
+          >
+            状況 {sortField === 'status' && (sortDirection === 'asc' ? '↑' : '↓')}
+          </div>
           <div>タグ</div>
-          <div>タイトル</div>
-          <div>完了日</div>
-          <div>作成日</div>
+          <div
+            onClick={() => handleSort('title')}
+            style={{ cursor: 'pointer', userSelect: 'none', display: 'flex', alignItems: 'center', gap: 4 }}
+          >
+            タイトル {sortField === 'title' && (sortDirection === 'asc' ? '↑' : '↓')}
+          </div>
+          <div
+            onClick={() => handleSort('done_date')}
+            style={{ cursor: 'pointer', userSelect: 'none', display: 'flex', alignItems: 'center', gap: 4 }}
+          >
+            完了日 {sortField === 'done_date' && (sortDirection === 'asc' ? '↑' : '↓')}
+          </div>
+          <div
+            onClick={() => handleSort('created_at')}
+            style={{ cursor: 'pointer', userSelect: 'none', display: 'flex', alignItems: 'center', gap: 4 }}
+          >
+            作成日 {sortField === 'created_at' && (sortDirection === 'asc' ? '↑' : '↓')}
+          </div>
           <div></div>
           <div></div>
         </div>
-        {todos.map((todo) => {
+        {getSortedTodos().map((todo) => {
           const isExpanded = expandedTodos.has(todo.id)
           const isCompleted = todo.status === '完了'
           const isEditing = editingTodo === todo.id
@@ -416,7 +488,6 @@ export default function TodoPage() {
           if (isEditing) {
             return (
               <div key={todo.id} style={{
-                borderBottom: '1px solidrgb(232, 232, 232)',
                 backgroundColor: '#f1f1f1'
               }} data-todo-container>
                 <div style={{
@@ -430,7 +501,6 @@ export default function TodoPage() {
                     value={editForm.priority || ''}
                     onChange={(e) => setEditForm(prev => ({ ...prev, priority: e.target.value as any || null }))}
                     style={{
-                      border: '1px solid #ddd',
                       borderRadius: 4,
                       padding: '6px 8px',
                       fontSize: '12px'
@@ -446,16 +516,13 @@ export default function TodoPage() {
                     value={editForm.status}
                     onChange={(e) => setEditForm(prev => ({ ...prev, status: e.target.value as any }))}
                     style={{
-                      border: '1px solid #ddd',
                       borderRadius: 4,
                       padding: '6px 8px',
                       fontSize: '12px'
                     }}
                   >
                     <option value="未着手">未着手</option>
-                    <option value="開発中">開発中</option>
-                    <option value="PR中">PR中</option>
-                    <option value="QA待ち">QA待ち</option>
+                    <option value="着手中">着手中</option>
                     <option value="完了">完了</option>
                   </select>
 
@@ -464,7 +531,6 @@ export default function TodoPage() {
                     value={editForm.tags}
                     onChange={(e) => setEditForm(prev => ({ ...prev, tags: e.target.value }))}
                     style={{
-                      border: '1px solid #ddd',
                       borderRadius: 4,
                       padding: '6px 8px',
                       fontSize: '12px'
@@ -477,7 +543,6 @@ export default function TodoPage() {
                     value={editForm.title}
                     onChange={(e) => setEditForm(prev => ({ ...prev, title: e.target.value }))}
                     style={{
-                      border: '1px solid #ddd',
                       borderRadius: 4,
                       padding: '6px 8px',
                       fontSize: '14px'
@@ -530,7 +595,6 @@ export default function TodoPage() {
 
           return (
             <div key={todo.id} style={{
-              borderBottom: '1px solid #e0e0e0',
               backgroundColor: isCompleted ? '#ccc' : 'white',
               opacity: isCompleted ? 0.7 : (isDeleting ? 0.3 : 1),
               transform: isNewlyCreated ? 'translateY(-10px)' : 'translateY(0)',
@@ -665,8 +729,7 @@ export default function TodoPage() {
               }}>
                 <div style={{
                   padding: '16px',
-                  backgroundColor: '#f9f9f9',
-                  borderTop: isExpanded ? '1px solid #e0e0e0' : 'none'
+                  backgroundColor: '#f9f9f9'
                 }}>
                   {editingMarkdown === todo.id ? (
                     <div data-markdown-container>
@@ -676,7 +739,6 @@ export default function TodoPage() {
                         style={{
                           width: '100%',
                           height: '120px',
-                          border: '1px solid #ddd',
                           borderRadius: 4,
                           padding: '8px',
                           fontSize: '12px',
@@ -691,7 +753,6 @@ export default function TodoPage() {
                     <div
                       onClick={() => startEditingMarkdown(todo.id, todo.markdown_text || "")}
                       style={{
-                        border: 'none',
                         borderRadius: 4,
                         padding: 12,
                         backgroundColor: 'transparent',
@@ -721,7 +782,6 @@ export default function TodoPage() {
 
         {showNewTodo ? (
           <div style={{
-            borderBottom: '1px solid #e0e0e0',
             backgroundColor: '#f0fff0',
             animation: 'slideInFromTop 0.3s ease-in'
           }} data-todo-container>
@@ -760,8 +820,6 @@ export default function TodoPage() {
               >
                 <option value="未着手">未着手</option>
                 <option value="開発中">開発中</option>
-                <option value="PR中">PR中</option>
-                <option value="QA待ち">QA待ち</option>
                 <option value="完了">完了</option>
               </select>
 
@@ -831,7 +889,6 @@ export default function TodoPage() {
         ) : (
           <div style={{
             padding: '12px 16px',
-            borderBottom: '1px solid #e0e0e0',
             backgroundColor: '#fafafa',
             cursor: 'pointer'
           }}
