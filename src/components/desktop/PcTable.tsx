@@ -375,15 +375,23 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
       )}
 
       {!loading && (
-        <div style={{ overflowX: 'auto' }}>
+        <div
+          style={{
+            overflowX: 'auto',
+            overflowY: 'hidden',
+            scrollbarWidth: 'auto',
+            msOverflowStyle: 'auto',
+            WebkitOverflowScrolling: 'touch',
+            border: '1px solid #dee2e6',
+            borderRadius: '8px',
+            backgroundColor: 'white',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+          }}
+        >
           <table style={{
             borderCollapse: 'collapse', 
             width: '100%',
-            minWidth: '1000px',
-            backgroundColor: 'white',
-            borderRadius: '8px',
-            overflow: 'hidden',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+            minWidth: '1000px'
           }}>
       <thead>
         <tr style={{ backgroundColor: '#f8f9fa' }}>
@@ -508,8 +516,11 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
         </tr>
       </thead>
       <tbody>
-        {pcs.map((pc) => (
-          <tr key={pc.id}>
+        {pcs.map((pc) => {
+          const productLink = pc.af_url || pc.url
+
+          return (
+            <tr key={pc.id}>
             <td style={{border: '1px solid #ddd', padding: '8px', textAlign: 'center'}}>
               {pc.pcScore && (
                 <span style={{ fontWeight: 'bold', fontSize: '14px' }}>
@@ -519,11 +530,26 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
             </td>
             <td style={{border: '1px solid #ddd', padding: '8px', textAlign: 'center'}}>
               {pc.img_url ? (
-                <ImageComponent 
-                  src={pc.img_url} 
-                  alt={pc.name || 'PC Image'} 
-                  style={{width: '80px', height: 'auto', borderRadius: '4px'}} 
-                />
+                productLink ? (
+                  <a
+                    href={productLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ display: 'inline-block' }}
+                  >
+                    <ImageComponent 
+                      src={pc.img_url} 
+                      alt={pc.name || 'PC Image'} 
+                      style={{width: '80px', height: 'auto', borderRadius: '4px'}} 
+                    />
+                  </a>
+                ) : (
+                  <ImageComponent 
+                    src={pc.img_url} 
+                    alt={pc.name || 'PC Image'} 
+                    style={{width: '80px', height: 'auto', borderRadius: '4px'}} 
+                  />
+                )
               ) : (
                 <div style={{
                   width: '80px',
@@ -542,7 +568,18 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
             </td>
             <td style={{border: '1px solid #ddd', padding: '8px', position: 'relative'}}>
               <div style={{fontWeight: 'bold', fontSize: '14px'}}>
-                {pc.brand} / {pc.name || 'Unnamed PC'}
+                {productLink ? (
+                  <a
+                    href={productLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ color: '#333', textDecoration: 'none' }}
+                  >
+                    {pc.brand} / {pc.name || 'Unnamed PC'}
+                  </a>
+                ) : (
+                  <span>{pc.brand} / {pc.name || 'Unnamed PC'}</span>
+                )}
               </div>
               {/* インプレッション計測用1pxトラッキング画像 */}
               {pc.imp_img_url && (
@@ -586,10 +623,10 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
               )}
             </td>
             <td style={{border: '1px solid #ddd', padding: '8px', textAlign: 'center'}}>
-                      {(pc.af_url || pc.url) && (
-          <a
-            href={pc.af_url || pc.url || '#'}
-                  target="_blank" 
+              {productLink && (
+                <a
+                  href={productLink}
+                  target="_blank"
                   rel="noopener noreferrer"
                   style={{
                     display: 'inline-block',
@@ -608,7 +645,8 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
               )}
             </td>
           </tr>
-        ))}
+          )
+        })}
       </tbody>
           </table>
         </div>
