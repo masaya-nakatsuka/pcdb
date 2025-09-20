@@ -72,13 +72,13 @@ const priorityColors: Record<NonNullable<TodoItem['priority']> | 'none', string>
   none: 'rgba(148, 163, 184, 0.6)'
 }
 
-const pageBackgroundStyle = {
+const pageBackgroundStyle: CSSProperties = {
   minHeight: '100vh',
   background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
   padding: '48px 16px 64px'
 }
 
-const pageContentStyle = {
+const pageContentStyle: CSSProperties = {
   width: '100%',
   maxWidth: '1240px',
   margin: '0 auto',
@@ -87,7 +87,7 @@ const pageContentStyle = {
   gap: '32px'
 }
 
-const glassCardStyle = {
+const glassCardStyle: CSSProperties = {
   backgroundColor: GLASS_BACKGROUND,
   border: GLASS_BORDER,
   borderRadius: '24px',

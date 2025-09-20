@@ -398,13 +398,13 @@ export default function TodoPage() {
     })
   }
 
-  const pageBackgroundStyle = {
+  const pageBackgroundStyle: CSSProperties = {
     minHeight: '100vh',
     background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
     padding: '48px 16px 64px'
   }
 
-  const pageContentStyle = {
+  const pageContentStyle: CSSProperties = {
     width: '100%',
     maxWidth: '1240px',
     margin: '0 auto',
@@ -413,7 +413,7 @@ export default function TodoPage() {
     gap: '32px'
   }
 
-  const glassCardStyle = {
+  const glassCardStyle: CSSProperties = {
     backgroundColor: GLASS_BACKGROUND,
     border: GLASS_BORDER,
     borderRadius: '24px',
