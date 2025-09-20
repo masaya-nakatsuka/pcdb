@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { PcTableProps, ClientPcWithCpuSpec, ClientSortOptions, ClientSortField, ClientSortOrder, ClientUsageCategory } from '../types'
 import { sortPcs } from '../utils/pcSort'
 import { fetchPcList } from '../../app/pc-list/fetchPcs'
@@ -18,6 +18,9 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
   )
   const [isSortApplied, setIsSortApplied] = useState(false)
   const [loading, setLoading] = useState(false)
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null)
+  const [showLeftScrollCue, setShowLeftScrollCue] = useState(false)
+  const [showRightScrollCue, setShowRightScrollCue] = useState(false)
 
   const availableCpuOptions = useMemo(() => {
     const cpuSet = new Set(allPcs.map((pc) => pc.cpu).filter((cpu): cpu is string => Boolean(cpu)))
@@ -152,6 +155,35 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
       applyCpuFilterAndSort(allPcs, selectedCpu, selectedDisplaySize, sortOptions, true)
     }
   }, [cpuOrderList, isSortApplied, sortOptions, allPcs, selectedCpu, selectedDisplaySize, applyCpuFilterAndSort])
+
+  useEffect(() => {
+    const container = scrollContainerRef.current
+    if (!container) return
+
+    const updateScrollCue = () => {
+      const { scrollLeft, scrollWidth, clientWidth } = container
+      const maxScrollLeft = scrollWidth - clientWidth
+      setShowLeftScrollCue(scrollLeft > 0)
+      setShowRightScrollCue(maxScrollLeft > 0 && scrollLeft < maxScrollLeft - 1)
+
+    }
+
+    updateScrollCue()
+    container.addEventListener('scroll', updateScrollCue)
+
+    const resizeObserver =
+      typeof ResizeObserver !== 'undefined'
+        ? new ResizeObserver(() => {
+            updateScrollCue()
+          })
+        : null
+    resizeObserver?.observe(container)
+
+    return () => {
+      container.removeEventListener('scroll', updateScrollCue)
+      resizeObserver?.disconnect()
+    }
+  }, [pcs])
 
   return (
     <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '20px' }}>
@@ -377,280 +409,337 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
       {!loading && (
         <div
           style={{
-            overflowX: 'auto',
-            overflowY: 'hidden',
-            scrollbarWidth: 'auto',
-            msOverflowStyle: 'auto',
-            WebkitOverflowScrolling: 'touch',
+            position: 'relative',
             border: '1px solid #dee2e6',
             borderRadius: '8px',
             backgroundColor: 'white',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+            overflow: 'hidden'
           }}
         >
-          <table style={{
-            borderCollapse: 'collapse', 
-            width: '100%',
-            minWidth: '1000px'
-          }}>
-      <thead>
-        <tr style={{ backgroundColor: '#f8f9fa' }}>
-          <th style={{
-            border: '1px solid #dee2e6', 
-            padding: '12px 8px', 
-            cursor: 'pointer',
-            backgroundColor: sortOptions.field === 'pcScore' ? '#e9ecef' : 'transparent',
-            fontWeight: '600',
-            color: '#495057',
-            transition: 'background-color 0.2s ease',
-            minWidth: '100px'
-          }} onClick={() => handleSortChange('pcScore')}>
-            スペック評価{getSortIcon('pcScore')}
-          </th>
-          <th style={{
-            border: '1px solid #dee2e6', 
-            padding: '12px 8px',
-            fontWeight: '600',
-            color: '#495057',
-            textAlign: 'center'
-          }}>画像</th>
-          <th style={{
-            border: '1px solid #dee2e6', 
-            padding: '12px 8px',
-            fontWeight: '600',
-            color: '#495057',
-            minWidth: '200px'
-          }}>ブランド / 製品名</th>
-          <th style={{
-            border: '1px solid #dee2e6', 
-            padding: '12px 8px', 
-            cursor: 'pointer',
-            backgroundColor: sortOptions.field === 'cpu' ? '#e9ecef' : 'transparent',
-            fontWeight: '600',
-            color: '#495057',
-            transition: 'background-color 0.2s ease',
-            minWidth: '150px'
-          }} onClick={() => handleSortChange('cpu')}>
-            CPU{getSortIcon('cpu')}
-          </th>
-          <th style={{
-            border: '1px solid #dee2e6', 
-            padding: '12px 8px', 
-            cursor: 'pointer',
-            backgroundColor: sortOptions.field === 'ram' ? '#e9ecef' : 'transparent',
-            fontWeight: '600',
-            color: '#495057',
-            transition: 'background-color 0.2s ease',
-            minWidth: '80px'
-          }} onClick={() => handleSortChange('ram')}>
-            メモリ{getSortIcon('ram')}
-          </th>
-          <th style={{
-            border: '1px solid #dee2e6', 
-            padding: '12px 8px', 
-            cursor: 'pointer',
-            backgroundColor: sortOptions.field === 'rom' ? '#e9ecef' : 'transparent',
-            fontWeight: '600',
-            color: '#495057',
-            transition: 'background-color 0.2s ease',
-            minWidth: '100px'
-          }} onClick={() => handleSortChange('rom')}>
-            ストレージ{getSortIcon('rom')}
-          </th>
-          <th style={{
-            border: '1px solid #dee2e6', 
-            padding: '12px 8px', 
-            cursor: 'pointer',
-            backgroundColor: sortOptions.field === 'display_size' ? '#e9ecef' : 'transparent',
-            fontWeight: '600',
-            color: '#495057',
-            transition: 'background-color 0.2s ease',
-            minWidth: '100px'
-          }} onClick={() => handleSortChange('display_size')}>
-            画面サイズ{getSortIcon('display_size')}
-          </th>
-          <th style={{
-            border: '1px solid #dee2e6', 
-            padding: '12px 8px', 
-            cursor: 'pointer',
-            backgroundColor: sortOptions.field === 'weight' ? '#e9ecef' : 'transparent',
-            fontWeight: '600',
-            color: '#495057',
-            transition: 'background-color 0.2s ease',
-            minWidth: '80px'
-          }} onClick={() => handleSortChange('weight')}>
-            重さ{getSortIcon('weight')}
-          </th>
-          <th style={{
-            border: '1px solid #dee2e6', 
-            padding: '12px 8px', 
-            cursor: 'pointer',
-            backgroundColor: sortOptions.field === 'estimatedBatteryLifeHours' ? '#e9ecef' : 'transparent',
-            fontWeight: '600',
-            color: '#495057',
-            transition: 'background-color 0.2s ease',
-            minWidth: '90px'
-          }} onClick={() => handleSortChange('estimatedBatteryLifeHours')}>
-            駆動時間{getSortIcon('estimatedBatteryLifeHours')}
-          </th>
-          <th style={{
-            border: '1px solid #dee2e6', 
-            padding: '12px 8px', 
-            cursor: 'pointer',
-            backgroundColor: sortOptions.field === 'price' ? '#e9ecef' : 'transparent',
-            fontWeight: '600',
-            color: '#495057',
-            transition: 'background-color 0.2s ease',
-            minWidth: '120px'
-          }} onClick={() => handleSortChange('price')}>
-            価格{getSortIcon('price')}
-          </th>
-          <th style={{
-            border: '1px solid #dee2e6', 
-            padding: '12px 8px',
-            fontWeight: '600',
-            color: '#495057',
-            minWidth: '80px',
-            textAlign: 'center'
-          }}>詳細</th>
-        </tr>
-      </thead>
-      <tbody>
-        {pcs.map((pc) => {
-          const productLink = pc.af_url || pc.url
+          <div
+            ref={scrollContainerRef}
+            className="pc-scroll-container"
+            style={{
+              overflowX: 'scroll',
+              overflowY: 'hidden',
+              scrollbarWidth: 'auto',
+              msOverflowStyle: 'auto',
+              WebkitOverflowScrolling: 'touch',
+              scrollbarGutter: 'stable'
+            }}
+          >
+            <table
+              style={{
+                borderCollapse: 'collapse',
+                width: '100%',
+                minWidth: '1000px'
+              }}
+            >
+              <thead>
+                <tr style={{ backgroundColor: '#f8f9fa' }}>
+                  <th style={{
+                    border: '1px solid #dee2e6',
+                    padding: '12px 8px',
+                    cursor: 'pointer',
+                    backgroundColor: sortOptions.field === 'pcScore' ? '#e9ecef' : 'transparent',
+                    fontWeight: '600',
+                    color: '#495057',
+                    transition: 'background-color 0.2s ease',
+                    minWidth: '100px'
+                  }} onClick={() => handleSortChange('pcScore')}>
+                    スペック評価{getSortIcon('pcScore')}
+                  </th>
+                  <th style={{
+                    border: '1px solid #dee2e6',
+                    padding: '12px 8px',
+                    fontWeight: '600',
+                    color: '#495057',
+                    textAlign: 'center'
+                  }}>画像</th>
+                  <th style={{
+                    border: '1px solid #dee2e6',
+                    padding: '12px 8px',
+                    fontWeight: '600',
+                    color: '#495057',
+                    minWidth: '200px'
+                  }}>ブランド / 製品名</th>
+                  <th style={{
+                    border: '1px solid #dee2e6',
+                    padding: '12px 8px',
+                    cursor: 'pointer',
+                    backgroundColor: sortOptions.field === 'cpu' ? '#e9ecef' : 'transparent',
+                    fontWeight: '600',
+                    color: '#495057',
+                    transition: 'background-color 0.2s ease',
+                    minWidth: '150px'
+                  }} onClick={() => handleSortChange('cpu')}>
+                    CPU{getSortIcon('cpu')}
+                  </th>
+                  <th style={{
+                    border: '1px solid #dee2e6',
+                    padding: '12px 8px',
+                    cursor: 'pointer',
+                    backgroundColor: sortOptions.field === 'ram' ? '#e9ecef' : 'transparent',
+                    fontWeight: '600',
+                    color: '#495057',
+                    transition: 'background-color 0.2s ease',
+                    minWidth: '80px'
+                  }} onClick={() => handleSortChange('ram')}>
+                    メモリ{getSortIcon('ram')}
+                  </th>
+                  <th style={{
+                    border: '1px solid #dee2e6',
+                    padding: '12px 8px',
+                    cursor: 'pointer',
+                    backgroundColor: sortOptions.field === 'rom' ? '#e9ecef' : 'transparent',
+                    fontWeight: '600',
+                    color: '#495057',
+                    transition: 'background-color 0.2s ease',
+                    minWidth: '100px'
+                  }} onClick={() => handleSortChange('rom')}>
+                    ストレージ{getSortIcon('rom')}
+                  </th>
+                  <th style={{
+                    border: '1px solid #dee2e6',
+                    padding: '12px 8px',
+                    cursor: 'pointer',
+                    backgroundColor: sortOptions.field === 'display_size' ? '#e9ecef' : 'transparent',
+                    fontWeight: '600',
+                    color: '#495057',
+                    transition: 'background-color 0.2s ease',
+                    minWidth: '100px'
+                  }} onClick={() => handleSortChange('display_size')}>
+                    画面サイズ{getSortIcon('display_size')}
+                  </th>
+                  <th style={{
+                    border: '1px solid #dee2e6',
+                    padding: '12px 8px',
+                    cursor: 'pointer',
+                    backgroundColor: sortOptions.field === 'weight' ? '#e9ecef' : 'transparent',
+                    fontWeight: '600',
+                    color: '#495057',
+                    transition: 'background-color 0.2s ease',
+                    minWidth: '80px'
+                  }} onClick={() => handleSortChange('weight')}>
+                    重さ{getSortIcon('weight')}
+                  </th>
+                  <th style={{
+                    border: '1px solid #dee2e6',
+                    padding: '12px 8px',
+                    cursor: 'pointer',
+                    backgroundColor: sortOptions.field === 'estimatedBatteryLifeHours' ? '#e9ecef' : 'transparent',
+                    fontWeight: '600',
+                    color: '#495057',
+                    transition: 'background-color 0.2s ease',
+                    minWidth: '90px'
+                  }} onClick={() => handleSortChange('estimatedBatteryLifeHours')}>
+                    駆動時間{getSortIcon('estimatedBatteryLifeHours')}
+                  </th>
+                  <th style={{
+                    border: '1px solid #dee2e6',
+                    padding: '12px 8px',
+                    cursor: 'pointer',
+                    backgroundColor: sortOptions.field === 'price' ? '#e9ecef' : 'transparent',
+                    fontWeight: '600',
+                    color: '#495057',
+                    transition: 'background-color 0.2s ease',
+                    minWidth: '120px'
+                  }} onClick={() => handleSortChange('price')}>
+                    価格{getSortIcon('price')}
+                  </th>
+                  <th style={{
+                    border: '1px solid #dee2e6',
+                    padding: '12px 8px',
+                    fontWeight: '600',
+                    color: '#495057',
+                    minWidth: '80px',
+                    textAlign: 'center'
+                  }}>詳細</th>
+                </tr>
+              </thead>
+              <tbody>
+                {pcs.map((pc) => {
+                  const productLink = pc.af_url || pc.url
 
-          return (
-            <tr key={pc.id}>
-            <td style={{border: '1px solid #ddd', padding: '8px', textAlign: 'center'}}>
-              {pc.pcScore && (
-                <span style={{ fontWeight: 'bold', fontSize: '14px' }}>
-                  {pc.pcScore}点
-                </span>
-              )}
-            </td>
-            <td style={{border: '1px solid #ddd', padding: '8px', textAlign: 'center'}}>
-              {pc.img_url ? (
-                productLink ? (
-                  <a
-                    href={productLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ display: 'inline-block' }}
-                  >
-                    <ImageComponent 
-                      src={pc.img_url} 
-                      alt={pc.name || 'PC Image'} 
-                      style={{width: '80px', height: 'auto', borderRadius: '4px'}} 
-                    />
-                  </a>
-                ) : (
-                  <ImageComponent 
-                    src={pc.img_url} 
-                    alt={pc.name || 'PC Image'} 
-                    style={{width: '80px', height: 'auto', borderRadius: '4px'}} 
-                  />
-                )
-              ) : (
-                <div style={{
-                  width: '80px',
-                  height: '60px',
-                  backgroundColor: '#f0f0f0',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  borderRadius: '4px',
-                  fontSize: '10px',
-                  color: '#666'
-                }}>
-                  No Image
-                </div>
-              )}
-            </td>
-            <td style={{border: '1px solid #ddd', padding: '8px', position: 'relative'}}>
-              <div style={{fontWeight: 'bold', fontSize: '14px'}}>
-                {productLink ? (
-                  <a
-                    href={productLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ color: '#333', textDecoration: 'none' }}
-                  >
-                    {pc.brand} / {pc.name || 'Unnamed PC'}
-                  </a>
-                ) : (
-                  <span>{pc.brand} / {pc.name || 'Unnamed PC'}</span>
-                )}
-              </div>
-              {/* インプレッション計測用1pxトラッキング画像 */}
-              {pc.imp_img_url && (
-                <img 
-                  src={pc.imp_img_url} 
-                  alt="" 
-                  style={{
-                    width: '1px', 
-                    height: '1px', 
-                    position: 'absolute',
-                    opacity: 0,
-                    pointerEvents: 'none'
-                  }} 
-                />
-              )}
-            </td>
-            <td style={{border: '1px solid #ddd', padding: '8px', fontSize: '12px'}}>{pc.cpu}</td>
-            <td style={{border: '1px solid #ddd', padding: '8px', fontSize: '12px'}}>{pc.ram}GB</td>
-            <td style={{border: '1px solid #ddd', padding: '8px', fontSize: '12px'}}>{pc.rom}GB</td>
-            <td style={{border: '1px solid #ddd', padding: '8px', fontSize: '12px'}}>{pc.display_size}インチ</td>
-            <td style={{border: '1px solid #ddd', padding: '8px', fontSize: '12px'}}>{pc.weight}g</td>
-            <td style={{border: '1px solid #ddd', padding: '8px', fontSize: '12px'}}>
-              {pc.estimatedBatteryLifeHours ? `${pc.estimatedBatteryLifeHours}時間` : '-'}
-            </td>
-            <td style={{border: '1px solid #ddd', padding: '8px'}}>
-              {pc.price && (
-                <div>
-                  <span style={{ color: '#d32f2f', fontWeight: 'bold' }}>
-                    ¥{pc.price.toLocaleString()}
-                  </span>
-                  {pc.real_price && pc.real_price !== pc.price && (
-                    <div style={{ 
-                      color: '#666', 
-                      fontSize: '12px', 
-                      textDecoration: 'line-through'
-                    }}>
-                      ¥{pc.real_price.toLocaleString()}
-                    </div>
-                  )}
-                </div>
-              )}
-            </td>
-            <td style={{border: '1px solid #ddd', padding: '8px', textAlign: 'center'}}>
-              {productLink && (
-                <a
-                  href={productLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    display: 'inline-block',
-                    padding: '6px 12px',
-                    backgroundColor: '#ee5a24',
-                    color: 'white',
-                    textDecoration: 'none',
-                    borderRadius: '4px',
-                    fontSize: '12px',
-                    fontWeight: 'bold',
-                    cursor: 'pointer'
-                  }}
-                >
-                  詳細
-                </a>
-              )}
-            </td>
-          </tr>
-          )
-        })}
-      </tbody>
-          </table>
+                  return (
+                    <tr key={pc.id}>
+                      <td style={{border: '1px solid #ddd', padding: '8px', textAlign: 'center'}}>
+                        {pc.pcScore && (
+                          <span style={{ fontWeight: 'bold', fontSize: '14px' }}>
+                            {pc.pcScore}点
+                          </span>
+                        )}
+                      </td>
+                      <td style={{border: '1px solid #ddd', padding: '8px', textAlign: 'center'}}>
+                        {pc.img_url ? (
+                          productLink ? (
+                            <a
+                              href={productLink}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              style={{ display: 'inline-block' }}
+                            >
+                              <ImageComponent
+                                src={pc.img_url}
+                                alt={pc.name || 'PC Image'}
+                                style={{width: '80px', height: 'auto', borderRadius: '4px'}}
+                              />
+                            </a>
+                          ) : (
+                            <ImageComponent
+                              src={pc.img_url}
+                              alt={pc.name || 'PC Image'}
+                              style={{width: '80px', height: 'auto', borderRadius: '4px'}}
+                            />
+                          )
+                        ) : (
+                          <div style={{
+                            width: '80px',
+                            height: '60px',
+                            backgroundColor: '#f0f0f0',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            borderRadius: '4px',
+                            fontSize: '10px',
+                            color: '#666'
+                          }}>
+                            No Image
+                          </div>
+                        )}
+                      </td>
+                      <td style={{border: '1px solid #ddd', padding: '8px', position: 'relative'}}>
+                        <div style={{fontWeight: 'bold', fontSize: '14px'}}>
+                          {productLink ? (
+                            <a
+                              href={productLink}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              style={{ color: '#333', textDecoration: 'none' }}
+                            >
+                              {pc.brand} / {pc.name || 'Unnamed PC'}
+                            </a>
+                          ) : (
+                            <span>{pc.brand} / {pc.name || 'Unnamed PC'}</span>
+                          )}
+                        </div>
+                        {/* インプレッション計測用1pxトラッキング画像 */}
+                        {pc.imp_img_url && (
+                          <img
+                            src={pc.imp_img_url}
+                            alt=""
+                            style={{
+                              width: '1px',
+                              height: '1px',
+                              position: 'absolute',
+                              opacity: 0,
+                              pointerEvents: 'none'
+                            }}
+                          />
+                        )}
+                      </td>
+                      <td style={{border: '1px solid #ddd', padding: '8px', fontSize: '12px'}}>{pc.cpu}</td>
+                      <td style={{border: '1px solid #ddd', padding: '8px', fontSize: '12px'}}>{pc.ram}GB</td>
+                      <td style={{border: '1px solid #ddd', padding: '8px', fontSize: '12px'}}>{pc.rom}GB</td>
+                      <td style={{border: '1px solid #ddd', padding: '8px', fontSize: '12px'}}>{pc.display_size}インチ</td>
+                      <td style={{border: '1px solid #ddd', padding: '8px', fontSize: '12px'}}>{pc.weight}g</td>
+                      <td style={{border: '1px solid #ddd', padding: '8px', fontSize: '12px'}}>
+                        {pc.estimatedBatteryLifeHours ? `${pc.estimatedBatteryLifeHours}時間` : '-'}
+                      </td>
+                      <td style={{border: '1px solid #ddd', padding: '8px'}}>
+                        {pc.price && (
+                          <div>
+                            <span style={{ color: '#d32f2f', fontWeight: 'bold' }}>
+                              ¥{pc.price.toLocaleString()}
+                            </span>
+                            {pc.real_price && pc.real_price !== pc.price && (
+                              <div style={{ 
+                                color: '#666', 
+                                fontSize: '12px', 
+                                textDecoration: 'line-through'
+                              }}>
+                                ¥{pc.real_price.toLocaleString()}
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </td>
+                      <td style={{border: '1px solid #ddd', padding: '8px', textAlign: 'center'}}>
+                        {productLink && (
+                          <a
+                            href={productLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{
+                              display: 'inline-block',
+                              padding: '6px 12px',
+                              backgroundColor: '#ee5a24',
+                              color: 'white',
+                              textDecoration: 'none',
+                              borderRadius: '4px',
+                              fontSize: '12px',
+                              fontWeight: 'bold',
+                              cursor: 'pointer'
+                            }}
+                          >
+                            詳細
+                          </a>
+                        )}
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+          {showLeftScrollCue && (
+            <div
+              style={{
+                position: 'absolute',
+                top: 0,
+                bottom: 0,
+                left: 0,
+                width: '56px',
+                pointerEvents: 'none',
+                background: 'linear-gradient(90deg, rgba(255,255,255,1) 0%, rgba(255,255,255,0) 70%)'
+              }}
+            />
+          )}
+          {showRightScrollCue && (
+            <div
+              style={{
+                position: 'absolute',
+                top: 0,
+                bottom: 0,
+                right: 0,
+                width: '56px',
+                pointerEvents: 'none',
+                background: 'linear-gradient(270deg, rgba(255,255,255,1) 0%, rgba(255,255,255,0) 70%)'
+              }}
+            />
+          )}
         </div>
       )}
+      <style jsx>{`
+        .pc-scroll-container {
+          scrollbar-width: thin;
+        }
+
+        .pc-scroll-container::-webkit-scrollbar {
+          height: 10px;
+        }
+
+        .pc-scroll-container::-webkit-scrollbar-thumb {
+          background: #adb5bd;
+          border-radius: 6px;
+        }
+
+        .pc-scroll-container::-webkit-scrollbar-track {
+          background: rgba(0, 0, 0, 0.08);
+          border-radius: 6px;
+        }
+      `}</style>
     </div>
   )
 }
