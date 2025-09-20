@@ -38,10 +38,14 @@ export interface PcCardProps {
 
 export interface PcTableProps {
   pcs: ClientPcWithCpuSpec[]
+  defaultCpu?: string
+  defaultMaxDisplaySize?: number
 }
 
 export interface PcListProps {
   pcs: ClientPcWithCpuSpec[]
+  defaultCpu?: string
+  defaultMaxDisplaySize?: number
 }
 
 export interface ImageComponentProps {

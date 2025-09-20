@@ -1,86 +1,90 @@
 "use client"
 
-import { useEffect, useMemo, useState } from 'react'
-import Link from 'next/link'
+import { useEffect, useMemo, useState, type CSSProperties } from 'react'
 import { supabaseNotes } from '@/lib/supabaseNotesClient'
-import type { NoteBook } from '@/lib/noteTypes'
+import type { NoteBook, NotePage } from '@/lib/noteTypes'
 import LoadingOverlay from '@/components/LoadingOverlay'
+import NoteSidebar, { type BookWithPages } from './components/NoteSidebar'
 
-/**
- * ノート一覧ページ
- * - ユーザーのブック一覧を表示
- * - ブックの作成・削除機能
- * - Google認証によるログイン/ログアウト
- */
 export default function NoteHomePage() {
-  // ===== 状態管理 =====
-  const [userId, setUserId] = useState<string | null>(null) // 現在のユーザーID
-  const [books, setBooks] = useState<NoteBook[]>([]) // ブック一覧
-  const [loading, setLoading] = useState<boolean>(true) // 初期読み込み状態
-  const [newTitle, setNewTitle] = useState<string>("") // 新規ブックのタイトル入力
-  const [creatingBook, setCreatingBook] = useState<boolean>(false) // ブック作成中フラグ
-  const [deletingBook, setDeletingBook] = useState<string | null>(null) // 削除中のブックID
-  const [overlayMessage, setOverlayMessage] = useState<string>("") // オーバーレイメッセージ
-  const [navigatingTo, setNavigatingTo] = useState<string | null>(null) // ナビゲーション先ID
-  
-  // Google認証後のリダイレクト先URLを生成（SSR対応）
+  const [userId, setUserId] = useState<string | null>(null)
+  const [books, setBooks] = useState<BookWithPages[]>([])
+  const [loading, setLoading] = useState<boolean>(true)
+  const [overlayMessage, setOverlayMessage] = useState<string>('')
+  const [expandedBooks, setExpandedBooks] = useState<Set<string>>(new Set())
+  const [deletingBook, setDeletingBook] = useState<string | null>(null)
+  const [deletingPage, setDeletingPage] = useState<string | null>(null)
+  const [editingBookId, setEditingBookId] = useState<string | null>(null)
+  const [editingBookTitle, setEditingBookTitle] = useState<string>('')
+  const [editingPageId, setEditingPageId] = useState<string | null>(null)
+  const [editingPageTitle, setEditingPageTitle] = useState<string>('')
+  const [pendingNewBookId, setPendingNewBookId] = useState<string | null>(null)
+  const [pendingPageIds, setPendingPageIds] = useState<Set<string>>(new Set())
+
   const redirectTo = useMemo(() => {
     if (typeof window === 'undefined') return undefined
-    // localhostの場合は開発環境、それ以外は本番環境として判定
     const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-    const baseUrl = isLocalhost 
+    const baseUrl = isLocalhost
       ? window.location.origin
       : process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
     return `${baseUrl}/note`
   }, [])
 
-
-  // ==============================
-  //  初期化処理 
-  // ==============================
-
   useEffect(() => {
-    let isMounted = true
+    let mounted = true
     ;(async () => {
-      // Supabaseから現在のユーザー情報を取得
       const { data } = await supabaseNotes.auth.getUser()
-      const userId = data.user?.id ?? null
-      
-      // コンポーネントがアンマウントされている場合は処理を中断
-      if (!isMounted) return
-      
-      setUserId(userId)
-      // ユーザーがログインしている場合、ブック一覧を読み込み
-      if (userId) {
-        await loadBooks(userId)
+      if (!mounted) return
+      const uid = data.user?.id ?? null
+      setUserId(uid)
+      if (uid) {
+        await loadWorkspace(uid)
       }
       setLoading(false)
     })()
-    
-    // クリーンアップ関数：コンポーネントアンマウント時にフラグを設定
     return () => {
-      isMounted = false
+      mounted = false
     }
   }, [])
 
+  async function loadWorkspace(uid: string) {
+    setOverlayMessage('読み込み中...')
+    const [{ data: booksData, error: booksError }, { data: pagesData, error: pagesError }] = await Promise.all([
+      supabaseNotes
+        .from('books')
+        .select('*')
+        .eq('user_id', uid)
+        .order('created_at', { ascending: false }),
+      supabaseNotes
+        .from('pages')
+        .select('*')
+        .eq('user_id', uid)
+        .order('created_at', { ascending: false })
+    ])
 
-  // ==============================
-  //  ブック一覧取得処理 
-  // ==============================
+    if (booksError || pagesError) {
+      setOverlayMessage('データの読み込みに失敗しました。')
+      return
+    }
 
-  async function loadBooks(userId: string) {
-    const { data, error } = await supabaseNotes
-      .from('books')
-      .select('*')
-      .eq('user_id', userId) // ユーザーIDでフィルタリング（RLSで保護）
-      .order('created_at', { ascending: false }) // 作成日時の降順でソート
-    if (!error && data) setBooks(data as NoteBook[])
+    const pagesByBook = new Map<string, NotePage[]>()
+    ;(pagesData ?? []).forEach((page) => {
+      pagesByBook.set(page.book_id, [...(pagesByBook.get(page.book_id) ?? []), page])
+    })
+
+    const nextBooks = (booksData ?? []).map((book) => ({
+      ...(book as NoteBook),
+      pages: pagesByBook.get(book.id) ?? []
+    }))
+
+    setBooks(nextBooks)
+    setPendingNewBookId(null)
+    setPendingPageIds(new Set())
+    if (nextBooks.length > 0) {
+      setExpandedBooks(new Set([nextBooks[0].id]))
+    }
+    setOverlayMessage('')
   }
-
-
-  // ==============================
-  //  ログイン処理 
-  // ==============================
 
   async function handleSignIn() {
     await supabaseNotes.auth.signInWithOAuth({
@@ -89,161 +93,495 @@ export default function NoteHomePage() {
     })
   }
 
-
-  // ==============================
-  //  ログアウト処理 
-  // ==============================
-
   async function handleSignOut() {
     await supabaseNotes.auth.signOut()
     setUserId(null)
     setBooks([])
+    setExpandedBooks(new Set())
+    setPendingNewBookId(null)
+    setPendingPageIds(new Set())
   }
 
-
-  // ==============================
-  //  ブック作成処理 
-  // ==============================
-
-  async function handleCreateBook(e: React.FormEvent) {
-    // フォーム送信時のリロードを防止
-    e.preventDefault()
-    
-    // バリデーション：ユーザーID、タイトル、作成中フラグをチェック
-    if (!userId || !newTitle.trim() || creatingBook) return
-    
-    // ローディング状態を開始
-    setCreatingBook(true)
-    setOverlayMessage("ブック作成中...")
-    
-    // Supabaseにブックを挿入
-    const { data, error } = await supabaseNotes
-      .from('books')
-      .insert({ title: newTitle.trim(), user_id: userId })
-      .select('*')
-      .single()
-    
-    // 成功時：ローカル状態を更新
-    if (!error && data) {
-      setBooks((prev) => [data as NoteBook, ...prev]) // 配列の先頭に追加
-      setNewTitle("") // 入力フィールドをクリア
+  async function handleCreateBook() {
+    if (!userId || pendingNewBookId) return
+    const tempId = `temp-book-${Date.now()}`
+    const now = new Date().toISOString()
+    const placeholder: BookWithPages = {
+      id: tempId,
+      title: '',
+      user_id: userId,
+      created_at: now,
+      updated_at: now,
+      pages: []
     }
-    
-    // ローディング状態を終了
-    setCreatingBook(false)
-    setOverlayMessage("")
+
+    setBooks((prev) => [placeholder, ...prev])
+    setExpandedBooks((prev) => {
+      const next = new Set(prev)
+      next.add(tempId)
+      return next
+    })
+    setPendingNewBookId(tempId)
+    setEditingBookId(tempId)
+    setEditingBookTitle('')
   }
-
-
-  // ==============================
-  //  ブック削除処理 
-  // ==============================
 
   async function handleDeleteBook(bookId: string) {
-    // 重複削除を防止
+    if (pendingNewBookId === bookId) {
+      setBooks((prev) => prev.filter((book) => book.id !== bookId))
+      setExpandedBooks((prev) => {
+        const next = new Set(prev)
+        next.delete(bookId)
+        return next
+      })
+      setPendingNewBookId(null)
+      if (editingBookId === bookId) {
+        setEditingBookId(null)
+        setEditingBookTitle('')
+      }
+      return
+    }
+
     if (deletingBook) return
-    
-    // ローディング状態を開始
+    if (!window.confirm('このノートを削除しますか？')) return
+
     setDeletingBook(bookId)
-    setOverlayMessage("ブック削除中...")
-    
-    // Supabaseからブックを削除
+    setOverlayMessage('ノート削除中...')
     const { error } = await supabaseNotes.from('books').delete().eq('id', bookId)
-    
-    // 成功時：ローカル状態からも削除
-    if (!error) setBooks((prev) => prev.filter((b) => b.id !== bookId))
-    
-    // ローディング状態を終了
+    if (!error) {
+      setBooks((prev) => prev.filter((book) => book.id !== bookId))
+      setExpandedBooks((prev) => {
+        const next = new Set(prev)
+        next.delete(bookId)
+        return next
+      })
+    }
     setDeletingBook(null)
-    setOverlayMessage("")
+    setOverlayMessage('')
   }
 
-  
-  // ==============================
-  //  レンダリング処理 
-  // ==============================
+  const handleStartEditBook = (bookId: string, title: string) => {
+    setEditingPageId(null)
+    setEditingBookId(bookId)
+    setEditingBookTitle(title)
+  }
+
+  const handleBookTitleChange = (value: string) => {
+    setEditingBookTitle(value)
+  }
+
+  async function handleCommitBookTitle(bookId: string, value: string) {
+    const trimmed = value.trim()
+    const isTemporary = pendingNewBookId === bookId
+
+    const target = books.find((book) => book.id === bookId)
+    if (!target) {
+      setEditingBookId(null)
+      if (isTemporary) setPendingNewBookId(null)
+      return
+    }
+
+    if (!trimmed) {
+      if (isTemporary) {
+        setBooks((prev) => prev.filter((book) => book.id !== bookId))
+        setExpandedBooks((prev) => {
+          const next = new Set(prev)
+          next.delete(bookId)
+          return next
+        })
+        setPendingNewBookId(null)
+      } else {
+        setEditingBookTitle(target.title ?? '')
+      }
+      setEditingBookId(null)
+      return
+    }
+
+    if (!isTemporary && target.title === trimmed) {
+      setEditingBookId(null)
+      return
+    }
+
+    if (isTemporary) {
+      if (!userId) return
+      setOverlayMessage('ノート作成中...')
+      const { data, error } = await supabaseNotes
+        .from('books')
+        .insert({ title: trimmed, user_id: userId })
+        .select('*')
+        .single()
+
+      if (error || !data) {
+        setOverlayMessage('')
+        window.alert?.('ノートの作成に失敗しました。')
+        return
+      }
+
+      const created = data as NoteBook
+      setBooks((prev) => prev.map((book) =>
+        book.id === bookId ? { ...created, pages: [] } : book
+      ))
+      setExpandedBooks((prev) => {
+        const next = new Set(prev)
+        next.delete(bookId)
+        next.add(created.id)
+        return next
+      })
+      setPendingNewBookId(null)
+      setEditingBookId(null)
+      setEditingBookTitle(created.title ?? trimmed)
+      setOverlayMessage('')
+      return
+    }
+
+    setOverlayMessage('ノート名を更新中...')
+    const { data, error } = await supabaseNotes
+      .from('books')
+      .update({ title: trimmed })
+      .eq('id', bookId)
+      .select('*')
+      .single()
+
+    if (error || !data) {
+      setOverlayMessage('')
+      window.alert?.('ノート名の更新に失敗しました。')
+      return
+    }
+
+    setBooks((prev) => prev.map((book) => book.id === bookId ? { ...book, title: trimmed } : book))
+    setOverlayMessage('')
+    setEditingBookTitle(trimmed)
+    setEditingBookId(null)
+  }
+
+  async function handleCreatePage(bookId: string) {
+    if (!userId) return
+    if (pendingNewBookId === bookId) {
+      window.alert?.('ノート名を先に入力してください。')
+      setEditingBookId(bookId)
+      setEditingBookTitle(books.find((book) => book.id === bookId)?.title ?? '')
+      return
+    }
+    const tempId = `temp-page-${Date.now()}`
+    const now = new Date().toISOString()
+    const placeholder: NotePage = {
+      id: tempId,
+      user_id: userId,
+      book_id: bookId,
+      title: '',
+      content: null,
+      created_at: now,
+      updated_at: now
+    }
+
+    setBooks((prev) => prev.map((book) =>
+      book.id === bookId ? { ...book, pages: [placeholder, ...book.pages] } : book
+    ))
+    setExpandedBooks((prev) => {
+      const next = new Set(prev)
+      next.add(bookId)
+      return next
+    })
+    setPendingPageIds((prev) => {
+      const next = new Set(prev)
+      next.add(tempId)
+      return next
+    })
+    setEditingPageId(tempId)
+    setEditingPageTitle('')
+  }
+
+  async function handleDeletePage(bookId: string, pageId: string) {
+    if (pendingPageIds.has(pageId)) {
+      setBooks((prev) => prev.map((book) =>
+        book.id === bookId
+          ? { ...book, pages: book.pages.filter((page) => page.id !== pageId) }
+          : book
+      ))
+      setPendingPageIds((prev) => {
+        const next = new Set(prev)
+        next.delete(pageId)
+        return next
+      })
+      if (editingPageId === pageId) {
+        setEditingPageId(null)
+        setEditingPageTitle('')
+      }
+      return
+    }
+
+    if (deletingPage) return
+    if (!window.confirm('このページを削除しますか？')) return
+
+    setDeletingPage(pageId)
+    setOverlayMessage('ページ削除中...')
+    const { error } = await supabaseNotes.from('pages').delete().eq('id', pageId)
+    if (!error) {
+      setBooks((prev) => prev.map((book) =>
+        book.id === bookId ? { ...book, pages: book.pages.filter((page) => page.id !== pageId) } : book
+      ))
+    }
+    setDeletingPage(null)
+    setOverlayMessage('')
+  }
+
+  const handleStartEditPage = (bookId: string, page: NotePage) => {
+    setEditingPageId(page.id)
+    setEditingPageTitle(page.title ?? '')
+    setEditingBookId(null)
+  }
+
+  const handlePageTitleChange = (value: string) => {
+    setEditingPageTitle(value)
+  }
+
+  async function handleCommitPageTitle(bookId: string, pageId: string, value: string) {
+    const trimmed = value.trim()
+    const isTemporary = pendingPageIds.has(pageId)
+
+    const parent = books.find((book) => book.id === bookId)
+    const target = parent?.pages.find((page) => page.id === pageId)
+    if (!parent || !target) {
+      setEditingPageId(null)
+      if (isTemporary) {
+        setPendingPageIds((prev) => {
+          const next = new Set(prev)
+          next.delete(pageId)
+          return next
+        })
+      }
+      return
+    }
+
+    if (!trimmed) {
+      if (isTemporary) {
+        setBooks((prev) => prev.map((book) =>
+          book.id === bookId
+            ? { ...book, pages: book.pages.filter((page) => page.id !== pageId) }
+            : book
+        ))
+        setPendingPageIds((prev) => {
+          const next = new Set(prev)
+          next.delete(pageId)
+          return next
+        })
+      } else {
+        setEditingPageTitle(target.title ?? '')
+      }
+      setEditingPageId(null)
+      return
+    }
+
+    if (!isTemporary && target.title === trimmed) {
+      setEditingPageId(null)
+      return
+    }
+
+    if (isTemporary) {
+      if (!userId) return
+      setOverlayMessage('ページ作成中...')
+      const { data, error } = await supabaseNotes
+        .from('pages')
+        .insert({ title: trimmed, user_id: userId, book_id: bookId })
+        .select('*')
+        .single()
+
+      if (error || !data) {
+        setOverlayMessage('')
+        window.alert?.('ページの作成に失敗しました。')
+        return
+      }
+
+      const created = data as NotePage
+      setBooks((prev) => prev.map((book) =>
+        book.id === bookId
+          ? { ...book, pages: book.pages.map((page) => page.id === pageId ? created : page) }
+          : book
+      ))
+      setPendingPageIds((prev) => {
+        const next = new Set(prev)
+        next.delete(pageId)
+        return next
+      })
+      setOverlayMessage('')
+      setEditingPageTitle(created.title ?? trimmed)
+      setEditingPageId(null)
+      return
+    }
+
+    setOverlayMessage('ページ名を更新中...')
+    const { data, error } = await supabaseNotes
+      .from('pages')
+      .update({ title: trimmed })
+      .eq('id', pageId)
+      .select('*')
+      .single()
+
+    if (error || !data) {
+      setOverlayMessage('')
+      window.alert?.('ページ名の更新に失敗しました。')
+      return
+    }
+
+    setBooks((prev) => prev.map((book) =>
+      book.id === bookId
+        ? { ...book, pages: book.pages.map((page) => page.id === pageId ? { ...page, title: trimmed } : page) }
+        : book
+    ))
+
+    setOverlayMessage('')
+    setEditingPageTitle(trimmed)
+    setEditingPageId(null)
+  }
+
+  const handleToggleBook = (bookId: string) => {
+    setExpandedBooks((prev) => {
+      const next = new Set(prev)
+      if (next.has(bookId)) next.delete(bookId)
+      else next.add(bookId)
+      return next
+    })
+  }
 
   if (loading) return <LoadingOverlay message="読み込み中..." />
 
-  // 未ログイン時はログイン画面を表示
   if (!userId) {
     return (
-      <div style={{ padding: 16 }}>
-        <h1>Note</h1>
-        <p>ログインが必要です。</p>
-        <button onClick={handleSignIn}>Googleでログイン</button>
+      <div style={loginWrapperStyle}>
+        <div style={loginCardStyle}>
+          <span style={loginKickerStyle}>Welcome</span>
+          <h1 style={loginTitleStyle}>Specsy Note</h1>
+          <p style={loginSubtitleStyle}>ノートとページを管理するにはログインしてください。</p>
+          <button onClick={handleSignIn} style={loginButtonStyle}>Googleでログイン</button>
+        </div>
       </div>
     )
   }
 
-
-  // ==============================
-  //  メイン画面 
-  // ==============================
-  
   return (
-    <div style={{ padding: 16 }}>
-      {/* ヘッダー：タイトルとログアウトボタン */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h1>Note</h1>
-        <button onClick={handleSignOut}>ログアウト</button>
-      </div>
-
-      {/* ブック作成フォーム */}
-      <form onSubmit={handleCreateBook} style={{ margin: '16px 0' }}>
-        <input
-          type="text"
-          placeholder="ブックのタイトル"
-          value={newTitle}
-          onChange={(e) => setNewTitle(e.target.value)}
-          disabled={creatingBook} // 作成中は入力無効
-          style={{ padding: 8, width: 280 }}
+    <div style={pageBackgroundStyle}>
+      <div style={workspaceStyle}>
+        <NoteSidebar
+          books={books}
+          expandedBooks={expandedBooks}
+          creatingBook={pendingNewBookId !== null}
+          deletingBook={deletingBook}
+          deletingPage={deletingPage}
+          editingBookId={editingBookId}
+          editingBookTitle={editingBookTitle}
+          editingPageId={editingPageId}
+          editingPageTitle={editingPageTitle}
+          onToggle={handleToggleBook}
+          onCreateBook={handleCreateBook}
+          onDeleteBook={handleDeleteBook}
+          onCreatePage={handleCreatePage}
+          onDeletePage={handleDeletePage}
+          onStartEditBook={handleStartEditBook}
+          onBookTitleChange={handleBookTitleChange}
+          onCommitBookTitle={handleCommitBookTitle}
+          onStartEditPage={handleStartEditPage}
+          onPageTitleChange={handlePageTitleChange}
+          onCommitPageTitle={handleCommitPageTitle}
+          onSignOut={handleSignOut}
         />
-        <button type="submit" disabled={creatingBook} style={{ marginLeft: 8 }}>
-          作成
-        </button>
-      </form>
 
-      {/* ブック一覧 */}
-      <ul style={{ listStyle: 'none', padding: 0 }}>
-        {books.map((book) => (
-          <li key={book.id} style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
-            {/* ブック名（クリックでブック詳細へ遷移） */}
-            <button 
-              style={{ 
-                marginRight: 12, 
-                background: 'none', 
-                border: 'none', 
-                color: 'blue', 
-                textDecoration: 'underline', 
-                cursor: 'pointer',
-                padding: 0,
-                font: 'inherit'
-              }}
-              onClick={() => {
-                setNavigatingTo(book.id)
-                window.location.href = `/note/${book.id}`
-              }}
-            >
-              {book.title}
-            </button>
-            {/* 削除ボタン */}
-            <button 
-              onClick={() => handleDeleteBook(book.id)}
-              disabled={deletingBook === book.id} // 削除中は無効
-            >
-              削除
-            </button>
-          </li>
-        ))}
-        {/* ブックが存在しない場合のメッセージ */}
-        {books.length === 0 && <li>ブックがありません。作成してください。</li>}
-      </ul>
-      
-      {/* ローディングオーバーレイ（常時表示、メッセージで制御） */}
+        <main style={{ ...glassCardStyle, ...mainCardStyle }}>
+          <div style={mainPlaceholderStyle}>
+            <h2>ノートを選択してください</h2>
+            <p>左のサイドバーでノートやページを選択すると内容を編集できます。</p>
+          </div>
+        </main>
+      </div>
       {overlayMessage && <LoadingOverlay message={overlayMessage} />}
     </div>
   )
 }
 
+const pageBackgroundStyle: CSSProperties = {
+  minHeight: '100vh',
+  background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+  padding: '36px 28px'
+}
 
+const workspaceStyle: CSSProperties = {
+  display: 'grid',
+  gridTemplateColumns: '320px 1fr',
+  gap: '28px',
+  maxWidth: '1400px',
+  margin: '0 auto'
+}
+
+const glassCardStyle: CSSProperties = {
+  background: 'rgba(15, 23, 42, 0.65)',
+  border: '1px solid rgba(148, 163, 184, 0.2)',
+  borderRadius: '24px',
+  boxShadow: '0 45px 80px -40px rgba(15, 23, 42, 0.8)',
+  backdropFilter: 'blur(22px)',
+  WebkitBackdropFilter: 'blur(22px)'
+}
+
+const mainCardStyle: CSSProperties = {
+  padding: '32px 36px',
+  minHeight: 'calc(100vh - 72px)',
+  color: '#e2e8f0',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center'
+}
+
+const mainPlaceholderStyle: CSSProperties = {
+  textAlign: 'center',
+  color: 'rgba(226, 232, 240, 0.75)'
+}
+
+const loginWrapperStyle: CSSProperties = {
+  minHeight: '100vh',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)'
+}
+
+const loginCardStyle: CSSProperties = {
+  ...glassCardStyle,
+  width: '100%',
+  maxWidth: '420px',
+  padding: '40px 32px',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '20px',
+  color: '#e2e8f0'
+}
+
+const loginKickerStyle: CSSProperties = {
+  fontSize: '12px',
+  letterSpacing: '0.4em',
+  textTransform: 'uppercase',
+  color: 'rgba(226, 232, 240, 0.6)'
+}
+
+const loginTitleStyle: CSSProperties = {
+  margin: 0,
+  fontSize: '36px',
+  fontWeight: 700,
+  background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
+  WebkitBackgroundClip: 'text',
+  WebkitTextFillColor: 'transparent'
+}
+
+const loginSubtitleStyle: CSSProperties = {
+  margin: 0,
+  fontSize: '15px',
+  lineHeight: 1.7,
+  color: 'rgba(226, 232, 240, 0.72)'
+}
+
+const loginButtonStyle: CSSProperties = {
+  border: 'none',
+  borderRadius: '999px',
+  padding: '12px 20px',
+  background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
+  color: '#fff',
+  fontWeight: 600,
+  cursor: 'pointer'
+}

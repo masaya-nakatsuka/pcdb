@@ -1,26 +1,85 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { PcListProps, ClientPcWithCpuSpec, ClientUsageCategory, ClientSortField, ClientSortOrder, ClientSortOptions } from '../types'
 import { fetchPcList } from '../../app/pc-list/fetchPcs'
 import { sortPcs } from '../utils/pcSort'
 import PcCard from './PcCard'
 
-interface PcListWithUsageProps extends PcListProps {
-  initialPcs: ClientPcWithCpuSpec[]
-}
-
-export default function PcList({ pcs: initialPcs }: { pcs: ClientPcWithCpuSpec[] }) {
+export default function PcList({ pcs: initialPcs, defaultCpu, defaultMaxDisplaySize }: PcListProps) {
   const [selectedUsage, setSelectedUsage] = useState<ClientUsageCategory>('cafe')
   const [pcs, setPcs] = useState<ClientPcWithCpuSpec[]>(initialPcs)
+  const [allPcs, setAllPcs] = useState<ClientPcWithCpuSpec[]>(initialPcs)
   const [loading, setLoading] = useState(false)
   const [sortOptions, setSortOptions] = useState<ClientSortOptions>({ field: 'pcScore', order: 'desc' })
   const [cpuOrderList, setCpuOrderList] = useState<string[]>([])
+  const [selectedCpu, setSelectedCpu] = useState<string>(defaultCpu ?? 'all')
+  const [selectedDisplaySize, setSelectedDisplaySize] = useState<string>(
+    defaultMaxDisplaySize ? `max:${defaultMaxDisplaySize}` : 'all'
+  )
+  const [isSortApplied, setIsSortApplied] = useState(false)
 
-  // initialPcsが変更されたときにpcsを更新
+  const availableCpuOptions = useMemo(() => {
+    const cpuSet = new Set(allPcs.map((pc) => pc.cpu).filter((cpu): cpu is string => Boolean(cpu)))
+
+    if (cpuOrderList.length === 0) {
+      return Array.from(cpuSet).sort()
+    }
+
+    const ordered = cpuOrderList.filter((cpu) => cpuSet.has(cpu))
+    const missing = Array.from(cpuSet).filter((cpu) => !ordered.includes(cpu))
+
+    return [...ordered, ...missing]
+  }, [allPcs, cpuOrderList])
+
+  const availableDisplaySizeOptions = useMemo(() => {
+    const sizeSet = new Set<number>()
+    allPcs.forEach((pc) => {
+      if (typeof pc.display_size === 'number') {
+        sizeSet.add(pc.display_size)
+      }
+    })
+
+    return Array.from(sizeSet).sort((a, b) => a - b)
+  }, [allPcs])
+
+  const applyCpuFilterAndSort = useCallback((
+    sourcePcs: ClientPcWithCpuSpec[],
+    cpuName: string,
+    displaySize: string,
+    options: ClientSortOptions,
+    sortApplied: boolean
+  ) => {
+    let filtered = cpuName === 'all' ? sourcePcs : sourcePcs.filter((pc) => pc.cpu === cpuName)
+
+    if (displaySize.startsWith('max:')) {
+      const limit = Number(displaySize.replace('max:', ''))
+      filtered = filtered.filter((pc) =>
+        typeof pc.display_size === 'number' ? pc.display_size <= limit : false
+      )
+    } else if (displaySize !== 'all') {
+      const targetSize = Number(displaySize)
+      filtered = filtered.filter((pc) => pc.display_size === targetSize)
+    }
+
+    const displayed = sortApplied ? sortPcs(filtered, options, cpuOrderList) : filtered
+    setPcs(displayed)
+  }, [cpuOrderList])
+
+  // initialPcsが変更されたときに基データを更新
   useEffect(() => {
-    setPcs(initialPcs)
-  }, [initialPcs])
+    setAllPcs(initialPcs)
+    setIsSortApplied(false)
+
+    const initialCpuFilter = defaultCpu ?? 'all'
+    const initialDisplayFilter = defaultMaxDisplaySize ? `max:${defaultMaxDisplaySize}` : 'all'
+
+    const baseSortOptions: ClientSortOptions = { field: 'pcScore', order: 'desc' }
+    setSortOptions(baseSortOptions)
+    setSelectedCpu(initialCpuFilter)
+    setSelectedDisplaySize(initialDisplayFilter)
+    applyCpuFilterAndSort(initialPcs, initialCpuFilter, initialDisplayFilter, baseSortOptions, false)
+  }, [initialPcs, defaultCpu, defaultMaxDisplaySize, applyCpuFilterAndSort])
 
   // ページ読み込み時にCPUリストを取得
   useEffect(() => {
@@ -45,10 +104,20 @@ export default function PcList({ pcs: initialPcs }: { pcs: ClientPcWithCpuSpec[]
     setLoading(true)
     try {
       const newPcs = await fetchPcList(usage)
-      setPcs(newPcs)
+      setAllPcs(newPcs)
+      setSelectedCpu(defaultCpu ?? 'all')
+      setSelectedDisplaySize(defaultMaxDisplaySize ? `max:${defaultMaxDisplaySize}` : 'all')
+      setIsSortApplied(false)
+      const baseSortOptions: ClientSortOptions = { field: 'pcScore', order: 'desc' }
+      setSortOptions(baseSortOptions)
+      applyCpuFilterAndSort(
+        newPcs,
+        defaultCpu ?? 'all',
+        defaultMaxDisplaySize ? `max:${defaultMaxDisplaySize}` : 'all',
+        baseSortOptions,
+        false
+      )
       setSelectedUsage(usage)
-      // ソート状態をリセット（バックエンドのデフォルト順序を維持）
-      setSortOptions({ field: 'pcScore', order: 'desc' })
     } catch (error) {
       console.error('Failed to fetch PCs for usage:', usage, error)
     } finally {
@@ -60,10 +129,26 @@ export default function PcList({ pcs: initialPcs }: { pcs: ClientPcWithCpuSpec[]
     const newOrder: ClientSortOrder = sortOptions.field === field && sortOptions.order === 'desc' ? 'asc' : 'desc'
     const newSortOptions = { field, order: newOrder }
     setSortOptions(newSortOptions)
-    
-    const sortedPcs = sortPcs(pcs, newSortOptions, cpuOrderList)
-    setPcs(sortedPcs)
+    setIsSortApplied(true)
+
+    applyCpuFilterAndSort(allPcs, selectedCpu, selectedDisplaySize, newSortOptions, true)
   }
+
+  const handleCpuFilterChange = (cpuName: string) => {
+    setSelectedCpu(cpuName)
+    applyCpuFilterAndSort(allPcs, cpuName, selectedDisplaySize, sortOptions, isSortApplied)
+  }
+
+  const handleDisplaySizeChange = (size: string) => {
+    setSelectedDisplaySize(size)
+    applyCpuFilterAndSort(allPcs, selectedCpu, size, sortOptions, isSortApplied)
+  }
+
+  useEffect(() => {
+    if (isSortApplied && sortOptions.field === 'cpu') {
+      applyCpuFilterAndSort(allPcs, selectedCpu, selectedDisplaySize, sortOptions, true)
+    }
+  }, [cpuOrderList, isSortApplied, sortOptions, allPcs, selectedCpu, selectedDisplaySize, applyCpuFilterAndSort])
 
   return (
     <>
@@ -217,6 +302,93 @@ export default function PcList({ pcs: initialPcs }: { pcs: ClientPcWithCpuSpec[]
             }}>
             🏠 家でじっくり作業
           </button>
+      </div>
+    </div>
+
+      {/* フィルター */}
+      <div style={{ padding: '0 16px 12px 16px' }}>
+        <div
+          style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: '12px',
+            justifyContent: 'center'
+          }}
+        >
+          <div
+            style={{
+              flex: '1 1 160px',
+              maxWidth: '240px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '6px'
+            }}
+          >
+            <label htmlFor="cpuFilter" style={{ fontSize: '14px', color: '#333' }}>
+              CPUで絞り込み
+            </label>
+            <select
+              id="cpuFilter"
+              value={selectedCpu}
+              onChange={(event) => handleCpuFilterChange(event.target.value)}
+              style={{
+                width: '100%',
+                padding: '8px 10px',
+                borderRadius: '10px',
+                border: '1px solid #ddd',
+                fontSize: '13px',
+                backgroundColor: '#fff',
+                color: '#333'
+              }}
+            >
+              <option value="all">すべて</option>
+              {availableCpuOptions.map((cpu) => (
+                <option key={cpu} value={cpu}>
+                  {cpu}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div
+            style={{
+              flex: '1 1 140px',
+              maxWidth: '200px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '6px'
+            }}
+          >
+            <label htmlFor="displaySizeFilter" style={{ fontSize: '14px', color: '#333' }}>
+              画面サイズで絞り込み
+            </label>
+            <select
+              id="displaySizeFilter"
+              value={selectedDisplaySize}
+              onChange={(event) => handleDisplaySizeChange(event.target.value)}
+              style={{
+                width: '100%',
+                padding: '8px 10px',
+                borderRadius: '10px',
+                border: '1px solid #ddd',
+                fontSize: '13px',
+                backgroundColor: '#fff',
+                color: '#333'
+              }}
+            >
+              <option value="all">すべて</option>
+              {defaultMaxDisplaySize && (
+                <option value={`max:${defaultMaxDisplaySize}`}>
+                  {defaultMaxDisplaySize}インチ以下
+                </option>
+              )}
+              {availableDisplaySizeOptions.map((size) => (
+                <option key={size} value={size}>
+                  {size}インチ
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
 
