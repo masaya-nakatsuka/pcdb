@@ -6,7 +6,8 @@ import type { TodoItem } from '@/lib/todoTypes'
 import LoadingOverlay from '@/components/LoadingOverlay'
 import ReactMarkdown from 'react-markdown'
 
-const GRID_TEMPLATE = '90px 5.2fr 70px 1.2fr 110px 110px 64px 64px'
+// レイアウトや配色をまとめた定数
+const GRID_TEMPLATE = '90px 5.2fr 70px 1.2fr 110px 110px 40px 40px'
 const PRIMARY_GRADIENT = 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)'
 const SECONDARY_GRADIENT = 'linear-gradient(135deg, #0ea5e9 0%, #14b8a6 100%)'
 const DESTRUCTIVE_GRADIENT = 'linear-gradient(135deg, #f97316 0%, #ef4444 100%)'
@@ -14,6 +15,7 @@ const GLASS_BACKGROUND = 'rgba(15, 23, 42, 0.65)'
 const GLASS_BORDER = '1px solid rgba(148, 163, 184, 0.2)'
 
 export default function TodoPage() {
+  // 画面全体の状態を管理
   const [userId, setUserId] = useState<string | null>(null)
   const [todos, setTodos] = useState<TodoItem[]>([])
   const [loading, setLoading] = useState<boolean>(true)
@@ -28,7 +30,9 @@ export default function TodoPage() {
   const [newlyCreatedTodos, setNewlyCreatedTodos] = useState<Set<string>>(new Set())
   const [sortField, setSortField] = useState<string>('created_at')
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
+  const [showCompleted, setShowCompleted] = useState<boolean>(false)
 
+  // 編集フォームの入力値を保持
   const [editForm, setEditForm] = useState<{
     title: string
     status: '未着手' | '着手中' | '完了'
@@ -47,6 +51,7 @@ export default function TodoPage() {
     markdown_text: ""
   })
 
+  // OAuthコールバック後の遷移先を保持
   const redirectTo = useMemo(() => {
     if (typeof window === 'undefined') return undefined
     // 現在のページの完全なURLを使用
@@ -54,6 +59,8 @@ export default function TodoPage() {
     return currentUrl
   }, [])
 
+  // 初回マウント時にユーザーとTODOを取得
+  // 編集中に外側をクリックした際の自動保存ハンドラ
   useEffect(() => {
     let isMounted = true
     ;(async () => {
@@ -74,6 +81,7 @@ export default function TodoPage() {
     }
   }, [])
 
+  // 指定ユーザーのTODOを全件取得
   async function loadTodos(userId: string) {
     const { data, error } = await supabaseTodo
       .from('todo_items')
@@ -83,6 +91,7 @@ export default function TodoPage() {
     if (!error && data) setTodos(data as TodoItem[])
   }
 
+  // Googleでログイン
   async function handleSignIn() {
     await supabaseTodo.auth.signInWithOAuth({
       provider: 'google',
@@ -90,12 +99,14 @@ export default function TodoPage() {
     })
   }
 
+  // ログアウト処理
   async function handleSignOut() {
     await supabaseTodo.auth.signOut()
     setUserId(null)
     setTodos([])
   }
 
+  // フォーム状態を初期化
   const resetEditForm = () => {
     setEditForm({
       title: "",
@@ -108,6 +119,7 @@ export default function TodoPage() {
     })
   }
 
+  // TODO編集モードに切り替え
   const startEditing = (todo: TodoItem) => {
     setEditingTodo(todo.id)
     setEditForm({
@@ -121,22 +133,26 @@ export default function TodoPage() {
     })
   }
 
+  // 新規TODO作成モードに切り替え
   const startCreating = () => {
     setShowNewTodo(true)
     resetEditForm()
   }
 
+  // 編集・新規作成をキャンセル
   const cancelEditing = () => {
     setEditingTodo(null)
     setShowNewTodo(false)
     resetEditForm()
   }
 
+  // マークダウンの編集開始
   const startEditingMarkdown = (todoId: string, currentMarkdown: string) => {
     setEditingMarkdown(todoId)
     setTempMarkdown(currentMarkdown || "")
   }
 
+  // マークダウン本文を保存
   const saveMarkdown = useCallback(async () => {
     if (!editingMarkdown) return
 
@@ -167,11 +183,13 @@ export default function TodoPage() {
     setOverlayMessage("")
   }, [editingMarkdown, tempMarkdown])
 
+  // マークダウン編集中止
   const cancelMarkdownEditing = () => {
     setEditingMarkdown(null)
     setTempMarkdown("")
   }
 
+  // TODOの新規作成または更新を保存
   const saveTodo = useCallback(async (isNew: boolean) => {
     if (!userId || !editForm.title.trim()) return
 
@@ -268,6 +286,7 @@ export default function TodoPage() {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [editingTodo, showNewTodo, editForm.title, editingMarkdown, saveTodo, saveMarkdown])
 
+  // TODOステータスを即時更新
   async function updateTodoStatus(todoId: string, status: '未着手' | '着手中' | '完了') {
     if (updatingTodo) return
 
@@ -291,6 +310,7 @@ export default function TodoPage() {
     setOverlayMessage("")
   }
 
+  // TODOを物理削除
   async function deleteTodo(todoId: string) {
     if (updatingTodo) return
 
@@ -322,6 +342,7 @@ export default function TodoPage() {
     }, 300)
   }
 
+  // ステータスごとの表示色
   const getStatusColor = (status: string) => {
     switch (status) {
       case '未着手': return '#94a3b8'
@@ -331,6 +352,7 @@ export default function TodoPage() {
     }
   }
 
+  // 優先度ごとの表示色
   const getPriorityColor = (priority: string | null) => {
     switch (priority) {
       case 'high': return '#f87171'
@@ -340,6 +362,7 @@ export default function TodoPage() {
     }
   }
 
+  // 詳細表示の開閉を切り替え
   const toggleExpanded = (todoId: string) => {
     setExpandedTodos(prev => {
       const newSet = new Set(prev)
@@ -352,6 +375,7 @@ export default function TodoPage() {
     })
   }
 
+  // ソート項目と方向の切り替え
   const handleSort = (field: string) => {
     if (sortField === field) {
       setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc')
@@ -361,8 +385,9 @@ export default function TodoPage() {
     }
   }
 
+  // 表示リストをソート＆完了フィルタ
   const getSortedTodos = () => {
-    return [...todos].sort((a, b) => {
+    const sorted = [...todos].sort((a, b) => {
       let aValue: any, bValue: any
 
       switch (sortField) {
@@ -396,14 +421,19 @@ export default function TodoPage() {
       if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1
       return 0
     })
+
+    if (showCompleted) return sorted
+    return sorted.filter(todo => todo.status !== '完了')
   }
 
+  // 背景となるグラデーション設定
   const pageBackgroundStyle: CSSProperties = {
     minHeight: '100vh',
     background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
     padding: '48px 16px 64px'
   }
 
+  // ページ中央のコンテナ設定
   const pageContentStyle: CSSProperties = {
     width: '100%',
     maxWidth: '1240px',
@@ -413,6 +443,7 @@ export default function TodoPage() {
     gap: '32px'
   }
 
+  // ガラス風コンポーネントの共通スタイル
   const glassCardStyle: CSSProperties = {
     backgroundColor: GLASS_BACKGROUND,
     border: GLASS_BORDER,
@@ -422,7 +453,8 @@ export default function TodoPage() {
     WebkitBackdropFilter: 'blur(22px)'
   }
 
-  const controlBaseStyle = {
+  // インプット類のベーススタイル
+  const controlBaseStyle: CSSProperties = {
     borderRadius: '12px',
     padding: '10px 12px',
     fontSize: '13px',
@@ -430,9 +462,12 @@ export default function TodoPage() {
     border: '1px solid rgba(148, 163, 184, 0.35)',
     color: '#e2e8f0',
     outline: 'none',
-    transition: 'border-color 0.2s ease, box-shadow 0.2s ease'
+    transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
+    boxSizing: 'border-box',
+    minWidth: 0
   }
 
+  // ピル型ボタンの共通スタイル
   const pillButtonStyle: CSSProperties = {
     display: 'inline-flex',
     alignItems: 'center',
@@ -469,8 +504,10 @@ export default function TodoPage() {
     完了: todos.filter((todo) => todo.status === '完了').length
   }), [todos])
 
+  // 読み込み中はオーバーレイのみ表示
   if (loading) return <LoadingOverlay message="読み込み中..." />
 
+  // 未ログイン時はログイン促進カードを表示
   if (!userId) {
     return (
       <div
@@ -553,9 +590,11 @@ export default function TodoPage() {
     )
   }
 
+  // ログイン済みユーザー向けのメインレイアウト
   return (
     <div style={pageBackgroundStyle}>
       <div style={pageContentStyle}>
+      {/* ダッシュボードの概要カード */}
       <div
         style={{
           ...glassCardStyle,
@@ -678,6 +717,7 @@ export default function TodoPage() {
         </div>
       </div>
 
+      {/* TODO一覧カード */}
       <div
         style={{
           ...glassCardStyle,
@@ -685,9 +725,39 @@ export default function TodoPage() {
           color: '#e2e8f0',
           display: 'flex',
           flexDirection: 'column',
-          gap: '16px'
         }}
       >
+        {/* 完了タスクの表示切り替え */}
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'flex-end',
+            alignItems: 'center',
+            marginBottom: '16px'
+          }}
+        >
+          <button
+            onClick={() => setShowCompleted(prev => !prev)}
+            style={{
+              ...pillButtonStyle,
+              padding: '8px 16px',
+              fontSize: '12px',
+              background: showCompleted ? 'rgba(59, 130, 246, 0.25)' : 'rgba(148, 163, 184, 0.22)',
+              color: '#e2e8f0',
+              boxShadow: 'none'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-2px)'
+              e.currentTarget.style.background = showCompleted ? 'rgba(59, 130, 246, 0.35)' : 'rgba(148, 163, 184, 0.32)'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)'
+              e.currentTarget.style.background = showCompleted ? 'rgba(59, 130, 246, 0.25)' : 'rgba(148, 163, 184, 0.22)'
+            }}
+          >
+            {showCompleted ? '完了タスクを非表示' : '完了タスクを表示'}
+          </button>
+        </div>
         <style jsx>{`
           @keyframes slideInFromBottom {
             from {
@@ -714,9 +784,9 @@ export default function TodoPage() {
         <div style={{
           display: 'grid',
           gridTemplateColumns: GRID_TEMPLATE,
-          gap: 12,
-          padding: '16px 20px',
-          marginBottom: '12px',
+          gap: 0,
+          padding: '10px 16px',
+          marginBottom: '4px',
           color: 'rgba(226, 232, 240, 0.7)',
           fontSize: '12px',
           letterSpacing: '0.05em',
@@ -769,17 +839,14 @@ export default function TodoPage() {
           const isNewlyCreated = newlyCreatedTodos.has(todo.id)
 
           if (isEditing) {
+            // 編集中のTODO行用レイアウト
             return (
               <div
                 key={todo.id}
                 style={{
-                  borderRadius: '20px',
-                  border: '1px solid rgba(59, 130, 246, 0.35)',
-                  background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.16) 0%, rgba(139, 92, 246, 0.16) 100%)',
-                  boxShadow: '0 28px 50px -24px rgba(59, 130, 246, 0.55)',
                   animation: 'slideInFromTop 0.3s ease',
                   overflow: 'hidden',
-                  marginBottom: '16px'
+                  borderBottom: '1px solid rgba(148, 163, 184, 0.18)'
                 }}
                 data-todo-container
               >
@@ -787,8 +854,8 @@ export default function TodoPage() {
                   style={{
                     display: 'grid',
                     gridTemplateColumns: GRID_TEMPLATE,
-                    gap: 12,
-                    padding: '18px 20px',
+                    gap: 0,
+                    padding: '10px 16px',
                     alignItems: 'center'
                   }}
                 >
@@ -799,7 +866,7 @@ export default function TodoPage() {
                       ...controlBaseStyle,
                       padding: '10px 12px',
                       textAlign: 'center',
-                      justifySelf: 'center'
+                      width: '100%'
                     }}
                   >
                     <option value="">なし</option>
@@ -808,17 +875,18 @@ export default function TodoPage() {
                     <option value="high">高</option>
                   </select>
 
-                  <input
-                    type="text"
-                    value={editForm.title}
-                    onChange={(e) => setEditForm(prev => ({ ...prev, title: e.target.value }))}
-                    style={{
-                      ...controlBaseStyle,
-                      fontSize: '15px',
-                      fontWeight: 600
-                    }}
-                    placeholder="タイトル"
-                  />
+              <input
+                type="text"
+                value={editForm.title}
+                onChange={(e) => setEditForm(prev => ({ ...prev, title: e.target.value }))}
+                style={{
+                  ...controlBaseStyle,
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  width: '100%'
+                }}
+                placeholder="タイトル"
+              />
 
                   <select
                     value={editForm.status}
@@ -827,7 +895,7 @@ export default function TodoPage() {
                       ...controlBaseStyle,
                       padding: '10px 12px',
                       textAlign: 'center',
-                      justifySelf: 'center'
+                      width: '100%'
                     }}
                   >
                     <option value="未着手">未着手</option>
@@ -842,7 +910,7 @@ export default function TodoPage() {
                     style={{
                       ...controlBaseStyle,
                       textAlign: 'center',
-                      justifySelf: 'center'
+                      width: '100%'
                     }}
                     placeholder="タグ"
                   />
@@ -855,41 +923,18 @@ export default function TodoPage() {
                     {todo.done_date ? new Date(todo.done_date).toLocaleDateString('ja-JP') : '-'}
                   </div>
 
-                  <button
-                    onClick={() => saveTodo(false)}
-                    style={{
-                      ...iconButtonStyle,
-                      width: '100%',
-                      background: PRIMARY_GRADIENT,
-                      border: 'none',
-                      boxShadow: '0 24px 50px -24px rgba(59, 130, 246, 0.6)',
-                      opacity: editForm.title.trim() ? 1 : 0.4,
-                      cursor: editForm.title.trim() ? 'pointer' : 'not-allowed'
-                    }}
-                    disabled={!editForm.title.trim()}
-                    onMouseEnter={(e) => {
-                      if (!editForm.title.trim()) return
-                      e.currentTarget.style.transform = 'translateY(-2px)'
-                      e.currentTarget.style.boxShadow = '0 28px 60px -24px rgba(59, 130, 246, 0.6)'
-                      e.currentTarget.style.background = 'linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)'
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.transform = 'translateY(0)'
-                      e.currentTarget.style.boxShadow = '0 24px 50px -24px rgba(59, 130, 246, 0.6)'
-                      e.currentTarget.style.background = PRIMARY_GRADIENT
-                    }}
-                  >
-                    ✓
-                  </button>
+                  <div />
 
                   <button
                     onClick={cancelEditing}
                     style={{
                       ...iconButtonStyle,
-                      width: '100%',
-                      background: 'rgba(239, 68, 68, 0.12)',
+                      width: '24px',
+                      height: '24px',
+                      background: 'rgba(239, 68, 68, 0.18)',
                       color: '#fda4af',
-                      border: '1px solid rgba(239, 68, 68, 0.2)'
+                      border: 'none',
+                      fontSize: '14px'
                     }}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.transform = 'translateY(-2px)'
@@ -911,22 +956,15 @@ export default function TodoPage() {
             )
           }
 
+          // 通常表示のTODO行
           return (
             <div
               key={todo.id}
               style={{
-                borderRadius: '20px',
-                border: `1px solid ${isExpanded ? 'rgba(59, 130, 246, 0.35)' : 'rgba(148, 163, 184, 0.18)'}`,
-                background: isNewlyCreated
-                  ? 'linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(139, 92, 246, 0.15) 100%)'
-                  : (isCompleted ? 'rgba(30, 41, 59, 0.5)' : 'rgba(15, 23, 42, 0.55)'),
-                boxShadow: isExpanded
-                  ? '0 28px 60px -24px rgba(59, 130, 246, 0.55)'
-                  : '0 24px 50px -28px rgba(15, 23, 42, 0.85)',
+                borderBottom: '1px solid rgba(148, 163, 184, 0.18)',
                 opacity: isDeleting ? 0.35 : 1,
-                transform: isExpanded ? 'translateY(-2px)' : 'translateY(0)',
-                transition: 'transform 0.3s ease, box-shadow 0.3s ease, border 0.3s ease, opacity 0.3s ease',
-                marginBottom: '16px',
+                background: isNewlyCreated ? 'rgba(59, 130, 246, 0.08)' : 'transparent',
+                transition: 'background 0.3s ease, opacity 0.3s ease',
                 animation: isNewlyCreated ? 'slideInFromBottom 0.3s ease-out' : undefined
               }}
             >
@@ -934,8 +972,8 @@ export default function TodoPage() {
                 style={{
                   display: 'grid',
                   gridTemplateColumns: GRID_TEMPLATE,
-                  gap: 12,
-                  padding: '18px 20px',
+                  gap: 0,
+                  padding: '10px 16px',
                   alignItems: 'center',
                   cursor: 'pointer'
                 }}
@@ -972,7 +1010,7 @@ export default function TodoPage() {
                   style={{
                     textDecoration: isCompleted ? 'line-through' : 'none',
                     color: isCompleted ? 'rgba(148, 163, 184, 0.7)' : '#f8fafc',
-                    fontSize: '15px',
+                    fontSize: '14px',
                     fontWeight: 600
                   }}
                 >
@@ -983,7 +1021,7 @@ export default function TodoPage() {
                   style={{
                     padding: '6px 12px',
                     borderRadius: '999px',
-                    background: 'rgba(148, 163, 184, 0.12)',
+                    background: 'rgba(148, 163, 184, 0.14)',
                     color: getStatusColor(todo.status),
                     fontSize: '13px',
                     fontWeight: 600,
@@ -1038,9 +1076,11 @@ export default function TodoPage() {
                   }}
                   style={{
                     ...iconButtonStyle,
-                    background: 'rgba(15, 23, 42, 0.55)',
-                    border: '1px solid rgba(148, 163, 184, 0.2)',
-                    fontSize: '16px'
+                    width: '24px',
+                    height: '24px',
+                    background: 'rgba(15, 23, 42, 0.6)',
+                    border: 'none',
+                    fontSize: '14px'
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.transform = 'translateY(-2px)'
@@ -1063,10 +1103,12 @@ export default function TodoPage() {
                   }}
                   style={{
                     ...iconButtonStyle,
+                    width: '24px',
+                    height: '24px',
                     background: 'rgba(239, 68, 68, 0.12)',
                     color: '#fda4af',
-                    border: '1px solid rgba(239, 68, 68, 0.2)',
-                    fontSize: '18px'
+                    border: 'none',
+                    fontSize: '16px'
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.transform = 'translateY(-2px)'
@@ -1094,14 +1136,14 @@ export default function TodoPage() {
               >
                 <div
                   style={{
-                    padding: '0 20px 20px'
+                    padding: '0 16px 16px'
                   }}
                 >
                   <div
                     style={{
-                      padding: '20px',
-                      borderRadius: '16px',
-                      background: 'rgba(15, 23, 42, 0.55)',
+                      padding: '16px',
+                      borderRadius: '12px',
+                      background: 'rgba(15, 23, 42, 0.6)',
                       border: '1px solid rgba(148, 163, 184, 0.2)'
                     }}
                   >
@@ -1117,7 +1159,7 @@ export default function TodoPage() {
                             borderRadius: '12px',
                             fontSize: '13px',
                             resize: 'vertical',
-                            marginBottom: '12px'
+                            marginBottom: '10px'
                           }}
                           placeholder="マークダウンで記述してください..."
                           autoFocus
@@ -1156,22 +1198,22 @@ export default function TodoPage() {
           )
         })}
 
+        {/* 新規TODO用フォーム or 追加ボタン */}
         {showNewTodo ? (
           <div
             style={{
-              borderRadius: '20px',
-              border: '1px solid rgba(59, 130, 246, 0.3)',
-              background: 'rgba(59, 130, 246, 0.12)',
+              borderBottom: '1px solid rgba(148, 163, 184, 0.18)',
               animation: 'slideInFromTop 0.3s ease'
             }}
             data-todo-container
           >
+            {/* 新規作成フォーム行 */}
             <div
               style={{
                 display: 'grid',
                 gridTemplateColumns: GRID_TEMPLATE,
-                gap: 12,
-                padding: '18px 20px',
+                gap: 0,
+                padding: '10px 16px',
                 alignItems: 'center'
               }}
             >
@@ -1180,7 +1222,8 @@ export default function TodoPage() {
                 onChange={(e) => setEditForm(prev => ({ ...prev, priority: (e.target.value as 'low' | 'medium' | 'high' | '') || null }))}
                 style={{
                   ...controlBaseStyle,
-                  padding: '10px 12px'
+                  padding: '10px 12px',
+                  width: '100%'
                 }}
               >
                 <option value="">なし</option>
@@ -1195,8 +1238,9 @@ export default function TodoPage() {
                 onChange={(e) => setEditForm(prev => ({ ...prev, title: e.target.value }))}
                 style={{
                   ...controlBaseStyle,
-                  fontSize: '15px',
-                  fontWeight: 600
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  width: '100%'
                 }}
                 placeholder="タイトル"
                 autoFocus
@@ -1207,7 +1251,8 @@ export default function TodoPage() {
                 onChange={(e) => setEditForm(prev => ({ ...prev, status: e.target.value as '未着手' | '着手中' | '完了' }))}
                 style={{
                   ...controlBaseStyle,
-                  padding: '10px 12px'
+                  padding: '10px 12px',
+                  width: '100%'
                 }}
               >
                 <option value="未着手">未着手</option>
@@ -1220,7 +1265,8 @@ export default function TodoPage() {
                 value={editForm.tags}
                 onChange={(e) => setEditForm(prev => ({ ...prev, tags: e.target.value }))}
                 style={{
-                  ...controlBaseStyle
+                  ...controlBaseStyle,
+                  width: '100%'
                 }}
                 placeholder="タグ"
               />
@@ -1229,41 +1275,18 @@ export default function TodoPage() {
 
               <div></div>
 
-              <button
-                onClick={() => saveTodo(true)}
-                style={{
-                  ...iconButtonStyle,
-                  width: '100%',
-                  background: PRIMARY_GRADIENT,
-                  border: 'none',
-                  boxShadow: '0 24px 50px -24px rgba(59, 130, 246, 0.6)',
-                  opacity: editForm.title.trim() ? 1 : 0.4,
-                  cursor: editForm.title.trim() ? 'pointer' : 'not-allowed'
-                }}
-                disabled={!editForm.title.trim()}
-                onMouseEnter={(e) => {
-                  if (!editForm.title.trim()) return
-                  e.currentTarget.style.transform = 'translateY(-2px)'
-                  e.currentTarget.style.boxShadow = '0 28px 60px -24px rgba(59, 130, 246, 0.6)'
-                  e.currentTarget.style.background = 'linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)'
-                  e.currentTarget.style.boxShadow = '0 24px 50px -24px rgba(59, 130, 246, 0.6)'
-                  e.currentTarget.style.background = PRIMARY_GRADIENT
-                }}
-              >
-                ✓
-              </button>
+              <div />
 
               <button
                 onClick={cancelEditing}
                 style={{
                   ...iconButtonStyle,
-                  width: '100%',
-                  background: 'rgba(239, 68, 68, 0.12)',
+                  width: '24px',
+                  height: '24px',
+                  background: 'rgba(239, 68, 68, 0.18)',
                   color: '#fda4af',
-                  border: '1px solid rgba(239, 68, 68, 0.2)'
+                  border: 'none',
+                  fontSize: '14px'
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.transform = 'translateY(-2px)'
@@ -1285,26 +1308,22 @@ export default function TodoPage() {
         ) : (
           <div
             style={{
-              marginTop: '8px',
-              padding: '16px 20px',
-              borderRadius: '18px',
-              background: 'rgba(148, 163, 184, 0.08)',
-              border: '1px dashed rgba(148, 163, 184, 0.3)',
+              marginTop: '4px',
+              padding: '10px 16px',
+              borderBottom: '1px dashed rgba(148, 163, 184, 0.3)',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
-              gap: '12px',
+              gap: '8px',
               color: 'rgba(226, 232, 240, 0.7)',
-              transition: 'background 0.3s ease, border-color 0.3s ease'
+              transition: 'color 0.3s ease'
             }}
             onClick={startCreating}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'rgba(148, 163, 184, 0.16)'
-              e.currentTarget.style.borderColor = 'rgba(148, 163, 184, 0.45)'
+              e.currentTarget.style.color = '#fff'
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'rgba(148, 163, 184, 0.08)'
-              e.currentTarget.style.borderColor = 'rgba(148, 163, 184, 0.3)'
+              e.currentTarget.style.color = 'rgba(226, 232, 240, 0.7)'
             }}
           >
             <span style={{ fontSize: '20px', lineHeight: 1 }}>＋</span>

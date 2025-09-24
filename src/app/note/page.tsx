@@ -20,6 +20,8 @@ export default function NoteHomePage() {
   const [editingPageTitle, setEditingPageTitle] = useState<string>('')
   const [pendingNewBookId, setPendingNewBookId] = useState<string | null>(null)
   const [pendingPageIds, setPendingPageIds] = useState<Set<string>>(new Set())
+  const [activeBookId, setActiveBookId] = useState<string | null>(null)
+  const [activePageId, setActivePageId] = useState<string | null>(null)
 
   const redirectTo = useMemo(() => {
     if (typeof window === 'undefined') return undefined
@@ -80,6 +82,8 @@ export default function NoteHomePage() {
     setBooks(nextBooks)
     setPendingNewBookId(null)
     setPendingPageIds(new Set())
+    setActiveBookId(null)
+    setActivePageId(null)
     if (nextBooks.length > 0) {
       setExpandedBooks(new Set([nextBooks[0].id]))
     }
@@ -100,6 +104,8 @@ export default function NoteHomePage() {
     setExpandedBooks(new Set())
     setPendingNewBookId(null)
     setPendingPageIds(new Set())
+    setActiveBookId(null)
+    setActivePageId(null)
   }
 
   async function handleCreateBook() {
@@ -139,6 +145,10 @@ export default function NoteHomePage() {
         setEditingBookId(null)
         setEditingBookTitle('')
       }
+      if (activeBookId === bookId) {
+        setActiveBookId(null)
+        setActivePageId(null)
+      }
       return
     }
 
@@ -155,6 +165,10 @@ export default function NoteHomePage() {
         next.delete(bookId)
         return next
       })
+      if (activeBookId === bookId) {
+        setActiveBookId(null)
+        setActivePageId(null)
+      }
     }
     setDeletingBook(null)
     setOverlayMessage('')
@@ -307,6 +321,10 @@ export default function NoteHomePage() {
         setEditingPageId(null)
         setEditingPageTitle('')
       }
+      if (activePageId === pageId) {
+        setActivePageId(null)
+        setActiveBookId((prev) => prev === bookId ? null : prev)
+      }
       return
     }
 
@@ -320,6 +338,10 @@ export default function NoteHomePage() {
       setBooks((prev) => prev.map((book) =>
         book.id === bookId ? { ...book, pages: book.pages.filter((page) => page.id !== pageId) } : book
       ))
+      if (activePageId === pageId) {
+        setActivePageId(null)
+        setActiveBookId((prev) => prev === bookId ? null : prev)
+      }
     }
     setDeletingPage(null)
     setOverlayMessage('')
@@ -329,6 +351,13 @@ export default function NoteHomePage() {
     setEditingPageId(page.id)
     setEditingPageTitle(page.title ?? '')
     setEditingBookId(null)
+    setActiveBookId(bookId)
+    setActivePageId(page.id)
+    setExpandedBooks((prev) => {
+      const next = new Set(prev)
+      next.add(bookId)
+      return next
+    })
   }
 
   const handlePageTitleChange = (value: string) => {
@@ -406,6 +435,8 @@ export default function NoteHomePage() {
       setOverlayMessage('')
       setEditingPageTitle(created.title ?? trimmed)
       setEditingPageId(null)
+      setActiveBookId(bookId)
+      setActivePageId(created.id)
       return
     }
 
@@ -432,6 +463,8 @@ export default function NoteHomePage() {
     setOverlayMessage('')
     setEditingPageTitle(trimmed)
     setEditingPageId(null)
+    setActiveBookId(bookId)
+    setActivePageId(pageId)
   }
 
   const handleToggleBook = (bookId: string) => {
@@ -441,6 +474,24 @@ export default function NoteHomePage() {
       else next.add(bookId)
       return next
     })
+  }
+
+  const handleSelectPage = (bookId: string, pageId: string) => {
+    const isSamePage = activePageId === pageId
+    if (isSamePage) {
+      setActivePageId(null)
+      setActiveBookId((prev) => (prev === bookId ? null : prev))
+    } else {
+      setActivePageId(pageId)
+      setActiveBookId(bookId)
+      setExpandedBooks((prev) => {
+        const next = new Set(prev)
+        next.add(bookId)
+        return next
+      })
+    }
+    setEditingBookId(null)
+    setEditingPageId(null)
   }
 
   if (loading) return <LoadingOverlay message="読み込み中..." />
@@ -471,6 +522,8 @@ export default function NoteHomePage() {
           editingBookTitle={editingBookTitle}
           editingPageId={editingPageId}
           editingPageTitle={editingPageTitle}
+          activeBookId={activeBookId}
+          activePageId={activePageId}
           onToggle={handleToggleBook}
           onCreateBook={handleCreateBook}
           onDeleteBook={handleDeleteBook}
@@ -482,6 +535,7 @@ export default function NoteHomePage() {
           onStartEditPage={handleStartEditPage}
           onPageTitleChange={handlePageTitleChange}
           onCommitPageTitle={handleCommitPageTitle}
+          onSelectPage={handleSelectPage}
           onSignOut={handleSignOut}
         />
 

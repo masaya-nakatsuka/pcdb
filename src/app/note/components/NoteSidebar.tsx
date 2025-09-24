@@ -17,6 +17,8 @@ interface NoteSidebarProps {
   editingBookTitle: string
   editingPageId: string | null
   editingPageTitle: string
+  activeBookId: string | null
+  activePageId: string | null
   onToggle: (bookId: string) => void
   onCreateBook: () => void
   onDeleteBook: (bookId: string) => void
@@ -28,6 +30,7 @@ interface NoteSidebarProps {
   onStartEditPage: (bookId: string, page: NotePage) => void
   onPageTitleChange: (value: string) => void
   onCommitPageTitle: (bookId: string, pageId: string, value: string) => void
+  onSelectPage: (bookId: string, pageId: string) => void
   onSignOut: () => void
 }
 
@@ -42,6 +45,8 @@ export default function NoteSidebar(props: NoteSidebarProps) {
     editingBookTitle,
     editingPageId,
     editingPageTitle,
+    activeBookId,
+    activePageId,
     onToggle,
     onCreateBook,
     onDeleteBook,
@@ -53,6 +58,7 @@ export default function NoteSidebar(props: NoteSidebarProps) {
     onStartEditPage,
     onPageTitleChange,
     onCommitPageTitle,
+    onSelectPage,
     onSignOut
   } = props
 
@@ -67,7 +73,7 @@ export default function NoteSidebar(props: NoteSidebarProps) {
         input.select()
       }
     }
-  }, [editingBookId, editingBookTitle])
+  }, [editingBookId])
 
   useEffect(() => {
     if (editingPageId) {
@@ -77,7 +83,7 @@ export default function NoteSidebar(props: NoteSidebarProps) {
         input.select()
       }
     }
-  }, [editingPageId, editingPageTitle])
+  }, [editingPageId])
 
   return (
     <aside style={{ ...glassCardStyle, ...sidebarStyle }}>
@@ -97,15 +103,23 @@ export default function NoteSidebar(props: NoteSidebarProps) {
         {books.map((book) => {
           const isExpanded = expandedBooks.has(book.id)
           const isEditingBook = editingBookId === book.id
+          const isActiveBook = activeBookId === book.id
+          const shouldHighlightBook = isActiveBook || isEditingBook
+          const cardStyle = shouldHighlightBook
+            ? { ...noteCardStyle, ...activeNoteCardStyle }
+            : noteCardStyle
+          const noteButtonStyle = isActiveBook
+            ? { ...noteTitleButtonStyle, ...activeNoteTitleButtonStyle }
+            : noteTitleButtonStyle
           return (
-            <div key={book.id} style={noteCardStyle}>
+            <div key={book.id} style={cardStyle}>
               <div style={noteCardHeaderStyle}>
                 <button
                   onClick={() => onToggle(book.id)}
                   style={toggleButtonStyle}
                   aria-label={isExpanded ? '閉じる' : '開く'}
                 >
-                  {isExpanded ? '▴' : '▾'}
+                  {isExpanded ? '-' : '>'}
                 </button>
                 <div style={noteTitleContainerStyle}>
                   {isEditingBook ? (
@@ -130,7 +144,7 @@ export default function NoteSidebar(props: NoteSidebarProps) {
                   ) : (
                     <button
                       onClick={() => onStartEditBook(book.id, book.title ?? '')}
-                      style={noteTitleButtonStyle}
+                      style={noteButtonStyle}
                     >
                       {book.title || '無題のノート'}
                     </button>
@@ -158,8 +172,25 @@ export default function NoteSidebar(props: NoteSidebarProps) {
                   )}
                   {book.pages.map((page) => {
                     const isEditingPage = editingPageId === page.id
+                    const isActivePage = activePageId === page.id
+                    const rowStyle = isActivePage
+                      ? { ...pageRowBaseStyle, ...activePageRowStyle }
+                      : pageRowBaseStyle
+                    const indicatorStyle = isActivePage
+                      ? { ...pageIndicatorStyle, ...activePageIndicatorStyle }
+                      : pageIndicatorStyle
+                    const pageButtonStyle = isActivePage
+                      ? { ...pageLinkStyle, ...activePageLinkStyle }
+                      : pageLinkStyle
                     return (
-                      <div key={page.id} style={pageRowStyle}>
+                      <div key={page.id} style={rowStyle}>
+                        <button
+                          onClick={() => onSelectPage(book.id, page.id)}
+                          style={indicatorStyle}
+                          aria-label={isActivePage ? 'ページを閉じる' : 'ページを開く'}
+                        >
+                          {isActivePage ? '-' : '>'}
+                        </button>
                         {isEditingPage ? (
                           <input
                             ref={(el) => { pageInputRefs.current[page.id] = el }}
@@ -182,7 +213,7 @@ export default function NoteSidebar(props: NoteSidebarProps) {
                         ) : (
                           <button
                             onClick={() => onStartEditPage(book.id, page)}
-                            style={pageLinkStyle}
+                            style={pageButtonStyle}
                           >
                             {page.title || '無題のページ'}
                           </button>
@@ -286,6 +317,11 @@ const noteCardStyle: React.CSSProperties = {
   gap: '12px'
 }
 
+const activeNoteCardStyle: React.CSSProperties = {
+  background: 'rgba(30, 41, 59, 0.75)',
+  border: '1px solid rgba(96, 165, 250, 0.45)'
+}
+
 const noteCardHeaderStyle: React.CSSProperties = {
   display: 'flex',
   alignItems: 'center',
@@ -317,10 +353,31 @@ const pageListStyle: React.CSSProperties = {
   gap: '8px'
 }
 
-const pageRowStyle: React.CSSProperties = {
+const pageRowBaseStyle: React.CSSProperties = {
   display: 'flex',
   alignItems: 'center',
   gap: '10px'
+}
+
+const activePageRowStyle: React.CSSProperties = {
+  background: 'rgba(37, 99, 235, 0.18)',
+  borderRadius: '12px',
+  padding: '6px 8px'
+}
+
+const pageIndicatorStyle: React.CSSProperties = {
+  border: 'none',
+  background: 'rgba(148, 163, 184, 0.18)',
+  color: '#f1f5f9',
+  width: '24px',
+  height: '24px',
+  borderRadius: '8px',
+  cursor: 'pointer'
+}
+
+const activePageIndicatorStyle: React.CSSProperties = {
+  background: 'rgba(96, 165, 250, 0.45)',
+  color: '#e0f2fe'
 }
 
 const pageLinkStyle: React.CSSProperties = {
@@ -332,6 +389,11 @@ const pageLinkStyle: React.CSSProperties = {
   cursor: 'pointer',
   padding: '8px 12px',
   borderRadius: '12px'
+}
+
+const activePageLinkStyle: React.CSSProperties = {
+  color: '#e2e8f0',
+  background: 'rgba(96, 165, 250, 0.25)'
 }
 
 const deletePageButtonStyle: React.CSSProperties = {
@@ -360,6 +422,10 @@ const noteTitleButtonStyle: React.CSSProperties = {
   textAlign: 'left',
   cursor: 'pointer',
   padding: '4px 0'
+}
+
+const activeNoteTitleButtonStyle: React.CSSProperties = {
+  color: '#bfdbfe'
 }
 
 const noteTitleInputStyle: React.CSSProperties = {
