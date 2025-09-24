@@ -5,6 +5,7 @@ import { supabaseNotes } from '@/lib/supabaseNotesClient'
 import type { NoteBook, NotePage } from '@/lib/noteTypes'
 import LoadingOverlay from '@/components/LoadingOverlay'
 import NoteSidebar, { type BookWithPages } from './components/NoteSidebar'
+import PageContentPanel from './components/PageContentPanel'
 
 export default function NoteHomePage() {
   const [userId, setUserId] = useState<string | null>(null)
@@ -22,6 +23,9 @@ export default function NoteHomePage() {
   const [pendingPageIds, setPendingPageIds] = useState<Set<string>>(new Set())
   const [activeBookId, setActiveBookId] = useState<string | null>(null)
   const [activePageId, setActivePageId] = useState<string | null>(null)
+  const [pageContentDraft, setPageContentDraft] = useState<string>('')
+  const [savingPageContent, setSavingPageContent] = useState<boolean>(false)
+  const [pageContentFeedback, setPageContentFeedback] = useState<string | null>(null)
 
   const redirectTo = useMemo(() => {
     if (typeof window === 'undefined') return undefined
@@ -494,6 +498,64 @@ export default function NoteHomePage() {
     setEditingPageId(null)
   }
 
+  useEffect(() => {
+    if (!activeBookId || !activePageId) {
+      setPageContentDraft('')
+      setPageContentFeedback(null)
+      return
+    }
+
+    const book = books.find((item) => item.id === activeBookId)
+    const page = book?.pages.find((item) => item.id === activePageId)
+    setPageContentDraft(page?.content ?? '')
+    setPageContentFeedback(null)
+  }, [activeBookId, activePageId, books])
+
+  const handlePageContentChange = (value: string) => {
+    setPageContentDraft(value)
+    setPageContentFeedback(null)
+  }
+
+  async function handleSavePageContent() {
+    if (!activeBookId || !activePageId) return
+
+    const parent = books.find((book) => book.id === activeBookId)
+    const page = parent?.pages.find((item) => item.id === activePageId)
+    const originalContent = page?.content ?? ''
+
+    if (pageContentDraft === originalContent) return
+
+    setSavingPageContent(true)
+    const { data, error } = await supabaseNotes
+      .from('pages')
+      .update({ content: pageContentDraft })
+      .eq('id', activePageId)
+      .select('*')
+      .single()
+
+    if (error || !data) {
+      setSavingPageContent(false)
+      setPageContentFeedback('保存に失敗しました。')
+      return
+    }
+
+    const updated = data as NotePage
+    setBooks((prev) => prev.map((book) =>
+      book.id === activeBookId
+        ? {
+          ...book,
+          pages: book.pages.map((item) =>
+            item.id === activePageId ? { ...item, content: updated.content, updated_at: updated.updated_at } : item
+          )
+        }
+        : book
+    ))
+
+    setSavingPageContent(false)
+    setPageContentFeedback('保存しました。')
+    window.setTimeout(() => setPageContentFeedback(null), 2000)
+  }
+
   if (loading) return <LoadingOverlay message="読み込み中..." />
 
   if (!userId) {
@@ -508,6 +570,10 @@ export default function NoteHomePage() {
       </div>
     )
   }
+
+  const activeBook = activeBookId ? books.find((book) => book.id === activeBookId) ?? null : null
+  const activePage = activePageId ? activeBook?.pages.find((page) => page.id === activePageId) ?? null : null
+  const isContentDirty = activePage ? pageContentDraft !== (activePage.content ?? '') : false
 
   return (
     <div style={pageBackgroundStyle}>
@@ -539,12 +605,16 @@ export default function NoteHomePage() {
           onSignOut={handleSignOut}
         />
 
-        <main style={{ ...glassCardStyle, ...mainCardStyle }}>
-          <div style={mainPlaceholderStyle}>
-            <h2>ノートを選択してください</h2>
-            <p>左のサイドバーでノートやページを選択すると内容を編集できます。</p>
-          </div>
-        </main>
+        <PageContentPanel
+          book={activeBook}
+          page={activePage ?? null}
+          content={pageContentDraft}
+          onChange={handlePageContentChange}
+          onSave={handleSavePageContent}
+          saving={savingPageContent}
+          dirty={isContentDirty}
+          feedback={pageContentFeedback}
+        />
       </div>
       {overlayMessage && <LoadingOverlay message={overlayMessage} />}
     </div>
@@ -572,20 +642,6 @@ const glassCardStyle: CSSProperties = {
   boxShadow: '0 45px 80px -40px rgba(15, 23, 42, 0.8)',
   backdropFilter: 'blur(22px)',
   WebkitBackdropFilter: 'blur(22px)'
-}
-
-const mainCardStyle: CSSProperties = {
-  padding: '32px 36px',
-  minHeight: 'calc(100vh - 72px)',
-  color: '#e2e8f0',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center'
-}
-
-const mainPlaceholderStyle: CSSProperties = {
-  textAlign: 'center',
-  color: 'rgba(226, 232, 240, 0.75)'
 }
 
 const loginWrapperStyle: CSSProperties = {
