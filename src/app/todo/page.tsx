@@ -2,96 +2,99 @@
 
 import { useEffect, useMemo, useState, useCallback, type CSSProperties } from 'react'
 import { supabaseTodo } from '@/lib/supabaseTodoClient'
-import type { TodoItem } from '@/lib/todoTypes'
 import LoadingOverlay from '@/components/LoadingOverlay'
-import ReactMarkdown from 'react-markdown'
+import Link from 'next/link'
 
-// レイアウトや配色をまとめた定数
-const GRID_TEMPLATE = '90px 5.2fr 70px 1.2fr 110px 110px 40px 40px'
+// スタイル共通定数
 const PRIMARY_GRADIENT = 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)'
 const SECONDARY_GRADIENT = 'linear-gradient(135deg, #0ea5e9 0%, #14b8a6 100%)'
-const DESTRUCTIVE_GRADIENT = 'linear-gradient(135deg, #f97316 0%, #ef4444 100%)'
 const GLASS_BACKGROUND = 'rgba(15, 23, 42, 0.65)'
 const GLASS_BORDER = '1px solid rgba(148, 163, 184, 0.2)'
 
-export default function TodoPage() {
-  // 画面全体の状態を管理
+type TodoList = {
+  id: string
+  user_id: string
+  name: string
+  sort_order: number | null
+  created_at: string | null
+}
+
+type StatusCounts = {
+  total: number
+  未着手: number
+  着手中: number
+  完了: number
+}
+
+export default function TodoListsPage() {
   const [userId, setUserId] = useState<string | null>(null)
-  const [todos, setTodos] = useState<TodoItem[]>([])
-  const [loading, setLoading] = useState<boolean>(true)
-  const [editingTodo, setEditingTodo] = useState<string | null>(null)
-  const [editingMarkdown, setEditingMarkdown] = useState<string | null>(null)
-  const [showNewTodo, setShowNewTodo] = useState<boolean>(false)
-  const [updatingTodo, setUpdatingTodo] = useState<string | null>(null)
-  const [overlayMessage, setOverlayMessage] = useState<string>("")
-  const [expandedTodos, setExpandedTodos] = useState<Set<string>>(new Set())
-  const [tempMarkdown, setTempMarkdown] = useState<string>("")
-  const [deletingTodos, setDeletingTodos] = useState<Set<string>>(new Set())
-  const [newlyCreatedTodos, setNewlyCreatedTodos] = useState<Set<string>>(new Set())
-  const [sortField, setSortField] = useState<string>('created_at')
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
-  const [showCompleted, setShowCompleted] = useState<boolean>(false)
+  const [lists, setLists] = useState<TodoList[]>([])
+  const [summaries, setSummaries] = useState<Record<string, StatusCounts>>({})
+  const [loading, setLoading] = useState(true)
+  const [overlayMessage, setOverlayMessage] = useState("")
+  const [showCreate, setShowCreate] = useState(false)
+  const [newListName, setNewListName] = useState("")
 
-  // 編集フォームの入力値を保持
-  const [editForm, setEditForm] = useState<{
-    title: string
-    status: '未着手' | '着手中' | '完了'
-    priority: 'low' | 'medium' | 'high' | null
-    tags: string
-    branch_names: string
-    pr_links: string
-    markdown_text: string
-  }>({
-    title: "",
-    status: '未着手',
-    priority: null,
-    tags: "",
-    branch_names: "",
-    pr_links: "",
-    markdown_text: ""
-  })
-
-  // OAuthコールバック後の遷移先を保持
   const redirectTo = useMemo(() => {
     if (typeof window === 'undefined') return undefined
-    // 現在のページの完全なURLを使用
-    const currentUrl = window.location.href
-    return currentUrl
+    return window.location.href
   }, [])
 
-  // 初回マウント時にユーザーとTODOを取得
-  // 編集中に外側をクリックした際の自動保存ハンドラ
   useEffect(() => {
-    let isMounted = true
+    let mounted = true
     ;(async () => {
       const { data } = await supabaseTodo.auth.getUser()
-      const userId = data.user?.id ?? null
-
-      if (!isMounted) return
-
-      setUserId(userId)
-      if (userId) {
-        await loadTodos(userId)
+      if (!mounted) return
+      const uid = data.user?.id ?? null
+      setUserId(uid)
+      if (uid) {
+        await loadLists(uid)
       }
       setLoading(false)
     })()
-
-    return () => {
-      isMounted = false
-    }
+    return () => { mounted = false }
   }, [])
 
-  // 指定ユーザーのTODOを全件取得
-  async function loadTodos(userId: string) {
-    const { data, error } = await supabaseTodo
-      .from('todo_items')
+  async function loadLists(uid: string) {
+    const { data: listsData, error } = await supabaseTodo
+      .from('todo_lists')
       .select('*')
-      .eq('user_id', userId)
+      .eq('user_id', uid)
+      .order('sort_order', { ascending: true, nullsFirst: false })
       .order('created_at', { ascending: false })
-    if (!error && data) setTodos(data as TodoItem[])
+
+    if (!error && listsData) {
+      const listArr = listsData as TodoList[]
+      setLists(listArr)
+
+      if (listArr.length > 0) {
+        const { data: items, error: itemsErr } = await supabaseTodo
+          .from('todo_items')
+          .select('id, list_id, status')
+          .eq('user_id', uid)
+          .in('list_id', listArr.map(l => l.id))
+
+        if (!itemsErr && items) {
+          const counts: Record<string, StatusCounts> = {}
+          // 初期化
+          for (const l of listArr) {
+            counts[l.id] = { total: 0, 未着手: 0, 着手中: 0, 完了: 0 }
+          }
+          // 集計
+          for (const it of items as { id: string; list_id: string; status: '未着手' | '着手中' | '完了' }[]) {
+            const c = counts[it.list_id]
+            if (!c) continue
+            c.total += 1
+            c[it.status] += 1
+          }
+          setSummaries(counts)
+        }
+      } else {
+        setSummaries({})
+      }
+    }
   }
 
-  // Googleでログイン
   async function handleSignIn() {
     await supabaseTodo.auth.signInWithOAuth({
       provider: 'google',
@@ -99,341 +102,44 @@ export default function TodoPage() {
     })
   }
 
-  // ログアウト処理
   async function handleSignOut() {
     await supabaseTodo.auth.signOut()
     setUserId(null)
-    setTodos([])
+    setLists([])
+    setSummaries({})
   }
 
-  // フォーム状態を初期化
-  const resetEditForm = () => {
-    setEditForm({
-      title: "",
-      status: '未着手',
-      priority: null,
-      tags: "",
-      branch_names: "",
-      pr_links: "",
-      markdown_text: ""
-    })
-  }
-
-  // TODO編集モードに切り替え
-  const startEditing = (todo: TodoItem) => {
-    setEditingTodo(todo.id)
-    setEditForm({
-      title: todo.title,
-      status: todo.status,
-      priority: todo.priority,
-      tags: todo.tags.join(', '),
-      branch_names: todo.branch_names.join(', '),
-      pr_links: todo.pr_links.join(', '),
-      markdown_text: todo.markdown_text || ""
-    })
-  }
-
-  // 新規TODO作成モードに切り替え
-  const startCreating = () => {
-    setShowNewTodo(true)
-    resetEditForm()
-  }
-
-  // 編集・新規作成をキャンセル
-  const cancelEditing = () => {
-    setEditingTodo(null)
-    setShowNewTodo(false)
-    resetEditForm()
-  }
-
-  // マークダウンの編集開始
-  const startEditingMarkdown = (todoId: string, currentMarkdown: string) => {
-    setEditingMarkdown(todoId)
-    setTempMarkdown(currentMarkdown || "")
-  }
-
-  // マークダウン本文を保存
-  const saveMarkdown = useCallback(async () => {
-    if (!editingMarkdown) return
-
-    setUpdatingTodo(editingMarkdown)
-    setOverlayMessage("マークダウン更新中...")
-
-    const { error } = await supabaseTodo
-      .from('todo_items')
-      .update({
-        markdown_text: tempMarkdown.trim() || null,
-        updated_at: new Date().toISOString()
+  async function createList() {
+    if (!userId) return
+    const name = newListName.trim()
+    if (!name) return
+    setOverlayMessage("リストを作成中...")
+    const { data, error } = await supabaseTodo
+      .from('todo_lists')
+      .insert({
+        user_id: userId,
+        name,
+        sort_order: null,
+        created_at: new Date().toISOString()
       })
-      .eq('id', editingMarkdown)
-
-    if (!error) {
-      setTodos((prev) =>
-        prev.map((todo) =>
-          todo.id === editingMarkdown
-            ? { ...todo, markdown_text: tempMarkdown.trim() || null }
-            : todo
-        )
-      )
-    }
-
-    setEditingMarkdown(null)
-    setTempMarkdown("")
-    setUpdatingTodo(null)
+      .select('*')
+      .single()
     setOverlayMessage("")
-  }, [editingMarkdown, tempMarkdown])
-
-  // マークダウン編集中止
-  const cancelMarkdownEditing = () => {
-    setEditingMarkdown(null)
-    setTempMarkdown("")
-  }
-
-  // TODOの新規作成または更新を保存
-  const saveTodo = useCallback(async (isNew: boolean) => {
-    if (!userId || !editForm.title.trim()) return
-
-    setUpdatingTodo(isNew ? 'new' : editingTodo!)
-    setOverlayMessage(isNew ? "TODO作成中..." : "TODO更新中...")
-
-    // 現在のステータスと新しいステータスをチェック
-    const currentTodo = isNew ? null : todos.find(t => t.id === editingTodo)
-    const isCompletingNow = editForm.status === '完了' && currentTodo?.status !== '完了'
-    const isUncompletingNow = editForm.status !== '完了' && currentTodo?.status === '完了'
-
-    const todoData = {
-      title: editForm.title.trim(),
-      status: editForm.status,
-      priority: editForm.priority,
-      tags: editForm.tags ? editForm.tags.split(',').map(tag => tag.trim()).filter(tag => tag) : [],
-      branch_names: editForm.branch_names ? editForm.branch_names.split(',').map(branch => branch.trim()).filter(branch => branch) : [],
-      pr_links: editForm.pr_links ? editForm.pr_links.split(',').map(link => link.trim()).filter(link => link) : [],
-      markdown_text: editForm.markdown_text.trim() || null,
-      done_date: isCompletingNow ? new Date().toISOString() : (isUncompletingNow ? null : currentTodo?.done_date || null),
-      user_id: userId,
-      updated_at: new Date().toISOString()
-    }
-
-    if (isNew) {
-      const { data, error } = await supabaseTodo
-        .from('todo_items')
-        .insert(todoData)
-        .select('*')
-        .single()
-
-      if (!error && data) {
-        const newTodo = data as TodoItem
-        setTodos((prev) => [newTodo, ...prev])
-        setNewlyCreatedTodos(prev => {
-          const newSet = new Set(prev)
-          newSet.add(newTodo.id)
-          return newSet
-        })
-        setTimeout(() => {
-          setNewlyCreatedTodos(prev => {
-            const newSet = new Set(prev)
-            newSet.delete(newTodo.id)
-            return newSet
-          })
-        }, 500)
-        setShowNewTodo(false)
-        resetEditForm()
-      }
-    } else {
-      const { error } = await supabaseTodo
-        .from('todo_items')
-        .update(todoData)
-        .eq('id', editingTodo!)
-
-      if (!error) {
-        setTodos((prev) =>
-          prev.map((todo) =>
-            todo.id === editingTodo ? { ...todo, ...todoData } as TodoItem : todo
-          )
-        )
-        setEditingTodo(null)
-        resetEditForm()
-      }
-    }
-
-    setUpdatingTodo(null)
-    setOverlayMessage("")
-  }, [userId, editForm, editingTodo])
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (editingTodo || showNewTodo) {
-        const target = event.target as HTMLElement
-        const todoContainer = target.closest('[data-todo-container]')
-        if (!todoContainer) {
-          if (editForm.title.trim()) {
-            saveTodo(showNewTodo)
-          } else {
-            cancelEditing()
-          }
-        }
-      }
-      if (editingMarkdown) {
-        const target = event.target as HTMLElement
-        const markdownContainer = target.closest('[data-markdown-container]')
-        if (!markdownContainer) {
-          saveMarkdown()
-        }
-      }
-    }
-
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [editingTodo, showNewTodo, editForm.title, editingMarkdown, saveTodo, saveMarkdown])
-
-  // TODOステータスを即時更新
-  async function updateTodoStatus(todoId: string, status: '未着手' | '着手中' | '完了') {
-    if (updatingTodo) return
-
-    setUpdatingTodo(todoId)
-    setOverlayMessage("ステータス更新中...")
-
-    const { error } = await supabaseTodo
-      .from('todo_items')
-      .update({ status, updated_at: new Date().toISOString() })
-      .eq('id', todoId)
-
-    if (!error) {
-      setTodos((prev) =>
-        prev.map((todo) =>
-          todo.id === todoId ? { ...todo, status } : todo
-        )
-      )
-    }
-
-    setUpdatingTodo(null)
-    setOverlayMessage("")
-  }
-
-  // TODOを物理削除
-  async function deleteTodo(todoId: string) {
-    if (updatingTodo) return
-
-    setDeletingTodos(prev => {
-      const newSet = new Set(prev)
-      newSet.add(todoId)
-      return newSet
-    })
-    setUpdatingTodo(todoId)
-    setOverlayMessage("削除中...")
-
-    setTimeout(async () => {
-      const { error } = await supabaseTodo
-        .from('todo_items')
-        .delete()
-        .eq('id', todoId)
-
-      if (!error) {
-        setTodos((prev) => prev.filter((todo) => todo.id !== todoId))
-      }
-
-      setDeletingTodos(prev => {
-        const newSet = new Set(prev)
-        newSet.delete(todoId)
-        return newSet
-      })
-      setUpdatingTodo(null)
-      setOverlayMessage("")
-    }, 300)
-  }
-
-  // ステータスごとの表示色
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case '未着手': return '#94a3b8'
-      case '着手中': return '#38bdf8'
-      case '完了': return '#34d399'
-      default: return '#94a3b8'
+    if (!error && data) {
+      const created = data as TodoList
+      setLists(prev => [created, ...prev])
+      setSummaries(prev => ({ ...prev, [created.id]: { total: 0, 未着手: 0, 着手中: 0, 完了: 0 } }))
+      setShowCreate(false)
+      setNewListName("")
     }
   }
 
-  // 優先度ごとの表示色
-  const getPriorityColor = (priority: string | null) => {
-    switch (priority) {
-      case 'high': return '#f87171'
-      case 'medium': return '#fbbf24'
-      case 'low': return '#34d399'
-      default: return '#cbd5f5'
-    }
-  }
-
-  // 詳細表示の開閉を切り替え
-  const toggleExpanded = (todoId: string) => {
-    setExpandedTodos(prev => {
-      const newSet = new Set(prev)
-      if (newSet.has(todoId)) {
-        newSet.delete(todoId)
-      } else {
-        newSet.add(todoId)
-      }
-      return newSet
-    })
-  }
-
-  // ソート項目と方向の切り替え
-  const handleSort = (field: string) => {
-    if (sortField === field) {
-      setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc')
-    } else {
-      setSortField(field)
-      setSortDirection('asc')
-    }
-  }
-
-  // 表示リストをソート＆完了フィルタ
-  const getSortedTodos = () => {
-    const sorted = [...todos].sort((a, b) => {
-      let aValue: any, bValue: any
-
-      switch (sortField) {
-        case 'priority':
-          const priorityOrder = { 'high': 3, 'medium': 2, 'low': 1, null: 0 }
-          aValue = priorityOrder[a.priority as keyof typeof priorityOrder] || 0
-          bValue = priorityOrder[b.priority as keyof typeof priorityOrder] || 0
-          break
-        case 'status':
-          const statusOrder = { '未着手': 1, '着手中': 2, '完了': 3 }
-          aValue = statusOrder[a.status as keyof typeof statusOrder] || 0
-          bValue = statusOrder[b.status as keyof typeof statusOrder] || 0
-          break
-        case 'title':
-          aValue = a.title.toLowerCase()
-          bValue = b.title.toLowerCase()
-          break
-        case 'done_date':
-          aValue = a.done_date ? new Date(a.done_date).getTime() : 0
-          bValue = b.done_date ? new Date(b.done_date).getTime() : 0
-          break
-        case 'created_at':
-          aValue = a.created_at ? new Date(a.created_at).getTime() : 0
-          bValue = b.created_at ? new Date(b.created_at).getTime() : 0
-          break
-        default:
-          return 0
-      }
-
-      if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1
-      if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1
-      return 0
-    })
-
-    if (showCompleted) return sorted
-    return sorted.filter(todo => todo.status !== '完了')
-  }
-
-  // 背景となるグラデーション設定
+  // 背景・カード・ボタンのスタイル
   const pageBackgroundStyle: CSSProperties = {
     minHeight: '100vh',
     background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
     padding: '48px 16px 64px'
   }
-
-  // ページ中央のコンテナ設定
   const pageContentStyle: CSSProperties = {
     width: '100%',
     maxWidth: '1240px',
@@ -442,8 +148,6 @@ export default function TodoPage() {
     flexDirection: 'column',
     gap: '32px'
   }
-
-  // ガラス風コンポーネントの共通スタイル
   const glassCardStyle: CSSProperties = {
     backgroundColor: GLASS_BACKGROUND,
     border: GLASS_BORDER,
@@ -452,22 +156,6 @@ export default function TodoPage() {
     backdropFilter: 'blur(22px)',
     WebkitBackdropFilter: 'blur(22px)'
   }
-
-  // インプット類のベーススタイル
-  const controlBaseStyle: CSSProperties = {
-    borderRadius: '12px',
-    padding: '10px 12px',
-    fontSize: '13px',
-    backgroundColor: 'rgba(15, 23, 42, 0.6)',
-    border: '1px solid rgba(148, 163, 184, 0.35)',
-    color: '#e2e8f0',
-    outline: 'none',
-    transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
-    boxSizing: 'border-box',
-    minWidth: 0
-  }
-
-  // ピル型ボタンの共通スタイル
   const pillButtonStyle: CSSProperties = {
     display: 'inline-flex',
     alignItems: 'center',
@@ -482,32 +170,43 @@ export default function TodoPage() {
     cursor: 'pointer',
     transition: 'transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease'
   }
-
-  const iconButtonStyle: CSSProperties = {
-    width: '46px',
-    height: '46px',
-    borderRadius: '14px',
-    border: 'none',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: '18px',
-    background: 'rgba(15, 23, 42, 0.55)',
+  const controlBaseStyle: CSSProperties = {
+    borderRadius: '12px',
+    padding: '10px 12px',
+    fontSize: '13px',
+    backgroundColor: 'rgba(15, 23, 42, 0.6)',
+    border: '1px solid rgba(148, 163, 184, 0.35)',
     color: '#e2e8f0',
-    cursor: 'pointer',
-    transition: 'transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease, color 0.25s ease'
+    outline: 'none',
+    transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
+    boxSizing: 'border-box',
+    minWidth: 0
   }
 
-  const statusSummary = useMemo(() => ({
-    未着手: todos.filter((todo) => todo.status === '未着手').length,
-    着手中: todos.filter((todo) => todo.status === '着手中').length,
-    完了: todos.filter((todo) => todo.status === '完了').length
-  }), [todos])
+  const statusColor = (status: '未着手' | '着手中' | '完了') => {
+    switch (status) {
+      case '未着手': return '#94a3b8'
+      case '着手中': return '#38bdf8'
+      case '完了': return '#34d399'
+      default: return '#94a3b8'
+    }
+  }
 
-  // 読み込み中はオーバーレイのみ表示
+  const totalSummary = useMemo(() => {
+    return Object.values(summaries).reduce(
+      (acc, cur) => {
+        acc.total += cur.total
+        acc['未着手'] += cur['未着手']
+        acc['着手中'] += cur['着手中']
+        acc['完了'] += cur['完了']
+        return acc
+      },
+      { total: 0, 未着手: 0, 着手中: 0, 完了: 0 } as StatusCounts
+    )
+  }, [summaries])
+
   if (loading) return <LoadingOverlay message="読み込み中..." />
 
-  // 未ログイン時はログイン促進カードを表示
   if (!userId) {
     return (
       <div
@@ -590,749 +289,264 @@ export default function TodoPage() {
     )
   }
 
-  // ログイン済みユーザー向けのメインレイアウト
   return (
     <div style={pageBackgroundStyle}>
       <div style={pageContentStyle}>
-      {/* ダッシュボードの概要カード */}
-      <div
-        style={{
-          ...glassCardStyle,
-          padding: '28px 32px',
-          color: '#e2e8f0',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '18px'
-        }}
-      >
         <div
           style={{
+            ...glassCardStyle,
+            padding: '28px 32px',
+            color: '#e2e8f0',
             display: 'flex',
-            flexWrap: 'wrap',
-            justifyContent: 'space-between',
-            alignItems: 'flex-start',
-            gap: '24px'
+            flexDirection: 'column',
+            gap: '18px'
           }}
         >
-          <div style={{ flex: '1 1 280px' }}>
-            <span
-              style={{
-                fontSize: '12px',
-                letterSpacing: '0.35em',
-                textTransform: 'uppercase',
-                color: 'rgba(226, 232, 240, 0.5)'
-              }}
-            >
-              Dashboard
-            </span>
-            <h1
-              style={{
-                margin: '10px 0 14px',
-                fontSize: '42px',
-                fontWeight: 700,
-                background: PRIMARY_GRADIENT,
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text'
-              }}
-            >
-              作業リスト
-            </h1>
-            <p
-              style={{
-                margin: 0,
-                fontSize: '15px',
-                lineHeight: 1.7,
-                color: 'rgba(226, 232, 240, 0.72)'
-              }}
-            >
-              ステータスや優先度をまとめて確認し、必要な作業にすぐアクセスできます。
-            </p>
-          </div>
           <div
             style={{
-              flex: '0 0 auto',
               display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'flex-end',
-              gap: '16px'
+              flexWrap: 'wrap',
+              justifyContent: 'space-between',
+              alignItems: 'flex-start',
+              gap: '24px'
             }}
           >
+            <div style={{ flex: '1 1 280px' }}>
+              <span
+                style={{
+                  fontSize: '12px',
+                  letterSpacing: '0.35em',
+                  textTransform: 'uppercase',
+                  color: 'rgba(226, 232, 240, 0.5)'
+                }}
+              >
+                Dashboard
+              </span>
+              <h1
+                style={{
+                  margin: '10px 0 14px',
+                  fontSize: '42px',
+                  fontWeight: 700,
+                  background: PRIMARY_GRADIENT,
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text'
+                }}
+              >
+                TODOリスト
+              </h1>
+              <p
+                style={{
+                  margin: 0,
+                  fontSize: '15px',
+                  lineHeight: 1.7,
+                  color: 'rgba(226, 232, 240, 0.72)'
+                }}
+              >
+                リスト毎にタスクを整理できます。カードをクリックして詳細へ進んでください。
+              </p>
+            </div>
             <div
               style={{
+                flex: '0 0 auto',
                 display: 'flex',
-                gap: '12px',
-                flexWrap: 'wrap',
-                justifyContent: 'flex-end'
-              }}
-            >
-              {(['未着手', '着手中', '完了'] as const).map((status) => (
-                <div
-                  key={status}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    padding: '10px 14px',
-                    borderRadius: '16px',
-                    background: 'rgba(15, 23, 42, 0.55)',
-                    border: '1px solid rgba(148, 163, 184, 0.2)',
-                    color: 'rgba(226, 232, 240, 0.85)'
-                  }}
-                >
-                  <span
-                    style={{
-                      width: '10px',
-                      height: '10px',
-                      borderRadius: '50%',
-                      backgroundColor: getStatusColor(status)
-                    }}
-                  />
-                  <span style={{ fontSize: '13px', fontWeight: 600 }}>{status}</span>
-                  <span style={{ fontSize: '13px', opacity: 0.7 }}>{statusSummary[status]}</span>
-                </div>
-              ))}
-            </div>
-            <button
-              onClick={handleSignOut}
-              style={{
-                ...pillButtonStyle,
-                background: SECONDARY_GRADIENT,
-                boxShadow: '0 24px 50px -20px rgba(14, 165, 233, 0.45)'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-2px)'
-                e.currentTarget.style.boxShadow = '0 28px 60px -20px rgba(14, 165, 233, 0.55)'
-                e.currentTarget.style.background = 'linear-gradient(135deg, #0ea5e9 0%, #22d3ee 100%)'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)'
-                e.currentTarget.style.boxShadow = '0 24px 50px -20px rgba(14, 165, 233, 0.45)'
-                e.currentTarget.style.background = SECONDARY_GRADIENT
-              }}
-            >
-              ログアウト
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* TODO一覧カード */}
-      <div
-        style={{
-          ...glassCardStyle,
-          padding: '24px',
-          color: '#e2e8f0',
-          display: 'flex',
-          flexDirection: 'column',
-        }}
-      >
-        {/* 完了タスクの表示切り替え */}
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'flex-end',
-            alignItems: 'center',
-            marginBottom: '16px'
-          }}
-        >
-          <button
-            onClick={() => setShowCompleted(prev => !prev)}
-            style={{
-              ...pillButtonStyle,
-              padding: '8px 16px',
-              fontSize: '12px',
-              background: showCompleted ? 'rgba(59, 130, 246, 0.25)' : 'rgba(148, 163, 184, 0.22)',
-              color: '#e2e8f0',
-              boxShadow: 'none'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-2px)'
-              e.currentTarget.style.background = showCompleted ? 'rgba(59, 130, 246, 0.35)' : 'rgba(148, 163, 184, 0.32)'
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)'
-              e.currentTarget.style.background = showCompleted ? 'rgba(59, 130, 246, 0.25)' : 'rgba(148, 163, 184, 0.22)'
-            }}
-          >
-            {showCompleted ? '完了タスクを非表示' : '完了タスクを表示'}
-          </button>
-        </div>
-        <style jsx>{`
-          @keyframes slideInFromBottom {
-            from {
-              transform: translateY(12px);
-              opacity: 0;
-            }
-            to {
-              transform: translateY(0);
-              opacity: 1;
-            }
-          }
-
-          @keyframes slideInFromTop {
-            from {
-              transform: translateY(-16px);
-              opacity: 0;
-            }
-            to {
-              transform: translateY(0);
-              opacity: 1;
-            }
-          }
-        `}</style>
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: GRID_TEMPLATE,
-          gap: 0,
-          padding: '10px 16px',
-          marginBottom: '4px',
-          color: 'rgba(226, 232, 240, 0.7)',
-          fontSize: '12px',
-          letterSpacing: '0.05em',
-          textTransform: 'uppercase',
-          background: 'rgba(148, 163, 184, 0.12)',
-          borderRadius: '20px',
-          border: '1px solid rgba(148, 163, 184, 0.15)',
-          backdropFilter: 'blur(18px)',
-          WebkitBackdropFilter: 'blur(18px)'
-        }}>
-          <div
-            onClick={() => handleSort('priority')}
-            style={{ cursor: 'pointer', userSelect: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
-          >
-            優先度 {sortField === 'priority' && (sortDirection === 'asc' ? '↑' : '↓')}
-          </div>
-          <div
-            onClick={() => handleSort('title')}
-            style={{ cursor: 'pointer', userSelect: 'none', display: 'flex', alignItems: 'center', gap: 6 }}
-          >
-            タイトル {sortField === 'title' && (sortDirection === 'asc' ? '↑' : '↓')}
-          </div>
-          <div
-            onClick={() => handleSort('status')}
-            style={{ cursor: 'pointer', userSelect: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
-          >
-            状況 {sortField === 'status' && (sortDirection === 'asc' ? '↑' : '↓')}
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>タグ</div>
-          <div
-            onClick={() => handleSort('created_at')}
-            style={{ cursor: 'pointer', userSelect: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
-          >
-            作成日 {sortField === 'created_at' && (sortDirection === 'asc' ? '↑' : '↓')}
-          </div>
-          <div
-            onClick={() => handleSort('done_date')}
-            style={{ cursor: 'pointer', userSelect: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
-          >
-            完了日 {sortField === 'done_date' && (sortDirection === 'asc' ? '↑' : '↓')}
-          </div>
-          <div></div>
-          <div></div>
-        </div>
-        {getSortedTodos().map((todo) => {
-          const isExpanded = expandedTodos.has(todo.id)
-          const isCompleted = todo.status === '完了'
-          const isEditing = editingTodo === todo.id
-          const isDeleting = deletingTodos.has(todo.id)
-          const isNewlyCreated = newlyCreatedTodos.has(todo.id)
-
-          if (isEditing) {
-            // 編集中のTODO行用レイアウト
-            return (
-              <div
-                key={todo.id}
-                style={{
-                  animation: 'slideInFromTop 0.3s ease',
-                  overflow: 'hidden',
-                  borderBottom: '1px solid rgba(148, 163, 184, 0.18)'
-                }}
-                data-todo-container
-              >
-                <div
-                  style={{
-                    display: 'grid',
-                    gridTemplateColumns: GRID_TEMPLATE,
-                    gap: 0,
-                    padding: '10px 16px',
-                    alignItems: 'center'
-                  }}
-                >
-                  <select
-                    value={editForm.priority || ''}
-                    onChange={(e) => setEditForm(prev => ({ ...prev, priority: (e.target.value as 'low' | 'medium' | 'high' | '') || null }))}
-                    style={{
-                      ...controlBaseStyle,
-                      padding: '10px 12px',
-                      textAlign: 'center',
-                      width: '100%'
-                    }}
-                  >
-                    <option value="">なし</option>
-                    <option value="low">低</option>
-                    <option value="medium">中</option>
-                    <option value="high">高</option>
-                  </select>
-
-              <input
-                type="text"
-                value={editForm.title}
-                onChange={(e) => setEditForm(prev => ({ ...prev, title: e.target.value }))}
-                style={{
-                  ...controlBaseStyle,
-                  fontSize: '14px',
-                  fontWeight: 600,
-                  width: '100%'
-                }}
-                placeholder="タイトル"
-              />
-
-                  <select
-                    value={editForm.status}
-                    onChange={(e) => setEditForm(prev => ({ ...prev, status: e.target.value as '未着手' | '着手中' | '完了' }))}
-                    style={{
-                      ...controlBaseStyle,
-                      padding: '10px 12px',
-                      textAlign: 'center',
-                      width: '100%'
-                    }}
-                  >
-                    <option value="未着手">未着手</option>
-                    <option value="着手中">着手中</option>
-                    <option value="完了">完了</option>
-                  </select>
-
-                  <input
-                    type="text"
-                    value={editForm.tags}
-                    onChange={(e) => setEditForm(prev => ({ ...prev, tags: e.target.value }))}
-                    style={{
-                      ...controlBaseStyle,
-                      textAlign: 'center',
-                      width: '100%'
-                    }}
-                    placeholder="タグ"
-                  />
-
-                  <div style={{ fontSize: '12px', color: 'rgba(226, 232, 240, 0.65)', textAlign: 'center' }}>
-                    {todo.created_at ? new Date(todo.created_at).toLocaleDateString('ja-JP') : '-'}
-                  </div>
-
-                  <div style={{ fontSize: '12px', color: 'rgba(226, 232, 240, 0.65)', textAlign: 'center' }}>
-                    {todo.done_date ? new Date(todo.done_date).toLocaleDateString('ja-JP') : '-'}
-                  </div>
-
-                  <div />
-
-                  <button
-                    onClick={cancelEditing}
-                    style={{
-                      ...iconButtonStyle,
-                      width: '24px',
-                      height: '24px',
-                      background: 'rgba(239, 68, 68, 0.18)',
-                      color: '#fda4af',
-                      border: 'none',
-                      fontSize: '14px'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.transform = 'translateY(-2px)'
-                      e.currentTarget.style.boxShadow = '0 28px 60px -24px rgba(239, 68, 68, 0.45)'
-                      e.currentTarget.style.background = DESTRUCTIVE_GRADIENT
-                      e.currentTarget.style.color = '#fff'
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.transform = 'translateY(0)'
-                      e.currentTarget.style.boxShadow = 'none'
-                      e.currentTarget.style.background = 'rgba(239, 68, 68, 0.12)'
-                      e.currentTarget.style.color = '#fda4af'
-                    }}
-                  >
-                    ✕
-                  </button>
-                </div>
-              </div>
-            )
-          }
-
-          // 通常表示のTODO行
-          return (
-            <div
-              key={todo.id}
-              style={{
-                borderBottom: '1px solid rgba(148, 163, 184, 0.18)',
-                opacity: isDeleting ? 0.35 : 1,
-                background: isNewlyCreated ? 'rgba(59, 130, 246, 0.08)' : 'transparent',
-                transition: 'background 0.3s ease, opacity 0.3s ease',
-                animation: isNewlyCreated ? 'slideInFromBottom 0.3s ease-out' : undefined
+                flexDirection: 'column',
+                alignItems: 'flex-end',
+                gap: '16px'
               }}
             >
               <div
                 style={{
-                  display: 'grid',
-                  gridTemplateColumns: GRID_TEMPLATE,
-                  gap: 0,
-                  padding: '10px 16px',
-                  alignItems: 'center',
-                  cursor: 'pointer'
-                }}
-                onClick={() => startEditing(todo)}
-              >
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    justifyContent: 'center'
-                  }}
-                >
-                  <span
-                    style={{
-                      width: '12px',
-                      height: '12px',
-                      borderRadius: '50%',
-                      backgroundColor: getPriorityColor(todo.priority)
-                    }}
-                  />
-                  <span
-                    style={{
-                      fontSize: '13px',
-                      fontWeight: 600,
-                      color: todo.priority ? 'rgba(226, 232, 240, 0.9)' : 'rgba(226, 232, 240, 0.5)'
-                    }}
-                  >
-                    {todo.priority ? (todo.priority === 'high' ? '高' : todo.priority === 'medium' ? '中' : '低') : '―'}
-                  </span>
-                </div>
-
-                <div
-                  style={{
-                    textDecoration: isCompleted ? 'line-through' : 'none',
-                    color: isCompleted ? 'rgba(148, 163, 184, 0.7)' : '#f8fafc',
-                    fontSize: '14px',
-                    fontWeight: 600
-                  }}
-                >
-                  {todo.title}
-                </div>
-
-                <div
-                  style={{
-                    padding: '6px 12px',
-                    borderRadius: '999px',
-                    background: 'rgba(148, 163, 184, 0.14)',
-                    color: getStatusColor(todo.status),
-                    fontSize: '13px',
-                    fontWeight: 600,
-                    textAlign: 'center'
-                  }}
-                >
-                  {todo.status}
-                </div>
-
-                <div
-                  style={{
-                    fontSize: '12px',
-                    display: 'flex',
-                    flexWrap: 'wrap',
-                    gap: '6px',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    textAlign: 'center'
-                  }}
-                >
-                  {todo.tags.length ? (
-                    todo.tags.map((tag, index) => (
-                      <span
-                        key={index}
-                        style={{
-                          padding: '4px 10px',
-                          borderRadius: '999px',
-                          background: 'rgba(148, 163, 184, 0.18)',
-                          color: 'rgba(226, 232, 240, 0.85)'
-                        }}
-                      >
-                        {tag}
-                      </span>
-                    ))
-                  ) : (
-                    <span style={{ color: 'rgba(226, 232, 240, 0.45)' }}>-</span>
-                  )}
-                </div>
-
-                <div style={{ fontSize: '12px', color: 'rgba(226, 232, 240, 0.65)', textAlign: 'center' }}>
-                  {todo.created_at ? new Date(todo.created_at).toLocaleDateString('ja-JP') : '-'}
-                </div>
-
-                <div style={{ fontSize: '12px', color: 'rgba(226, 232, 240, 0.65)', textAlign: 'center' }}>
-                  {todo.done_date ? new Date(todo.done_date).toLocaleDateString('ja-JP') : '-'}
-                </div>
-
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    toggleExpanded(todo.id)
-                  }}
-                  style={{
-                    ...iconButtonStyle,
-                    width: '24px',
-                    height: '24px',
-                    background: 'rgba(15, 23, 42, 0.6)',
-                    border: 'none',
-                    fontSize: '14px'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'translateY(-2px)'
-                    e.currentTarget.style.boxShadow = '0 18px 40px -24px rgba(59, 130, 246, 0.5)'
-                    e.currentTarget.style.background = 'rgba(59, 130, 246, 0.2)'
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'translateY(0)'
-                    e.currentTarget.style.boxShadow = 'none'
-                    e.currentTarget.style.background = 'rgba(15, 23, 42, 0.55)'
-                  }}
-                >
-                  {isExpanded ? '▲' : '▼'}
-                </button>
-
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    deleteTodo(todo.id)
-                  }}
-                  style={{
-                    ...iconButtonStyle,
-                    width: '24px',
-                    height: '24px',
-                    background: 'rgba(239, 68, 68, 0.12)',
-                    color: '#fda4af',
-                    border: 'none',
-                    fontSize: '16px'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'translateY(-2px)'
-                    e.currentTarget.style.boxShadow = '0 18px 40px -24px rgba(239, 68, 68, 0.45)'
-                    e.currentTarget.style.background = DESTRUCTIVE_GRADIENT
-                    e.currentTarget.style.color = '#fff'
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'translateY(0)'
-                    e.currentTarget.style.boxShadow = 'none'
-                    e.currentTarget.style.background = 'rgba(239, 68, 68, 0.12)'
-                    e.currentTarget.style.color = '#fda4af'
-                  }}
-                >
-                  🗑
-                </button>
-              </div>
-
-              <div
-                style={{
-                  maxHeight: isExpanded ? '320px' : '0px',
-                  overflow: 'hidden',
-                  transition: 'max-height 0.35s ease'
+                  display: 'flex',
+                  gap: '12px',
+                  flexWrap: 'wrap',
+                  justifyContent: 'flex-end'
                 }}
               >
-                <div
-                  style={{
-                    padding: '0 16px 16px'
-                  }}
-                >
+                {(['未着手', '着手中', '完了'] as const).map((status) => (
                   <div
+                    key={status}
                     style={{
-                      padding: '16px',
-                      borderRadius: '12px',
-                      background: 'rgba(15, 23, 42, 0.6)',
-                      border: '1px solid rgba(148, 163, 184, 0.2)'
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '10px 14px',
+                      borderRadius: '16px',
+                      background: 'rgba(15, 23, 42, 0.55)',
+                      border: '1px solid rgba(148, 163, 184, 0.2)',
+                      color: 'rgba(226, 232, 240, 0.85)'
                     }}
                   >
-                    {editingMarkdown === todo.id ? (
-                      <div data-markdown-container>
-                        <textarea
-                          value={tempMarkdown}
-                          onChange={(e) => setTempMarkdown(e.target.value)}
-                          style={{
-                            ...controlBaseStyle,
-                            width: '100%',
-                            height: '140px',
-                            borderRadius: '12px',
-                            fontSize: '13px',
-                            resize: 'vertical',
-                            marginBottom: '10px'
-                          }}
-                          placeholder="マークダウンで記述してください..."
-                          autoFocus
-                        />
-                      </div>
-                    ) : (
-                      <div
-                        onClick={() => startEditingMarkdown(todo.id, todo.markdown_text || "")}
-                        style={{
-                          borderRadius: '12px',
-                          padding: '12px',
-                          backgroundColor: 'transparent',
-                          cursor: 'text',
-                          minHeight: '60px',
-                          fontSize: '13px',
-                          whiteSpace: 'pre-wrap',
-                          wordWrap: 'break-word',
-                          color: 'rgba(226, 232, 240, 0.85)'
-                        }}
-                      >
-                        {todo.markdown_text ? (
-                          <div style={{ whiteSpace: 'pre-wrap' }}>
-                            <ReactMarkdown>{todo.markdown_text}</ReactMarkdown>
-                          </div>
-                        ) : (
-                          <div style={{ color: 'rgba(226, 232, 240, 0.45)', fontStyle: 'italic' }}>
-                            クリックして詳細を追加...
-                          </div>
-                        )}
-                      </div>
-                    )}
+                    <span
+                      style={{
+                        width: '10px',
+                        height: '10px',
+                        borderRadius: '50%',
+                        backgroundColor: statusColor(status)
+                      }}
+                    />
+                    <span style={{ fontSize: '13px', fontWeight: 600 }}>{status}</span>
+                    <span style={{ fontSize: '13px', opacity: 0.7 }}>{totalSummary[status]}</span>
                   </div>
-                </div>
+                ))}
               </div>
-            </div>
-          )
-        })}
-
-        {/* 新規TODO用フォーム or 追加ボタン */}
-        {showNewTodo ? (
-          <div
-            style={{
-              borderBottom: '1px solid rgba(148, 163, 184, 0.18)',
-              animation: 'slideInFromTop 0.3s ease'
-            }}
-            data-todo-container
-          >
-            {/* 新規作成フォーム行 */}
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: GRID_TEMPLATE,
-                gap: 0,
-                padding: '10px 16px',
-                alignItems: 'center'
-              }}
-            >
-              <select
-                value={editForm.priority || ''}
-                onChange={(e) => setEditForm(prev => ({ ...prev, priority: (e.target.value as 'low' | 'medium' | 'high' | '') || null }))}
-                style={{
-                  ...controlBaseStyle,
-                  padding: '10px 12px',
-                  width: '100%'
-                }}
-              >
-                <option value="">なし</option>
-                <option value="low">低</option>
-                <option value="medium">中</option>
-                <option value="high">高</option>
-              </select>
-
-              <input
-                type="text"
-                value={editForm.title}
-                onChange={(e) => setEditForm(prev => ({ ...prev, title: e.target.value }))}
-                style={{
-                  ...controlBaseStyle,
-                  fontSize: '14px',
-                  fontWeight: 600,
-                  width: '100%'
-                }}
-                placeholder="タイトル"
-                autoFocus
-              />
-
-              <select
-                value={editForm.status}
-                onChange={(e) => setEditForm(prev => ({ ...prev, status: e.target.value as '未着手' | '着手中' | '完了' }))}
-                style={{
-                  ...controlBaseStyle,
-                  padding: '10px 12px',
-                  width: '100%'
-                }}
-              >
-                <option value="未着手">未着手</option>
-                <option value="着手中">着手中</option>
-                <option value="完了">完了</option>
-              </select>
-
-              <input
-                type="text"
-                value={editForm.tags}
-                onChange={(e) => setEditForm(prev => ({ ...prev, tags: e.target.value }))}
-                style={{
-                  ...controlBaseStyle,
-                  width: '100%'
-                }}
-                placeholder="タグ"
-              />
-
-              <div></div>
-
-              <div></div>
-
-              <div />
-
               <button
-                onClick={cancelEditing}
+                onClick={handleSignOut}
                 style={{
-                  ...iconButtonStyle,
-                  width: '24px',
-                  height: '24px',
-                  background: 'rgba(239, 68, 68, 0.18)',
-                  color: '#fda4af',
-                  border: 'none',
-                  fontSize: '14px'
+                  ...pillButtonStyle,
+                  background: SECONDARY_GRADIENT,
+                  boxShadow: '0 24px 50px -20px rgba(14, 165, 233, 0.45)'
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.transform = 'translateY(-2px)'
-                  e.currentTarget.style.boxShadow = '0 28px 60px -24px rgba(239, 68, 68, 0.45)'
-                  e.currentTarget.style.background = DESTRUCTIVE_GRADIENT
-                  e.currentTarget.style.color = '#fff'
+                  e.currentTarget.style.boxShadow = '0 28px 60px -20px rgba(14, 165, 233, 0.55)'
+                  e.currentTarget.style.background = 'linear-gradient(135deg, #0ea5e9 0%, #22d3ee 100%)'
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.transform = 'translateY(0)'
-                  e.currentTarget.style.boxShadow = 'none'
-                  e.currentTarget.style.background = 'rgba(239, 68, 68, 0.12)'
-                  e.currentTarget.style.color = '#fda4af'
+                  e.currentTarget.style.boxShadow = '0 24px 50px -20px rgba(14, 165, 233, 0.45)'
+                  e.currentTarget.style.background = SECONDARY_GRADIENT
                 }}
               >
-                ✕
+                ログアウト
               </button>
             </div>
           </div>
-        ) : (
+        </div>
+
+        <div
+          style={{
+            ...glassCardStyle,
+            padding: '24px',
+            color: '#e2e8f0',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '16px'
+          }}
+        >
           <div
             style={{
-              marginTop: '4px',
-              padding: '10px 16px',
-              borderBottom: '1px dashed rgba(148, 163, 184, 0.3)',
-              cursor: 'pointer',
               display: 'flex',
+              gap: '12px',
               alignItems: 'center',
-              gap: '8px',
-              color: 'rgba(226, 232, 240, 0.7)',
-              transition: 'color 0.3s ease'
-            }}
-            onClick={startCreating}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.color = '#fff'
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.color = 'rgba(226, 232, 240, 0.7)'
+              flexWrap: 'wrap'
             }}
           >
-            <span style={{ fontSize: '20px', lineHeight: 1 }}>＋</span>
-            新しいTODOを追加
+            {showCreate ? (
+              <>
+                <input
+                  type="text"
+                  value={newListName}
+                  onChange={(e) => setNewListName(e.target.value)}
+                  placeholder="新しいリスト名"
+                  style={{ ...controlBaseStyle, minWidth: '240px' }}
+                  autoFocus
+                />
+                <button
+                  onClick={createList}
+                  style={{
+                    ...pillButtonStyle,
+                    background: PRIMARY_GRADIENT,
+                    boxShadow: '0 24px 50px -20px rgba(59, 130, 246, 0.45)'
+                  }}
+                >
+                  作成
+                </button>
+                <button
+                  onClick={() => { setShowCreate(false); setNewListName('') }}
+                  style={{
+                    ...pillButtonStyle,
+                    background: 'rgba(148,163,184,0.22)',
+                    boxShadow: 'none'
+                  }}
+                >
+                  キャンセル
+                </button>
+              </>
+            ) : (
+              <button
+                onClick={() => setShowCreate(true)}
+                style={{
+                  ...pillButtonStyle,
+                  background: PRIMARY_GRADIENT,
+                  boxShadow: '0 24px 50px -20px rgba(59, 130, 246, 0.45)'
+                }}
+              >
+                ＋ 新しいリスト
+              </button>
+            )}
           </div>
-        )}
+
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
+              gap: '16px',
+            }}
+          >
+            {lists.map((list) => {
+              const s = summaries[list.id] ?? { total: 0, 未着手: 0, 着手中: 0, 完了: 0 }
+              return (
+                <Link
+                  key={list.id}
+                  href={`/todo/${list.id}`}
+                  style={{ textDecoration: 'none' }}
+                >
+                  <div
+                    style={{
+                      ...glassCardStyle,
+                      padding: '18px',
+                      borderRadius: '16px',
+                      transition: 'transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease',
+                      background: 'rgba(15, 23, 42, 0.55)',
+                      border: '1px solid rgba(148, 163, 184, 0.18)'
+                    }}
+                    onMouseEnter={(e) => {
+                      (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-2px)'
+                      ;(e.currentTarget as HTMLDivElement).style.boxShadow = '0 28px 60px -24px rgba(59, 130, 246, 0.35)'
+                      ;(e.currentTarget as HTMLDivElement).style.background = 'rgba(59, 130, 246, 0.12)'
+                    }}
+                    onMouseLeave={(e) => {
+                      (e.currentTarget as HTMLDivElement).style.transform = 'translateY(0)'
+                      ;(e.currentTarget as HTMLDivElement).style.boxShadow = '0 45px 80px -40px rgba(15, 23, 42, 0.8)'
+                      ;(e.currentTarget as HTMLDivElement).style.background = 'rgba(15, 23, 42, 0.55)'
+                    }}
+                  >
+                    <div style={{ color: '#e2e8f0', fontWeight: 700, fontSize: '16px', marginBottom: '8px' }}>
+                      {list.name}
+                    </div>
+                    <div style={{ color: 'rgba(226,232,240,0.7)', fontSize: '12px', marginBottom: '12px' }}>
+                      合計 {s.total} 件
+                    </div>
+                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                      {(['未着手', '着手中', '完了'] as const).map(st => (
+                        <span
+                          key={st}
+                          style={{
+                            fontSize: '12px',
+                            padding: '4px 10px',
+                            borderRadius: '999px',
+                            background: 'rgba(148, 163, 184, 0.18)',
+                            color: statusColor(st)
+                          }}
+                        >
+                          {st} {s[st]}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </Link>
+              )
+            })}
+            {lists.length === 0 && (
+              <div style={{ color: 'rgba(226,232,240,0.7)' }}>
+                リストがありません。「＋ 新しいリスト」から作成してください。
+              </div>
+            )}
+          </div>
+        </div>
       </div>
+      {overlayMessage && <LoadingOverlay message={overlayMessage} />}
     </div>
-    {overlayMessage && <LoadingOverlay message={overlayMessage} />}
-  </div>
   )
 }
