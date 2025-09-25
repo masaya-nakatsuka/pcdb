@@ -1,16 +1,17 @@
 "use client"
 
-import { useEffect, useMemo, useState, type CSSProperties } from 'react'
+import { useEffect, useState, type CSSProperties } from 'react'
 import { supabaseNotes } from '@/lib/supabaseNotesClient'
 import type { NoteBook, NotePage } from '@/lib/noteTypes'
 import LoadingOverlay from '@/components/LoadingOverlay'
+import LoginScreen from '@/components/LoginScreen'
+import { useAuth } from '@/hooks/useAuth'
 import NoteSidebar, { type BookWithPages } from './components/NoteSidebar'
 import PageContentPanel from './components/PageContentPanel'
 
 export default function NoteHomePage() {
-  const [userId, setUserId] = useState<string | null>(null)
+  const { userId, loading, signIn, signOut } = useAuth(supabaseNotes, { redirectPath: '/note' })
   const [books, setBooks] = useState<BookWithPages[]>([])
-  const [loading, setLoading] = useState<boolean>(true)
   const [overlayMessage, setOverlayMessage] = useState<string>('')
   const [expandedBooks, setExpandedBooks] = useState<Set<string>>(new Set())
   const [deletingBook, setDeletingBook] = useState<string | null>(null)
@@ -27,31 +28,11 @@ export default function NoteHomePage() {
   const [savingPageContent, setSavingPageContent] = useState<boolean>(false)
   const [pageContentFeedback, setPageContentFeedback] = useState<string | null>(null)
 
-  const redirectTo = useMemo(() => {
-    if (typeof window === 'undefined') return undefined
-    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-    const baseUrl = isLocalhost
-      ? window.location.origin
-      : process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
-    return `${baseUrl}/note`
-  }, [])
-
   useEffect(() => {
-    let mounted = true
-    ;(async () => {
-      const { data } = await supabaseNotes.auth.getUser()
-      if (!mounted) return
-      const uid = data.user?.id ?? null
-      setUserId(uid)
-      if (uid) {
-        await loadWorkspace(uid)
-      }
-      setLoading(false)
-    })()
-    return () => {
-      mounted = false
+    if (userId) {
+      loadWorkspace(userId)
     }
-  }, [])
+  }, [userId])
 
   async function loadWorkspace(uid: string) {
     setOverlayMessage('読み込み中...')
@@ -94,16 +75,8 @@ export default function NoteHomePage() {
     setOverlayMessage('')
   }
 
-  async function handleSignIn() {
-    await supabaseNotes.auth.signInWithOAuth({
-      provider: 'google',
-      options: redirectTo ? { redirectTo } : undefined,
-    })
-  }
-
   async function handleSignOut() {
-    await supabaseNotes.auth.signOut()
-    setUserId(null)
+    await signOut()
     setBooks([])
     setExpandedBooks(new Set())
     setPendingNewBookId(null)
@@ -560,14 +533,11 @@ export default function NoteHomePage() {
 
   if (!userId) {
     return (
-      <div style={loginWrapperStyle}>
-        <div style={loginCardStyle}>
-          <span style={loginKickerStyle}>Welcome</span>
-          <h1 style={loginTitleStyle}>Specsy Note</h1>
-          <p style={loginSubtitleStyle}>ノートとページを管理するにはログインしてください。</p>
-          <button onClick={handleSignIn} style={loginButtonStyle}>Googleでログイン</button>
-        </div>
-      </div>
+      <LoginScreen
+        title="Specsy Note"
+        subtitle="ノートとページを管理するにはログインしてください。"
+        onSignIn={signIn}
+      />
     )
   }
 
@@ -633,65 +603,4 @@ const workspaceStyle: CSSProperties = {
   gap: '28px',
   maxWidth: '1400px',
   margin: '0 auto'
-}
-
-const glassCardStyle: CSSProperties = {
-  background: 'rgba(15, 23, 42, 0.65)',
-  border: '1px solid rgba(148, 163, 184, 0.2)',
-  borderRadius: '24px',
-  boxShadow: '0 45px 80px -40px rgba(15, 23, 42, 0.8)',
-  backdropFilter: 'blur(22px)',
-  WebkitBackdropFilter: 'blur(22px)'
-}
-
-const loginWrapperStyle: CSSProperties = {
-  minHeight: '100vh',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)'
-}
-
-const loginCardStyle: CSSProperties = {
-  ...glassCardStyle,
-  width: '100%',
-  maxWidth: '420px',
-  padding: '40px 32px',
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '20px',
-  color: '#e2e8f0'
-}
-
-const loginKickerStyle: CSSProperties = {
-  fontSize: '12px',
-  letterSpacing: '0.4em',
-  textTransform: 'uppercase',
-  color: 'rgba(226, 232, 240, 0.6)'
-}
-
-const loginTitleStyle: CSSProperties = {
-  margin: 0,
-  fontSize: '36px',
-  fontWeight: 700,
-  background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
-  WebkitBackgroundClip: 'text',
-  WebkitTextFillColor: 'transparent'
-}
-
-const loginSubtitleStyle: CSSProperties = {
-  margin: 0,
-  fontSize: '15px',
-  lineHeight: 1.7,
-  color: 'rgba(226, 232, 240, 0.72)'
-}
-
-const loginButtonStyle: CSSProperties = {
-  border: 'none',
-  borderRadius: '999px',
-  padding: '12px 20px',
-  background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
-  color: '#fff',
-  fontWeight: 600,
-  cursor: 'pointer'
 }

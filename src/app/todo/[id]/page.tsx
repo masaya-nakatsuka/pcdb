@@ -41,16 +41,12 @@ export default function TodoListDetailPage({ params }: { params: { id: string } 
     status: '未着手' | '着手中' | '完了'
     priority: 'low' | 'medium' | 'high' | null
     tags: string
-    branch_names: string
-    pr_links: string
     markdown_text: string
   }>({
     title: "",
     status: '未着手',
     priority: null,
     tags: "",
-    branch_names: "",
-    pr_links: "",
     markdown_text: ""
   })
 
@@ -58,8 +54,8 @@ export default function TodoListDetailPage({ params }: { params: { id: string } 
   const redirectTo = useMemo(() => {
     if (typeof window === 'undefined') return undefined
     // 現在のページの完全なURLを使用
-    const currentUrl = window.location.href
-    return currentUrl
+    const baseUrl = window.location.origin
+    return `${baseUrl}/todo`
   }, [])
 
   // 初回マウント時にユーザーとTODOを取得
@@ -116,8 +112,6 @@ export default function TodoListDetailPage({ params }: { params: { id: string } 
       status: '未着手',
       priority: null,
       tags: "",
-      branch_names: "",
-      pr_links: "",
       markdown_text: ""
     })
   }
@@ -130,8 +124,6 @@ export default function TodoListDetailPage({ params }: { params: { id: string } 
       status: todo.status,
       priority: todo.priority,
       tags: todo.tags.join(', '),
-      branch_names: todo.branch_names.join(', '),
-      pr_links: todo.pr_links.join(', '),
       markdown_text: todo.markdown_text || ""
     })
   }
@@ -211,8 +203,6 @@ export default function TodoListDetailPage({ params }: { params: { id: string } 
       status: editForm.status,
       priority: editForm.priority,
       tags: editForm.tags ? editForm.tags.split(',').map(tag => tag.trim()).filter(tag => tag) : [],
-      branch_names: editForm.branch_names ? editForm.branch_names.split(',').map(branch => branch.trim()).filter(branch => branch) : [],
-      pr_links: editForm.pr_links ? editForm.pr_links.split(',').map(link => link.trim()).filter(link => link) : [],
       markdown_text: editForm.markdown_text.trim() || null,
       done_date: isCompletingNow ? new Date().toISOString() : (isUncompletingNow ? null : currentTodo?.done_date || null),
       user_id: userId,

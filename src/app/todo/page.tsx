@@ -1,15 +1,19 @@
 "use client"
 
-import { useEffect, useMemo, useState, useCallback, type CSSProperties } from 'react'
+import { useEffect, useState, useMemo, type CSSProperties } from 'react'
 import { supabaseTodo } from '@/lib/supabaseTodoClient'
 import LoadingOverlay from '@/components/LoadingOverlay'
+import LoginScreen from '@/components/LoginScreen'
+import { useAuth } from '@/hooks/useAuth'
+import {
+  PRIMARY_GRADIENT,
+  SECONDARY_GRADIENT,
+  glassCardStyle,
+  pillButtonStyle,
+  controlBaseStyle,
+  pageBackgroundStyle
+} from '@/styles/commonStyles'
 import Link from 'next/link'
-
-// スタイル共通定数
-const PRIMARY_GRADIENT = 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)'
-const SECONDARY_GRADIENT = 'linear-gradient(135deg, #0ea5e9 0%, #14b8a6 100%)'
-const GLASS_BACKGROUND = 'rgba(15, 23, 42, 0.65)'
-const GLASS_BORDER = '1px solid rgba(148, 163, 184, 0.2)'
 
 type TodoList = {
   id: string
@@ -27,33 +31,18 @@ type StatusCounts = {
 }
 
 export default function TodoListsPage() {
-  const [userId, setUserId] = useState<string | null>(null)
+  const { userId, loading, signIn, signOut } = useAuth(supabaseTodo, { redirectPath: '/todo' })
   const [lists, setLists] = useState<TodoList[]>([])
   const [summaries, setSummaries] = useState<Record<string, StatusCounts>>({})
-  const [loading, setLoading] = useState(true)
   const [overlayMessage, setOverlayMessage] = useState("")
   const [showCreate, setShowCreate] = useState(false)
   const [newListName, setNewListName] = useState("")
 
-  const redirectTo = useMemo(() => {
-    if (typeof window === 'undefined') return undefined
-    return window.location.href
-  }, [])
-
   useEffect(() => {
-    let mounted = true
-    ;(async () => {
-      const { data } = await supabaseTodo.auth.getUser()
-      if (!mounted) return
-      const uid = data.user?.id ?? null
-      setUserId(uid)
-      if (uid) {
-        await loadLists(uid)
-      }
-      setLoading(false)
-    })()
-    return () => { mounted = false }
-  }, [])
+    if (userId) {
+      loadLists(userId)
+    }
+  }, [userId])
 
   async function loadLists(uid: string) {
     const { data: listsData, error } = await supabaseTodo
@@ -95,16 +84,8 @@ export default function TodoListsPage() {
     }
   }
 
-  async function handleSignIn() {
-    await supabaseTodo.auth.signInWithOAuth({
-      provider: 'google',
-      options: redirectTo ? { redirectTo } : undefined,
-    })
-  }
-
   async function handleSignOut() {
-    await supabaseTodo.auth.signOut()
-    setUserId(null)
+    await signOut()
     setLists([])
     setSummaries({})
   }
@@ -134,12 +115,7 @@ export default function TodoListsPage() {
     }
   }
 
-  // 背景・カード・ボタンのスタイル
-  const pageBackgroundStyle: CSSProperties = {
-    minHeight: '100vh',
-    background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
-    padding: '48px 16px 64px'
-  }
+  // ページレイアウトスタイル
   const pageContentStyle: CSSProperties = {
     width: '100%',
     maxWidth: '1240px',
@@ -147,40 +123,6 @@ export default function TodoListsPage() {
     display: 'flex',
     flexDirection: 'column',
     gap: '32px'
-  }
-  const glassCardStyle: CSSProperties = {
-    backgroundColor: GLASS_BACKGROUND,
-    border: GLASS_BORDER,
-    borderRadius: '24px',
-    boxShadow: '0 45px 80px -40px rgba(15, 23, 42, 0.8)',
-    backdropFilter: 'blur(22px)',
-    WebkitBackdropFilter: 'blur(22px)'
-  }
-  const pillButtonStyle: CSSProperties = {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '8px',
-    padding: '12px 20px',
-    borderRadius: '999px',
-    fontWeight: 600,
-    fontSize: '14px',
-    border: 'none',
-    color: '#fff',
-    cursor: 'pointer',
-    transition: 'transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease'
-  }
-  const controlBaseStyle: CSSProperties = {
-    borderRadius: '12px',
-    padding: '10px 12px',
-    fontSize: '13px',
-    backgroundColor: 'rgba(15, 23, 42, 0.6)',
-    border: '1px solid rgba(148, 163, 184, 0.35)',
-    color: '#e2e8f0',
-    outline: 'none',
-    transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
-    boxSizing: 'border-box',
-    minWidth: 0
   }
 
   const statusColor = (status: '未着手' | '着手中' | '完了') => {
@@ -209,83 +151,11 @@ export default function TodoListsPage() {
 
   if (!userId) {
     return (
-      <div
-        style={{
-          ...pageBackgroundStyle,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center'
-        }}
-      >
-        <div
-          style={{
-            ...glassCardStyle,
-            width: '100%',
-            maxWidth: '420px',
-            padding: '40px 32px 44px',
-            textAlign: 'center',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '24px',
-            color: '#e2e8f0'
-          }}
-        >
-          <div
-            style={{
-              fontSize: '12px',
-              letterSpacing: '0.4em',
-              textTransform: 'uppercase',
-              color: 'rgba(226, 232, 240, 0.6)'
-            }}
-          >
-            Welcome back
-          </div>
-          <h1
-            style={{
-              margin: 0,
-              fontSize: '36px',
-              fontWeight: 700,
-              background: PRIMARY_GRADIENT,
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text'
-            }}
-          >
-            Specsy Todo
-          </h1>
-          <p
-            style={{
-              margin: 0,
-              fontSize: '15px',
-              lineHeight: 1.7,
-              color: 'rgba(226, 232, 240, 0.72)'
-            }}
-          >
-            プロジェクトのタスクをまとめて管理するにはログインしてください。
-          </p>
-          <button
-            onClick={handleSignIn}
-            style={{
-              ...pillButtonStyle,
-              width: '100%',
-              background: PRIMARY_GRADIENT,
-              boxShadow: '0 28px 50px -20px rgba(59, 130, 246, 0.55)'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-2px)'
-              e.currentTarget.style.boxShadow = '0 32px 60px -20px rgba(59, 130, 246, 0.6)'
-              e.currentTarget.style.background = 'linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)'
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)'
-              e.currentTarget.style.boxShadow = '0 28px 50px -20px rgba(59, 130, 246, 0.55)'
-              e.currentTarget.style.background = PRIMARY_GRADIENT
-            }}
-          >
-            Googleでログイン
-          </button>
-        </div>
-      </div>
+      <LoginScreen
+        title="Specsy Todo"
+        subtitle="プロジェクトのタスクをまとめて管理するにはログインしてください。"
+        onSignIn={signIn}
+      />
     )
   }
 
