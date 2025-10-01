@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useState, useCallback, type CSSProperties, KeyboardEvent as ReactKeyboardEvent } from 'react'
+import { useEffect, useMemo, useState, useCallback, type CSSProperties } from 'react'
 import Link from 'next/link'
 import { supabaseTodo } from '@/lib/supabaseTodoClient'
 import type { TodoItem } from '@/lib/todoTypes'
@@ -17,10 +17,11 @@ import {
   getPriorityColor
 } from '@/styles/commonStyles'
 import Button from '@/components/ui/Button'
-import StatusBadge from '@/components/ui/StatusBadge'
+
+type SimpleStatus = '未着手' | '完了'
 
 // レイアウト定数
-const GRID_TEMPLATE = '90px 5.2fr 70px 1.2fr 110px 110px 40px 40px'
+const GRID_TEMPLATE = '70px 5.2fr 90px 1.2fr 110px 110px 40px 40px'
 
 export default function TodoListDetailPage({ params }: { params: { id: string } }) {
   const listId = params.id
@@ -45,7 +46,7 @@ export default function TodoListDetailPage({ params }: { params: { id: string } 
   // 編集フォームの入力値を保持
   const [editForm, setEditForm] = useState<{
     title: string
-    status: '未着手' | '着手中' | '完了'
+    status: SimpleStatus
     priority: 'low' | 'medium' | 'high' | null
     tags: string
     markdown_text: string
@@ -94,7 +95,13 @@ export default function TodoListDetailPage({ params }: { params: { id: string } 
       .eq('user_id', uid)
       .eq('list_id', lId)
       .order('created_at', { ascending: false })
-    if (!error && data) setTodos(data as TodoItem[])
+    if (!error && data) {
+      const normalized = (data as TodoItem[]).map((todo) => ({
+        ...todo,
+        status: todo.status === '完了' ? '完了' : '未着手'
+      }))
+      setTodos(normalized)
+    }
   }
 
   // Googleでログイン
@@ -128,7 +135,7 @@ export default function TodoListDetailPage({ params }: { params: { id: string } 
     setEditingTodo(todo.id)
     setEditForm({
       title: todo.title,
-      status: todo.status,
+      status: todo.status === '完了' ? '完了' : '未着手',
       priority: todo.priority,
       tags: todo.tags.join(', '),
       markdown_text: todo.markdown_text || ""
@@ -203,7 +210,7 @@ export default function TodoListDetailPage({ params }: { params: { id: string } 
     // 現在のステータスと新しいステータスをチェック
     const currentTodo = isNew ? null : todos.find(t => t.id === editingTodo)
     const isCompletingNow = editForm.status === '完了' && currentTodo?.status !== '完了'
-    const isUncompletingNow = editForm.status !== '完了' && currentTodo?.status === '完了'
+    const isReopening = editForm.status === '未着手' && currentTodo?.status === '完了'
 
     const todoData = {
       title: editForm.title.trim(),
@@ -211,7 +218,11 @@ export default function TodoListDetailPage({ params }: { params: { id: string } 
       priority: editForm.priority,
       tags: editForm.tags ? editForm.tags.split(',').map(tag => tag.trim()).filter(tag => tag) : [],
       markdown_text: editForm.markdown_text.trim() || null,
-      done_date: isCompletingNow ? new Date().toISOString() : (isUncompletingNow ? null : currentTodo?.done_date || null),
+      done_date: isCompletingNow
+        ? new Date().toISOString()
+        : isReopening
+          ? null
+          : currentTodo?.done_date || null,
       user_id: userId,
       list_id: listId,
       updated_at: new Date().toISOString()
@@ -226,7 +237,11 @@ export default function TodoListDetailPage({ params }: { params: { id: string } 
 
       if (!error && data) {
         const newTodo = data as TodoItem
-        setTodos((prev) => [newTodo, ...prev])
+        const normalizedTodo: TodoItem = {
+          ...newTodo,
+          status: newTodo.status === '完了' ? '完了' : '未着手'
+        }
+        setTodos((prev) => [normalizedTodo, ...prev])
         setNewlyCreatedTodos(prev => {
           const newSet = new Set(prev)
           newSet.add(newTodo.id)
@@ -291,24 +306,32 @@ export default function TodoListDetailPage({ params }: { params: { id: string } 
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [editingTodo, showNewTodo, editForm.title, editingMarkdown, saveTodo, saveMarkdown])
 
-  // TODOステータスを即時更新（list_id スコープ）
-  async function updateTodoStatus(todoId: string, status: '未着手' | '着手中' | '完了') {
+  async function toggleTodoCompletion(todo: TodoItem) {
     if (updatingTodo || !userId) return
 
-    setUpdatingTodo(todoId)
-    setOverlayMessage("ステータス更新中...")
+    const nextStatus: SimpleStatus = todo.status === '完了' ? '未着手' : '完了'
+    const nextDoneDate = nextStatus === '完了' ? new Date().toISOString() : null
+
+    setUpdatingTodo(todo.id)
+    setOverlayMessage(nextStatus === '完了' ? "完了に更新中..." : "未着手に戻しています...")
 
     const { error } = await supabaseTodo
       .from('todo_items')
-      .update({ status, updated_at: new Date().toISOString() })
-      .eq('id', todoId)
+      .update({
+        status: nextStatus,
+        done_date: nextDoneDate,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', todo.id)
       .eq('user_id', userId)
       .eq('list_id', listId)
 
     if (!error) {
       setTodos((prev) =>
-        prev.map((todo) =>
-          todo.id === todoId ? { ...todo, status } : todo
+        prev.map((item) =>
+          item.id === todo.id
+            ? { ...item, status: nextStatus, done_date: nextDoneDate }
+            : item
         )
       )
     }
@@ -355,7 +378,6 @@ export default function TodoListDetailPage({ params }: { params: { id: string } 
   const getStatusColor = (status: string) => {
     switch (status) {
       case '未着手': return '#94a3b8'
-      case '着手中': return '#38bdf8'
       case '完了': return '#34d399'
       default: return '#94a3b8'
     }
@@ -406,7 +428,7 @@ export default function TodoListDetailPage({ params }: { params: { id: string } 
           bValue = priorityOrder[b.priority as keyof typeof priorityOrder] || 0
           break
         case 'status':
-          const statusOrder = { '未着手': 1, '着手中': 2, '完了': 3 }
+          const statusOrder = { '未着手': 1, '完了': 2 }
           aValue = statusOrder[a.status as keyof typeof statusOrder] || 0
           bValue = statusOrder[b.status as keyof typeof statusOrder] || 0
           break
@@ -507,9 +529,25 @@ export default function TodoListDetailPage({ params }: { params: { id: string } 
     transition: 'transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease, color 0.25s ease'
   }
 
+  // TODO状況ボタンのベーススタイル
+  const todoStatusButtonBaseStyle: CSSProperties = {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '24px',
+    height: '24px',
+    borderRadius: '12px',
+    border: '1px solid rgba(148, 163, 184, 0.35)',
+    background: 'transparent',
+    color: '#0f172a',
+    fontSize: '14px',
+    fontWeight: 700,
+    cursor: 'pointer',
+    transition: 'background 0.2s ease, border-color 0.2s ease, transform 0.15s ease, opacity 0.2s ease'
+  }
+
   const statusSummary = useMemo(() => ({
-    未着手: todos.filter((todo) => todo.status === '未着手').length,
-    着手中: todos.filter((todo) => todo.status === '着手中').length,
+    未着手: todos.filter((todo) => todo.status !== '完了').length,
     完了: todos.filter((todo) => todo.status === '完了').length
   }), [todos])
 
@@ -659,7 +697,7 @@ export default function TodoListDetailPage({ params }: { params: { id: string } 
             }}
           >
             <div style={{ display: 'flex', gap: '12px' }}>
-              {(['未着手', '着手中', '完了'] as const).map((status) => (
+              {(['未着手', '完了'] as const).map((status) => (
                 <div
                   key={status}
                   style={{
@@ -734,10 +772,10 @@ export default function TodoListDetailPage({ params }: { params: { id: string } 
             WebkitBackdropFilter: 'blur(18px)'
           }}>
             <div
-              onClick={() => handleSort('priority')}
+              onClick={() => handleSort('status')}
               style={{ cursor: 'pointer', userSelect: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
             >
-              優先度 {sortField === 'priority' && (sortDirection === 'asc' ? '↑' : '↓')}
+              状況 {sortField === 'status' && (sortDirection === 'asc' ? '↑' : '↓')}
             </div>
             <div
               onClick={() => handleSort('title')}
@@ -746,10 +784,10 @@ export default function TodoListDetailPage({ params }: { params: { id: string } 
               タイトル {sortField === 'title' && (sortDirection === 'asc' ? '↑' : '↓')}
             </div>
             <div
-              onClick={() => handleSort('status')}
+              onClick={() => handleSort('priority')}
               style={{ cursor: 'pointer', userSelect: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
             >
-              状況 {sortField === 'status' && (sortDirection === 'asc' ? '↑' : '↓')}
+              優先度 {sortField === 'priority' && (sortDirection === 'asc' ? '↑' : '↓')}
             </div>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>タグ</div>
             <div
@@ -796,21 +834,34 @@ export default function TodoListDetailPage({ params }: { params: { id: string } 
                       alignItems: 'center'
                     }}
                   >
-                    <select
-                      value={editForm.priority || ''}
-                      onChange={(e) => setEditForm(prev => ({ ...prev, priority: (e.target.value as 'low' | 'medium' | 'high' | '') || null }))}
+                    <button
+                      type="button"
+                      onClick={() => setEditForm(prev => ({ ...prev, status: prev.status === '完了' ? '未着手' : '完了' }))}
                       style={{
-                        ...controlBaseStyle,
-                        padding: '10px 12px',
-                        textAlign: 'center',
-                        width: '100%'
+                        ...todoStatusButtonBaseStyle,
+                        margin: '0 auto',
+                        background: editForm.status === '完了'
+                          ? 'linear-gradient(135deg, rgba(52, 211, 153, 0.95) 0%, rgba(16, 185, 129, 0.95) 100%)'
+                          : 'transparent',
+                        borderColor: editForm.status === '完了' ? 'rgba(52, 211, 153, 0.6)' : 'rgba(148, 163, 184, 0.35)'
                       }}
                     >
-                      <option value="">なし</option>
-                      <option value="low">低</option>
-                      <option value="medium">中</option>
-                      <option value="high">高</option>
-                    </select>
+                      <span
+                        style={{
+                          width: '14px',
+                          height: '14px',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: editForm.status === '完了' ? '#0f172a' : 'transparent',
+                          fontSize: '12px',
+                          fontWeight: 700,
+                          transition: 'color 0.2s ease'
+                        }}
+                      >
+                        ✓
+                      </span>
+                    </button>
 
                     <input
                       type="text"
@@ -826,8 +877,8 @@ export default function TodoListDetailPage({ params }: { params: { id: string } 
                     />
 
                     <select
-                      value={editForm.status}
-                      onChange={(e) => setEditForm(prev => ({ ...prev, status: e.target.value as '未着手' | '着手中' | '完了' }))}
+                      value={editForm.priority || ''}
+                      onChange={(e) => setEditForm(prev => ({ ...prev, priority: (e.target.value as 'low' | 'medium' | 'high' | '') || null }))}
                       style={{
                         ...controlBaseStyle,
                         padding: '10px 12px',
@@ -835,9 +886,10 @@ export default function TodoListDetailPage({ params }: { params: { id: string } 
                         width: '100%'
                       }}
                     >
-                      <option value="未着手">未着手</option>
-                      <option value="着手中">着手中</option>
-                      <option value="完了">完了</option>
+                      <option value="">なし</option>
+                      <option value="low">低</option>
+                      <option value="medium">中</option>
+                      <option value="high">高</option>
                     </select>
 
                     <input
@@ -904,6 +956,51 @@ export default function TodoListDetailPage({ params }: { params: { id: string } 
                   }}
                   onClick={() => startEditing(todo)}
                 >
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      toggleTodoCompletion(todo)
+                    }}
+                    aria-pressed={isCompleted}
+                    disabled={updatingTodo === todo.id}
+                    style={{
+                      ...todoStatusButtonBaseStyle,
+                      margin: '0 auto',
+                      cursor: updatingTodo === todo.id ? 'not-allowed' : 'pointer',
+                      opacity: updatingTodo === todo.id ? 0.6 : 1,
+                      background: isCompleted ? 'linear-gradient(135deg, rgba(52, 211, 153, 0.95) 0%, rgba(16, 185, 129, 0.95) 100%)' : 'transparent',
+                      borderColor: isCompleted ? 'rgba(52, 211, 153, 0.6)' : 'rgba(148, 163, 184, 0.35)'
+                    }}
+                    title={isCompleted ? '完了に設定されています。クリックで未着手に戻す' : '未着手です。クリックで完了に設定'}
+                  >
+                    <span
+                      style={{
+                        width: '14px',
+                        height: '14px',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: isCompleted ? '#0f172a' : 'transparent',
+                        fontSize: '12px',
+                        fontWeight: 700,
+                        transition: 'color 0.2s ease'
+                      }}
+                    >
+                      ✓
+                    </span>
+                  </button>
+
+                  <div
+                    style={{
+                      textDecoration: isCompleted ? 'line-through' : 'none',
+                      color: isCompleted ? 'rgba(148, 163, 184, 0.7)' : '#f8fafc',
+                      fontSize: '14px',
+                      fontWeight: 600
+                    }}
+                  >
+                    {todo.title}
+                  </div>
+
                   <div
                     style={{
                       display: 'flex',
@@ -929,31 +1026,6 @@ export default function TodoListDetailPage({ params }: { params: { id: string } 
                     >
                       {todo.priority ? (todo.priority === 'high' ? '高' : todo.priority === 'medium' ? '中' : '低') : '―'}
                     </span>
-                  </div>
-
-                  <div
-                    style={{
-                      textDecoration: isCompleted ? 'line-through' : 'none',
-                      color: isCompleted ? 'rgba(148, 163, 184, 0.7)' : '#f8fafc',
-                      fontSize: '14px',
-                      fontWeight: 600
-                    }}
-                  >
-                    {todo.title}
-                  </div>
-
-                  <div
-                    style={{
-                      padding: '6px 12px',
-                      borderRadius: '999px',
-                      background: 'rgba(148, 163, 184, 0.14)',
-                      color: getStatusColor(todo.status),
-                      fontSize: '13px',
-                      fontWeight: 600,
-                      textAlign: 'center'
-                    }}
-                  >
-                    {todo.status}
                   </div>
 
                   <div
@@ -1120,35 +1192,54 @@ export default function TodoListDetailPage({ params }: { params: { id: string } 
                   alignItems: 'center'
                 }}
               >
-                <select
-                  value={editForm.priority || ''}
-                  onChange={(e) => setEditForm(prev => ({ ...prev, priority: (e.target.value as 'low' | 'medium' | 'high' | '') || null }))}
-                  style={{ ...controlBaseStyle, padding: '10px 12px', width: '100%' }}
-                >
-                  <option value="">なし</option>
-                  <option value="low">低</option>
-                  <option value="medium">中</option>
-                  <option value="high">高</option>
-                </select>
+                    <button
+                      type="button"
+                      onClick={() => setEditForm(prev => ({ ...prev, status: prev.status === '完了' ? '未着手' : '完了' }))}
+                      style={{
+                        ...todoStatusButtonBaseStyle,
+                        margin: '0 auto',
+                        background: editForm.status === '完了'
+                          ? 'linear-gradient(135deg, rgba(52, 211, 153, 0.95) 0%, rgba(16, 185, 129, 0.95) 100%)'
+                          : 'transparent',
+                        borderColor: editForm.status === '完了' ? 'rgba(52, 211, 153, 0.6)' : 'rgba(148, 163, 184, 0.35)'
+                      }}
+                    >
+                      <span
+                        style={{
+                          width: '14px',
+                          height: '14px',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: editForm.status === '完了' ? '#0f172a' : 'transparent',
+                          fontSize: '12px',
+                          fontWeight: 700,
+                          transition: 'color 0.2s ease'
+                        }}
+                      >
+                        ✓
+                      </span>
+                    </button>
 
-                <input
-                  type="text"
-                  value={editForm.title}
-                  onChange={(e) => setEditForm(prev => ({ ...prev, title: e.target.value }))}
-                  style={{ ...controlBaseStyle, fontSize: '14px', fontWeight: 600, width: '100%' }}
-                  placeholder="タイトル"
-                  autoFocus
-                />
+                    <input
+                      type="text"
+                      value={editForm.title}
+                      onChange={(e) => setEditForm(prev => ({ ...prev, title: e.target.value }))}
+                      style={{ ...controlBaseStyle, fontSize: '14px', fontWeight: 600, width: '100%' }}
+                      placeholder="タイトル"
+                      autoFocus
+                    />
 
-                <select
-                  value={editForm.status}
-                  onChange={(e) => setEditForm(prev => ({ ...prev, status: e.target.value as '未着手' | '着手中' | '完了' }))}
-                  style={{ ...controlBaseStyle, padding: '10px 12px', width: '100%' }}
-                >
-                  <option value="未着手">未着手</option>
-                  <option value="着手中">着手中</option>
-                  <option value="完了">完了</option>
-                </select>
+                    <select
+                      value={editForm.priority || ''}
+                      onChange={(e) => setEditForm(prev => ({ ...prev, priority: (e.target.value as 'low' | 'medium' | 'high' | '') || null }))}
+                      style={{ ...controlBaseStyle, padding: '10px 12px', width: '100%' }}
+                    >
+                      <option value="">なし</option>
+                      <option value="low">低</option>
+                      <option value="medium">中</option>
+                      <option value="high">高</option>
+                    </select>
 
                 <input
                   type="text"

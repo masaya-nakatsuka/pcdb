@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, useMemo, type CSSProperties } from 'react'
+import { useEffect, useState, useMemo, useRef, type CSSProperties } from 'react'
 import { supabaseTodo } from '@/lib/supabaseTodoClient'
 import LoadingOverlay from '@/components/LoadingOverlay'
 import LoginScreen from '@/components/LoginScreen'
@@ -17,7 +17,7 @@ import {
 import Button from '@/components/ui/Button'
 import Card from '@/components/ui/Card'
 import StatusBadge from '@/components/ui/StatusBadge'
-import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 
 type TodoList = {
   id: string
@@ -41,6 +41,10 @@ export default function TodoListsPage() {
   const [overlayMessage, setOverlayMessage] = useState("")
   const [showCreate, setShowCreate] = useState(false)
   const [newListName, setNewListName] = useState("")
+  const [editingListId, setEditingListId] = useState<string | null>(null)
+  const [editingName, setEditingName] = useState("")
+  const router = useRouter()
+  const savingRef = useRef(false)
 
   useEffect(() => {
     if (userId) {
@@ -116,6 +120,54 @@ export default function TodoListsPage() {
       setSummaries(prev => ({ ...prev, [created.id]: { total: 0, 未着手: 0, 着手中: 0, 完了: 0 } }))
       setShowCreate(false)
       setNewListName("")
+    }
+  }
+
+  function startEditing(list: TodoList) {
+    if (savingRef.current) return
+    setEditingListId(list.id)
+    setEditingName(list.name)
+  }
+
+  function cancelEditing() {
+    setEditingListId(null)
+    setEditingName("")
+  }
+
+  async function saveListName(listId: string) {
+    if (!userId || editingListId !== listId) return
+    const trimmed = editingName.trim()
+    const current = lists.find((l) => l.id === listId)
+    if (!trimmed) {
+      if (current) setEditingName(current.name)
+      cancelEditing()
+      return
+    }
+    if (current && current.name === trimmed) {
+      cancelEditing()
+      return
+    }
+
+    if (savingRef.current) return
+    savingRef.current = true
+    setOverlayMessage("リスト名を更新中...")
+    try {
+      const { data, error } = await supabaseTodo
+        .from('todo_lists')
+        .update({ name: trimmed })
+        .eq('id', listId)
+        .eq('user_id', userId)
+        .select('*')
+        .single()
+
+      if (!error && data) {
+        const updated = data as TodoList
+        setLists((prev) => prev.map((l) => (l.id === listId ? { ...l, name: updated.name } : l)))
+        cancelEditing()
+      }
+    } finally {
+      setOverlayMessage("")
+      savingRef.current = false
     }
   }
 
@@ -295,38 +347,87 @@ export default function TodoListsPage() {
           >
             {lists.map((list) => {
               const s = summaries[list.id] ?? { total: 0, 未着手: 0, 着手中: 0, 完了: 0 }
+              const isEditing = editingListId === list.id
               return (
-                <Link
+                <Card
                   key={list.id}
-                  href={`/todo/${list.id}`}
-                  style={{ textDecoration: 'none' }}
+                  padding="sm"
+                  hover
+                  onClick={isEditing ? undefined : () => router.push(`/todo/${list.id}`)}
+                  style={{
+                    background: 'rgba(15, 23, 42, 0.55)',
+                    border: '1px solid rgba(148, 163, 184, 0.18)'
+                  }}
                 >
-                  <Card
-                    padding="sm"
-                    hover
+                  <div
                     style={{
-                      background: 'rgba(15, 23, 42, 0.55)',
-                      border: '1px solid rgba(148, 163, 184, 0.18)'
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: '12px',
+                      marginBottom: '8px'
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      if (!isEditing) startEditing(list)
                     }}
                   >
-                    <div style={{ color: '#e2e8f0', fontWeight: 700, fontSize: '16px', marginBottom: '8px' }}>
-                      {list.name}
-                    </div>
-                    <div style={{ color: 'rgba(226,232,240,0.7)', fontSize: '12px', marginBottom: '12px' }}>
-                      合計 {s.total} 件
-                    </div>
-                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                      {(['未着手', '着手中', '完了'] as const).map(st => (
-                        <StatusBadge
-                          key={st}
-                          status={st}
-                          count={s[st]}
-                          size="sm"
-                        />
-                      ))}
-                    </div>
-                  </Card>
-                </Link>
+                    {isEditing ? (
+                      <input
+                        type="text"
+                        value={editingName}
+                        onChange={(e) => setEditingName(e.target.value)}
+                        onClick={(e) => e.stopPropagation()}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault()
+                            e.stopPropagation()
+                            saveListName(list.id)
+                          }
+                          if (e.key === 'Escape') {
+                            e.preventDefault()
+                            e.stopPropagation()
+                            cancelEditing()
+                          }
+                        }}
+                        onBlur={() => saveListName(list.id)}
+                        style={{
+                          ...controlBaseStyle,
+                          flex: '1 1 auto',
+                          minWidth: 0,
+                          padding: '10px 14px'
+                        }}
+                        autoFocus
+                      />
+                    ) : (
+                      <div
+                        style={{
+                          color: '#e2e8f0',
+                          fontWeight: 700,
+                          fontSize: '16px',
+                          flex: '1 1 auto',
+                          minWidth: 0,
+                          cursor: 'text'
+                        }}
+                      >
+                        {list.name}
+                      </div>
+                    )}
+                  </div>
+                  <div style={{ color: 'rgba(226,232,240,0.7)', fontSize: '12px', marginBottom: '12px' }}>
+                    合計 {s.total} 件
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                    {(['未着手', '着手中', '完了'] as const).map(st => (
+                      <StatusBadge
+                        key={st}
+                        status={st}
+                        count={s[st]}
+                        size="sm"
+                      />
+                    ))}
+                  </div>
+                </Card>
               )
             })}
             {lists.length === 0 && (
