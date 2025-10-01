@@ -13,26 +13,77 @@ export default function AuthCallback() {
   useEffect(() => {
     const handleAuthCallback = async () => {
       try {
+        console.log('Auth callback page loaded')
+        console.log('Current URL:', window.location.href)
+        console.log('Hash:', window.location.hash)
+        console.log('Search:', window.location.search)
+
         // URLパラメータから元のページを判定
         const urlParams = new URLSearchParams(window.location.search)
         const redirectTo = urlParams.get('redirect') || '/todo'
+        console.log('Redirect destination:', redirectTo)
 
         // リダイレクト先に応じて適切なSupabaseクライアントを選択
         const supabaseClient = redirectTo.includes('/note') ? supabaseNotes : supabaseTodo
 
+        // Supabaseの認証コールバックを処理
+        // URLのハッシュフラグメントまたはクエリパラメータから認証情報を取得
         const { data, error } = await supabaseClient.auth.getSession()
-        if (error) {
-          console.error('Auth callback error:', error.message)
-          setError(error.message)
-          // エラーの場合は5秒後に指定されたページにリダイレクト
+
+        // 認証情報が既に存在する場合
+        if (data.session) {
+          console.log('Existing session found, redirecting to:', redirectTo)
+          router.push(redirectTo)
+          return
+        }
+
+        // URLにエラーパラメータがある場合
+        const authError = urlParams.get('error')
+        if (authError) {
+          console.error('OAuth error:', authError)
+          setError(`認証エラー: ${authError}`)
           setTimeout(() => {
             router.push(redirectTo)
           }, 5000)
-        } else if (data.session) {
-          // 認証成功時は指定されたページにリダイレクト
-          router.push(redirectTo)
+          return
+        }
+
+        // ハッシュフラグメントから認証トークンを取得して処理
+        const hashParams = new URLSearchParams(window.location.hash.substring(1))
+        const accessToken = hashParams.get('access_token')
+        const refreshToken = hashParams.get('refresh_token')
+
+        if (accessToken) {
+          console.log('Processing OAuth callback with hash fragment tokens')
+          try {
+            const { data: sessionData, error: sessionError } = await supabaseClient.auth.setSession({
+              access_token: accessToken,
+              refresh_token: refreshToken || ''
+            })
+
+            if (sessionError) {
+              console.error('Session error:', sessionError.message)
+              setError(sessionError.message)
+              setTimeout(() => {
+                router.push(redirectTo)
+              }, 5000)
+            } else if (sessionData.session) {
+              console.log('Session established successfully, redirecting to:', redirectTo)
+              router.push(redirectTo)
+            } else {
+              console.log('No session created, redirecting to:', redirectTo)
+              router.push(redirectTo)
+            }
+          } catch (sessionError) {
+            console.error('Set session error:', sessionError)
+            setError('認証処理中にエラーが発生しました')
+            setTimeout(() => {
+              router.push(redirectTo)
+            }, 5000)
+          }
         } else {
-          // セッションがない場合も指定されたページにリダイレクト
+          // 認証情報が見つからない場合
+          console.log('No authentication data found, redirecting to:', redirectTo)
           router.push(redirectTo)
         }
       } catch (err) {
@@ -44,7 +95,9 @@ export default function AuthCallback() {
       }
     }
 
-    handleAuthCallback()
+    // 少し遅延を入れて、ページが完全にロードされてから処理を開始
+    const timer = setTimeout(handleAuthCallback, 100)
+    return () => clearTimeout(timer)
   }, [router])
 
   if (error) {

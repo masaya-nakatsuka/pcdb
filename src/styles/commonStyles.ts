@@ -3,6 +3,7 @@ import { type CSSProperties } from 'react'
 // カラーグラデーション
 export const PRIMARY_GRADIENT = 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)'
 export const SECONDARY_GRADIENT = 'linear-gradient(135deg, #0ea5e9 0%, #14b8a6 100%)'
+export const DESTRUCTIVE_GRADIENT = 'linear-gradient(135deg, #f97316 0%, #ef4444 100%)'
 
 // ガラスモルフィズムスタイル
 export const GLASS_BACKGROUND = 'rgba(15, 23, 42, 0.65)'
@@ -52,4 +53,26 @@ export const pageBackgroundStyle: CSSProperties = {
   minHeight: '100vh',
   background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
   padding: '48px 16px 64px'
+}
+
+// ステータスカラー
+export const STATUS_COLORS = {
+  '未着手': '#94a3b8',
+  '着手中': '#38bdf8',
+  '完了': '#34d399'
+} as const
+
+export function getStatusColor(status: '未着手' | '着手中' | '完了'): string {
+  return STATUS_COLORS[status] || STATUS_COLORS['未着手']
+}
+
+// 優先度カラー
+export const PRIORITY_COLORS = {
+  low: '#22c55e',
+  medium: '#f59e0b',
+  high: '#ef4444'
+} as const
+
+export function getPriorityColor(priority: 'low' | 'medium' | 'high' | null): string {
+  return priority ? PRIORITY_COLORS[priority] : '#6b7280'
 }

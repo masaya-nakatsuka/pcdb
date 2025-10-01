@@ -11,8 +11,12 @@ import {
   glassCardStyle,
   pillButtonStyle,
   controlBaseStyle,
-  pageBackgroundStyle
+  pageBackgroundStyle,
+  getStatusColor
 } from '@/styles/commonStyles'
+import Button from '@/components/ui/Button'
+import Card from '@/components/ui/Card'
+import StatusBadge from '@/components/ui/StatusBadge'
 import Link from 'next/link'
 
 type TodoList = {
@@ -125,15 +129,6 @@ export default function TodoListsPage() {
     gap: '32px'
   }
 
-  const statusColor = (status: '未着手' | '着手中' | '完了') => {
-    switch (status) {
-      case '未着手': return '#94a3b8'
-      case '着手中': return '#38bdf8'
-      case '完了': return '#34d399'
-      default: return '#94a3b8'
-    }
-  }
-
   const totalSummary = useMemo(() => {
     return Object.values(summaries).reduce(
       (acc, cur) => {
@@ -234,52 +229,17 @@ export default function TodoListsPage() {
                 }}
               >
                 {(['未着手', '着手中', '完了'] as const).map((status) => (
-                  <div
+                  <StatusBadge
                     key={status}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      padding: '10px 14px',
-                      borderRadius: '16px',
-                      background: 'rgba(15, 23, 42, 0.55)',
-                      border: '1px solid rgba(148, 163, 184, 0.2)',
-                      color: 'rgba(226, 232, 240, 0.85)'
-                    }}
-                  >
-                    <span
-                      style={{
-                        width: '10px',
-                        height: '10px',
-                        borderRadius: '50%',
-                        backgroundColor: statusColor(status)
-                      }}
-                    />
-                    <span style={{ fontSize: '13px', fontWeight: 600 }}>{status}</span>
-                    <span style={{ fontSize: '13px', opacity: 0.7 }}>{totalSummary[status]}</span>
-                  </div>
+                    status={status}
+                    count={totalSummary[status]}
+                    size="md"
+                  />
                 ))}
               </div>
-              <button
-                onClick={handleSignOut}
-                style={{
-                  ...pillButtonStyle,
-                  background: SECONDARY_GRADIENT,
-                  boxShadow: '0 24px 50px -20px rgba(14, 165, 233, 0.45)'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-2px)'
-                  e.currentTarget.style.boxShadow = '0 28px 60px -20px rgba(14, 165, 233, 0.55)'
-                  e.currentTarget.style.background = 'linear-gradient(135deg, #0ea5e9 0%, #22d3ee 100%)'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)'
-                  e.currentTarget.style.boxShadow = '0 24px 50px -20px rgba(14, 165, 233, 0.45)'
-                  e.currentTarget.style.background = SECONDARY_GRADIENT
-                }}
-              >
+              <Button variant="secondary" onClick={handleSignOut}>
                 ログアウト
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -312,38 +272,17 @@ export default function TodoListsPage() {
                   style={{ ...controlBaseStyle, minWidth: '240px' }}
                   autoFocus
                 />
-                <button
-                  onClick={createList}
-                  style={{
-                    ...pillButtonStyle,
-                    background: PRIMARY_GRADIENT,
-                    boxShadow: '0 24px 50px -20px rgba(59, 130, 246, 0.45)'
-                  }}
-                >
+                <Button variant="primary" onClick={createList}>
                   作成
-                </button>
-                <button
-                  onClick={() => { setShowCreate(false); setNewListName('') }}
-                  style={{
-                    ...pillButtonStyle,
-                    background: 'rgba(148,163,184,0.22)',
-                    boxShadow: 'none'
-                  }}
-                >
+                </Button>
+                <Button variant="ghost" onClick={() => { setShowCreate(false); setNewListName('') }}>
                   キャンセル
-                </button>
+                </Button>
               </>
             ) : (
-              <button
-                onClick={() => setShowCreate(true)}
-                style={{
-                  ...pillButtonStyle,
-                  background: PRIMARY_GRADIENT,
-                  boxShadow: '0 24px 50px -20px rgba(59, 130, 246, 0.45)'
-                }}
-              >
+              <Button variant="primary" onClick={() => setShowCreate(true)}>
                 ＋ 新しいリスト
-              </button>
+              </Button>
             )}
           </div>
 
@@ -362,24 +301,12 @@ export default function TodoListsPage() {
                   href={`/todo/${list.id}`}
                   style={{ textDecoration: 'none' }}
                 >
-                  <div
+                  <Card
+                    padding="sm"
+                    hover
                     style={{
-                      ...glassCardStyle,
-                      padding: '18px',
-                      borderRadius: '16px',
-                      transition: 'transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease',
                       background: 'rgba(15, 23, 42, 0.55)',
                       border: '1px solid rgba(148, 163, 184, 0.18)'
-                    }}
-                    onMouseEnter={(e) => {
-                      (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-2px)'
-                      ;(e.currentTarget as HTMLDivElement).style.boxShadow = '0 28px 60px -24px rgba(59, 130, 246, 0.35)'
-                      ;(e.currentTarget as HTMLDivElement).style.background = 'rgba(59, 130, 246, 0.12)'
-                    }}
-                    onMouseLeave={(e) => {
-                      (e.currentTarget as HTMLDivElement).style.transform = 'translateY(0)'
-                      ;(e.currentTarget as HTMLDivElement).style.boxShadow = '0 45px 80px -40px rgba(15, 23, 42, 0.8)'
-                      ;(e.currentTarget as HTMLDivElement).style.background = 'rgba(15, 23, 42, 0.55)'
                     }}
                   >
                     <div style={{ color: '#e2e8f0', fontWeight: 700, fontSize: '16px', marginBottom: '8px' }}>
@@ -390,21 +317,15 @@ export default function TodoListsPage() {
                     </div>
                     <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                       {(['未着手', '着手中', '完了'] as const).map(st => (
-                        <span
+                        <StatusBadge
                           key={st}
-                          style={{
-                            fontSize: '12px',
-                            padding: '4px 10px',
-                            borderRadius: '999px',
-                            background: 'rgba(148, 163, 184, 0.18)',
-                            color: statusColor(st)
-                          }}
-                        >
-                          {st} {s[st]}
-                        </span>
+                          status={st}
+                          count={s[st]}
+                          size="sm"
+                        />
                       ))}
                     </div>
-                  </div>
+                  </Card>
                 </Link>
               )
             })}

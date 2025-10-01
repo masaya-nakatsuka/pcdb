@@ -7,13 +7,20 @@ import type { TodoItem } from '@/lib/todoTypes'
 import LoadingOverlay from '@/components/LoadingOverlay'
 import ReactMarkdown from 'react-markdown'
 
-// レイアウトや配色をまとめた定数（既存テイスト踏襲）
+import {
+  PRIMARY_GRADIENT,
+  SECONDARY_GRADIENT,
+  DESTRUCTIVE_GRADIENT,
+  GLASS_BACKGROUND,
+  GLASS_BORDER,
+  getStatusColor,
+  getPriorityColor
+} from '@/styles/commonStyles'
+import Button from '@/components/ui/Button'
+import StatusBadge from '@/components/ui/StatusBadge'
+
+// レイアウト定数
 const GRID_TEMPLATE = '90px 5.2fr 70px 1.2fr 110px 110px 40px 40px'
-const PRIMARY_GRADIENT = 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)'
-const SECONDARY_GRADIENT = 'linear-gradient(135deg, #0ea5e9 0%, #14b8a6 100%)'
-const DESTRUCTIVE_GRADIENT = 'linear-gradient(135deg, #f97316 0%, #ef4444 100%)'
-const GLASS_BACKGROUND = 'rgba(15, 23, 42, 0.65)'
-const GLASS_BORDER = '1px solid rgba(148, 163, 184, 0.2)'
 
 export default function TodoListDetailPage({ params }: { params: { id: string } }) {
   const listId = params.id
