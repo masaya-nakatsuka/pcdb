@@ -98,7 +98,6 @@ export default function TodoListDetailPage({ params }: { params: { id: string } 
     if (!error && data) {
       const normalized = (data as TodoItem[]).map((todo) => ({
         ...todo,
-        status: todo.status === '完了' ? '完了' : '未着手'
       }))
       setTodos(normalized)
     }
