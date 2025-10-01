@@ -21,7 +21,7 @@ import Button from '@/components/ui/Button'
 type SimpleStatus = '未着手' | '完了'
 
 // レイアウト定数
-const GRID_TEMPLATE = '70px 5.2fr 90px 1.2fr 110px 110px 40px 40px'
+const GRID_TEMPLATE = '70px 5.2fr 90px 2.4fr 40px 40px'
 
 export default function TodoListDetailPage({ params }: { params: { id: string } }) {
   const listId = params.id
@@ -97,7 +97,7 @@ export default function TodoListDetailPage({ params }: { params: { id: string } 
       .order('created_at', { ascending: false })
     if (!error && data) {
       const normalized = (data as TodoItem[]).map((todo) => ({
-        ...todo,
+        ...todo,　
       }))
       setTodos(normalized)
     }
@@ -790,18 +790,15 @@ export default function TodoListDetailPage({ params }: { params: { id: string } 
             </div>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>タグ</div>
             <div
-              onClick={() => handleSort('created_at')}
-              style={{ cursor: 'pointer', userSelect: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '10px'
+              }}
             >
-              作成日 {sortField === 'created_at' && (sortDirection === 'asc' ? '↑' : '↓')}
+              <span style={{ textTransform: 'none', letterSpacing: 'normal' }}>詳細</span>
             </div>
-            <div
-              onClick={() => handleSort('done_date')}
-              style={{ cursor: 'pointer', userSelect: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
-            >
-              完了日 {sortField === 'done_date' && (sortDirection === 'asc' ? '↑' : '↓')}
-            </div>
-            <div></div>
             <div></div>
           </div>
 
@@ -811,6 +808,10 @@ export default function TodoListDetailPage({ params }: { params: { id: string } 
             const isEditing = editingTodo === todo.id
             const isDeleting = deletingTodos.has(todo.id)
             const isNewlyCreated = newlyCreatedTodos.has(todo.id)
+            const createdAtLabel = todo.created_at ? new Date(todo.created_at).toLocaleDateString('ja-JP') : '-'
+            const doneDateLabel = todo.done_date ? new Date(todo.done_date).toLocaleDateString('ja-JP') : '-'
+            const createdDateColor = todo.created_at ? 'rgba(248, 250, 252, 0.9)' : 'rgba(226, 232, 240, 0.45)'
+            const doneDateColor = todo.done_date ? 'rgba(248, 250, 252, 0.9)' : 'rgba(226, 232, 240, 0.45)'
 
             if (isEditing) {
               // 編集中のTODO行用レイアウト
@@ -902,14 +903,6 @@ export default function TodoListDetailPage({ params }: { params: { id: string } 
                       }}
                       placeholder="タグ"
                     />
-
-                    <div style={{ fontSize: '12px', color: 'rgba(226, 232, 240, 0.65)', textAlign: 'center' }}>
-                      {todo.created_at ? new Date(todo.created_at).toLocaleDateString('ja-JP') : '-'}
-                    </div>
-
-                    <div style={{ fontSize: '12px', color: 'rgba(226, 232, 240, 0.65)', textAlign: 'center' }}>
-                      {todo.done_date ? new Date(todo.done_date).toLocaleDateString('ja-JP') : '-'}
-                    </div>
 
                     <div />
 
@@ -1057,14 +1050,6 @@ export default function TodoListDetailPage({ params }: { params: { id: string } 
                     )}
                   </div>
 
-                  <div style={{ fontSize: '12px', color: 'rgba(226, 232, 240, 0.65)', textAlign: 'center' }}>
-                    {todo.created_at ? new Date(todo.created_at).toLocaleDateString('ja-JP') : '-'}
-                  </div>
-
-                  <div style={{ fontSize: '12px', color: 'rgba(226, 232, 240, 0.65)', textAlign: 'center' }}>
-                    {todo.done_date ? new Date(todo.done_date).toLocaleDateString('ja-JP') : '-'}
-                  </div>
-
                   <button
                     onClick={(e) => {
                       e.stopPropagation()
@@ -1121,6 +1106,25 @@ export default function TodoListDetailPage({ params }: { params: { id: string } 
                         border: '1px solid rgba(148, 163, 184, 0.2)'
                       }}
                     >
+                      <div
+                        style={{
+                          display: 'flex',
+                          flexWrap: 'wrap',
+                          gap: '16px',
+                          marginBottom: '12px',
+                          fontSize: '12px',
+                          color: 'rgba(226, 232, 240, 0.75)'
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <span style={{ opacity: 0.7 }}>作成日</span>
+                          <span style={{ fontWeight: 600, color: createdDateColor }}>{createdAtLabel}</span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <span style={{ opacity: 0.7 }}>完了日</span>
+                          <span style={{ fontWeight: 600, color: doneDateColor }}>{doneDateLabel}</span>
+                        </div>
+                      </div>
                       {editingMarkdown === todo.id ? (
                         <div data-markdown-container>
                           <textarea
@@ -1248,8 +1252,6 @@ export default function TodoListDetailPage({ params }: { params: { id: string } 
                   placeholder="タグ"
                 />
 
-                <div></div>
-                <div></div>
                 <div />
 
                 <button
