@@ -21,7 +21,23 @@ import Button from '@/components/ui/Button'
 type SimpleStatus = '未着手' | '完了'
 
 // レイアウト定数
-const GRID_TEMPLATE = '70px 5.2fr 90px 2.4fr 40px 40px'
+const GRID_TEMPLATE_DESKTOP = [
+  'clamp(56px, 5.2vw, 70px)',
+  'minmax(220px, 5.2fr)',
+  'clamp(78px, 8vw, 110px)',
+  'minmax(160px, 2.4fr)',
+  'clamp(32px, 4vw, 40px)',
+  'clamp(32px, 4vw, 40px)'
+].join(' ')
+
+const GRID_TEMPLATE_MOBILE = [
+  'clamp(48px, 15vw, 56px)',
+  'minmax(160px, 5fr)',
+  'clamp(60px, 20vw, 80px)',
+  'minmax(120px, 3fr)',
+  'clamp(32px, 12vw, 44px)',
+  'clamp(32px, 12vw, 44px)'
+].join(' ')
 
 export default function TodoListDetailPage({ params }: { params: { id: string } }) {
   const listId = params.id
@@ -42,6 +58,7 @@ export default function TodoListDetailPage({ params }: { params: { id: string } 
   const [sortField, setSortField] = useState<string>('created_at')
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
   const [showCompleted, setShowCompleted] = useState<boolean>(false)
+  const [isMobile, setIsMobile] = useState<boolean>(false)
 
   // 編集フォームの入力値を保持
   const [editForm, setEditForm] = useState<{
@@ -86,6 +103,16 @@ export default function TodoListDetailPage({ params }: { params: { id: string } 
       isMounted = false
     }
   }, [listId])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    const updateIsMobile = () => setIsMobile(window.innerWidth <= 640)
+    updateIsMobile()
+    window.addEventListener('resize', updateIsMobile)
+
+    return () => window.removeEventListener('resize', updateIsMobile)
+  }, [])
 
   // 指定ユーザーの指定リストのTODOを取得
   async function loadTodos(uid: string, lId: string) {
@@ -473,6 +500,11 @@ export default function TodoListDetailPage({ params }: { params: { id: string } 
     gap: '32px'
   }
 
+  const listRowPadding = isMobile ? '8px 12px' : '10px 16px'
+  const listHeaderMarginBottom = isMobile ? '8px' : '4px'
+  const listHeaderBorderRadius = isMobile ? '16px' : '20px'
+  const gridTemplateColumns = isMobile ? GRID_TEMPLATE_MOBILE : GRID_TEMPLATE_DESKTOP
+
   // ガラス風コンポーネントの共通スタイル
   const glassCardStyle: CSSProperties = {
     backgroundColor: GLASS_BACKGROUND,
@@ -680,7 +712,7 @@ export default function TodoListDetailPage({ params }: { params: { id: string } 
         <div
           style={{
             ...glassCardStyle,
-            padding: '24px',
+            padding: isMobile ? '16px' : '24px',
             color: '#e2e8f0',
             display: 'flex',
             flexDirection: 'column',
@@ -756,19 +788,20 @@ export default function TodoListDetailPage({ params }: { params: { id: string } 
           `}</style>
           <div style={{
             display: 'grid',
-            gridTemplateColumns: GRID_TEMPLATE,
+            gridTemplateColumns,
             gap: 0,
-            padding: '10px 16px',
-            marginBottom: '4px',
+            padding: listRowPadding,
+            marginBottom: listHeaderMarginBottom,
             color: 'rgba(226, 232, 240, 0.7)',
             fontSize: '12px',
             letterSpacing: '0.05em',
             textTransform: 'uppercase',
             background: 'rgba(148, 163, 184, 0.12)',
-            borderRadius: '20px',
+            borderRadius: listHeaderBorderRadius,
             border: '1px solid rgba(148, 163, 184, 0.15)',
             backdropFilter: 'blur(18px)',
-            WebkitBackdropFilter: 'blur(18px)'
+            WebkitBackdropFilter: 'blur(18px)',
+            width: '100%'
           }}>
             <div
               onClick={() => handleSort('status')}
@@ -821,17 +854,19 @@ export default function TodoListDetailPage({ params }: { params: { id: string } 
                   style={{
                     animation: 'slideInFromTop 0.3s ease',
                     overflow: 'hidden',
-                    borderBottom: '1px solid rgba(148, 163, 184, 0.18)'
+                    borderBottom: '1px solid rgba(148, 163, 184, 0.18)',
+                    width: '100%'
                   }}
                   data-todo-container
                 >
                   <div
                     style={{
                       display: 'grid',
-                      gridTemplateColumns: GRID_TEMPLATE,
+                      gridTemplateColumns,
                       gap: 0,
-                      padding: '10px 16px',
-                      alignItems: 'center'
+                      padding: listRowPadding,
+                      alignItems: 'center',
+                      width: '100%'
                     }}
                   >
                     <button
@@ -934,17 +969,19 @@ export default function TodoListDetailPage({ params }: { params: { id: string } 
                   opacity: isDeleting ? 0.35 : 1,
                   background: isNewlyCreated ? 'rgba(59, 130, 246, 0.08)' : 'transparent',
                   transition: 'background 0.3s ease, opacity 0.3s ease',
-                  animation: isNewlyCreated ? 'slideInFromBottom 0.3s ease-out' : undefined
+                  animation: isNewlyCreated ? 'slideInFromBottom 0.3s ease-out' : undefined,
+                  width: '100%'
                 }}
               >
                 <div
                   style={{
                     display: 'grid',
-                    gridTemplateColumns: GRID_TEMPLATE,
+                    gridTemplateColumns,
                     gap: 0,
-                    padding: '10px 16px',
+                    padding: listRowPadding,
                     alignItems: 'center',
-                    cursor: 'pointer'
+                    cursor: 'pointer',
+                    width: '100%'
                   }}
                   onClick={() => startEditing(todo)}
                 >
@@ -1181,7 +1218,8 @@ export default function TodoListDetailPage({ params }: { params: { id: string } 
             <div
               style={{
                 borderBottom: '1px solid rgba(148, 163, 184, 0.18)',
-                animation: 'slideInFromTop 0.3s ease'
+                animation: 'slideInFromTop 0.3s ease',
+                width: '100%'
               }}
               data-todo-container
             >
@@ -1189,10 +1227,11 @@ export default function TodoListDetailPage({ params }: { params: { id: string } 
               <div
                 style={{
                   display: 'grid',
-                  gridTemplateColumns: GRID_TEMPLATE,
+                  gridTemplateColumns,
                   gap: 0,
-                  padding: '10px 16px',
-                  alignItems: 'center'
+                  padding: listRowPadding,
+                  alignItems: 'center',
+                  width: '100%'
                 }}
               >
                     <button
@@ -1273,15 +1312,16 @@ export default function TodoListDetailPage({ params }: { params: { id: string } 
           ) : (
             <div
               style={{
-                marginTop: '4px',
-                padding: '10px 16px',
+                marginTop: isMobile ? '12px' : '4px',
+                padding: listRowPadding,
                 borderBottom: '1px dashed rgba(148, 163, 184, 0.3)',
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '8px',
                 color: 'rgba(226, 232, 240, 0.7)',
-                transition: 'color 0.3s ease'
+                transition: 'color 0.3s ease',
+                width: '100%'
               }}
               onClick={startCreating}
               onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.color = '#fff' }}
