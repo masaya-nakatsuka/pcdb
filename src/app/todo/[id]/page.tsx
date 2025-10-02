@@ -487,12 +487,13 @@ export default function TodoListDetailPage({ params }: { params: { id: string } 
   const pageBackgroundStyle: CSSProperties = {
     minHeight: '100vh',
     background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
-    padding: '48px 16px 64px'
+    padding: '48px 16px 64px',
+    overflowX: 'scroll'
   }
 
   // ページ中央のコンテナ設定
   const pageContentStyle: CSSProperties = {
-    width: '100%',
+    minWidth: '1000px',
     maxWidth: '1240px',
     margin: '0 auto',
     display: 'flex',
@@ -960,7 +961,9 @@ export default function TodoListDetailPage({ params }: { params: { id: string } 
               )
             }
 
-            // 通常表示のTODO行
+            /**
+             * 通常表示のTODO行
+             * */
             return (
               <div
                 key={todo.id}
@@ -981,7 +984,6 @@ export default function TodoListDetailPage({ params }: { params: { id: string } 
                     padding: listRowPadding,
                     alignItems: 'center',
                     cursor: 'pointer',
-                    width: '100%'
                   }}
                   onClick={() => startEditing(todo)}
                 >
