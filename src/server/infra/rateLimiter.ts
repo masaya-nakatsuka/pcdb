@@ -25,13 +25,14 @@ export interface RateLimitResult {
  * リクエストからIPアドレスを抽出
  */
 function extractIP(request: NextRequest): string {
-  return (
+  const forwardedFor = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+  const realIp =
     request.headers.get('cf-connecting-ip') ||
     request.headers.get('x-real-ip') ||
-    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-    request.ip ||
-    '127.0.0.1'
-  )
+    request.headers.get('x-vercel-forwarded-for') ||
+    forwardedFor
+
+  return realIp || '127.0.0.1'
 }
 
 /**
