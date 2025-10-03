@@ -84,7 +84,8 @@ export default function EditRow({
           placeholder="タイトル"
           autoFocus
           onKeyDown={(event) => {
-            if (event.key === 'Enter') {
+            if (event.key === 'Enter' && !event.nativeEvent.isComposing) {
+              event.preventDefault()
               onSave()
             }
           }}
@@ -123,7 +124,8 @@ export default function EditRow({
           }}
           placeholder="タグ"
           onKeyDown={(event) => {
-            if (event.key === 'Enter') {
+            if (event.key === 'Enter' && !event.nativeEvent.isComposing) {
+              event.preventDefault()
               onSave()
             }
           }}

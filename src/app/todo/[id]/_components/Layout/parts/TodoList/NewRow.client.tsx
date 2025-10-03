@@ -79,7 +79,8 @@ export default function NewRow({
           placeholder="タイトル"
           autoFocus
           onKeyDown={(event) => {
-            if (event.key === 'Enter') {
+            if (event.key === 'Enter' && !event.nativeEvent.isComposing) {
+              event.preventDefault()
               onSave()
             }
           }}
@@ -109,7 +110,8 @@ export default function NewRow({
           style={{ ...controlStyle, width: '100%' }}
           placeholder="タグ"
           onKeyDown={(event) => {
-            if (event.key === 'Enter') {
+            if (event.key === 'Enter' && !event.nativeEvent.isComposing) {
+              event.preventDefault()
               onSave()
             }
           }}

@@ -26,6 +26,9 @@ export default function AddRow({ gridTemplateColumns, cellPadding, onStartCreati
         tabIndex={0}
         onClick={onStartCreating}
         onKeyDown={(event) => {
+          if (event.nativeEvent.isComposing) {
+            return
+          }
           if (event.key === 'Enter' || event.key === ' ') {
             event.preventDefault()
             onStartCreating()

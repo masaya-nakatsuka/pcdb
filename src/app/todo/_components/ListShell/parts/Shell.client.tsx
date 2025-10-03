@@ -240,7 +240,8 @@ export default function Shell() {
               style={{ ...controlBaseStyle, fontSize: '14px' }}
               placeholder="リスト名"
               onKeyDown={(e) => {
-                if (e.key === 'Enter') {
+                if (e.key === 'Enter' && !e.nativeEvent.isComposing) {
+                  e.preventDefault()
                   createList()
                 }
               }}
@@ -280,7 +281,10 @@ export default function Shell() {
                           if (!savingRef.current) updateListName()
                         }}
                         onKeyDown={(e) => {
-                          if (e.key === 'Enter') updateListName()
+                          if (e.key === 'Enter' && !e.nativeEvent.isComposing) {
+                            e.preventDefault()
+                            updateListName()
+                          }
                         }}
                         style={{ ...controlBaseStyle, fontSize: '15px', width: '100%' }}
                         autoFocus
