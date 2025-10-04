@@ -81,15 +81,17 @@ export default function NewRow({
             onEditFormChange({ status: isInProgress ? '未着手' : '着手中' })
           }
           style={{
-            ...inProgressButtonStyle,
-            background: isInProgress
-              ? 'linear-gradient(135deg, rgba(56, 189, 248, 0.8) 0%, rgba(59, 130, 246, 0.9) 100%)'
-              : inProgressButtonStyle.background,
+            ...iconButtonStyle,
+            width: '24px',
+            height: '24px',
+            background: isInProgress ? 'rgba(59, 130, 246, 0.12)' : 'rgba(15, 23, 42, 0.6)',
             borderColor: isInProgress ? 'rgba(59, 130, 246, 0.6)' : 'rgba(148, 163, 184, 0.35)',
-            color: isInProgress ? '#0f172a' : 'rgba(226, 232, 240, 0.75)'
+            color: isInProgress ? '#60a5fa' : 'rgba(226, 232, 240, 0.75)',
+            fontSize: '14px'
           }}
+          title={isInProgress ? '着手中です。クリックで解除' : '未着手です。クリックで着手'}
         >
-          {isInProgress ? '着手中' : '未着手'}
+          {isInProgress ? '🚩' : '⚑'}
         </button>
       </div>
       <div style={{ ...cellStyle, flexDirection: 'column', alignItems: 'stretch' }}>
