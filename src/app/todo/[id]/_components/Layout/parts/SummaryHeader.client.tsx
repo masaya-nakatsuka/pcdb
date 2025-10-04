@@ -12,7 +12,7 @@ type SummaryHeaderProps = {
   onToggleShowCompleted: () => void
 }
 
-const STATUS_ORDER: SimpleStatus[] = ['未着手', '完了']
+const STATUS_ORDER: SimpleStatus[] = ['未着手', '着手中', '完了']
 
 const containerStyle: CSSProperties = {
   display: 'flex',

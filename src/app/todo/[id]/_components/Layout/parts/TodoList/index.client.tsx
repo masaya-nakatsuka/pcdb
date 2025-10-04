@@ -33,6 +33,7 @@ type TodoTableProps = {
   onStartEditingMarkdown: (todoId: string, markdown: string) => void
   tempMarkdown: string
   onTempMarkdownChange: (value: string) => void
+  onToggleTodoInProgress: (todo: TodoItem) => void
   onToggleTodoCompletion: (todo: TodoItem) => void
   updatingTodoId: string | null
   expandedTodos: Set<string>
@@ -94,6 +95,23 @@ const todoStatusButtonBaseStyle: CSSProperties = {
   transition: 'background 0.2s ease, border-color 0.2s ease, transform 0.15s ease, opacity 0.2s ease'
 }
 
+const inProgressButtonBaseStyle: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  padding: '8px 14px',
+  borderRadius: '999px',
+  border: '1px solid rgba(148, 163, 184, 0.35)',
+  background: 'rgba(15, 23, 42, 0.55)',
+  color: '#e2e8f0',
+  fontSize: '12px',
+  fontWeight: 600,
+  letterSpacing: '0.04em',
+  cursor: 'pointer',
+  minWidth: '80px',
+  transition: 'background 0.2s ease, border-color 0.2s ease, color 0.2s ease, opacity 0.2s ease'
+}
+
 const controlBaseStyle: CSSProperties = {
   borderRadius: '12px',
   padding: '10px 12px',
@@ -126,6 +144,7 @@ export default function TodoList({
   onStartEditingMarkdown,
   tempMarkdown,
   onTempMarkdownChange,
+  onToggleTodoInProgress,
   onToggleTodoCompletion,
   updatingTodoId,
   expandedTodos,
@@ -137,7 +156,7 @@ export default function TodoList({
 }: TodoTableProps) {
   const bodyCell = bodyCellStyle(cellPadding)
   const gridTemplateColumns = columnWidths.join(' ')
-  const minTableWidth = isMobile ? '720px' : '960px'
+  const minTableWidth = isMobile ? '760px' : '1080px'
 
   return (
     <div style={listShellStyle}>
@@ -166,12 +185,13 @@ export default function TodoList({
                 return (
                   <EditRow
                     key={todo.id}
-                    gridTemplateColumns={gridTemplateColumns}
-                    cellStyle={bodyCell}
-                    statusButtonStyle={todoStatusButtonBaseStyle}
-                    iconButtonStyle={iconButtonBaseStyle}
-                    controlStyle={controlBaseStyle}
-                    editForm={editForm}
+                  gridTemplateColumns={gridTemplateColumns}
+                  cellStyle={bodyCell}
+                  statusButtonStyle={todoStatusButtonBaseStyle}
+                  inProgressButtonStyle={inProgressButtonBaseStyle}
+                  iconButtonStyle={iconButtonBaseStyle}
+                  controlStyle={controlBaseStyle}
+                  editForm={editForm}
                     onEditFormChange={onEditFormChange}
                     onCancel={onCancelEditing}
                     onSave={() => onSaveTodo(false)}
@@ -187,7 +207,9 @@ export default function TodoList({
                   cellStyle={bodyCell}
                   cellPadding={cellPadding}
                   statusButtonStyle={todoStatusButtonBaseStyle}
+                  inProgressButtonStyle={inProgressButtonBaseStyle}
                   iconButtonStyle={iconButtonBaseStyle}
+                  onToggleTodoInProgress={onToggleTodoInProgress}
                   onToggleTodoCompletion={onToggleTodoCompletion}
                   onStartEditing={onStartEditing}
                   onToggleExpanded={onToggleExpanded}
@@ -210,6 +232,7 @@ export default function TodoList({
                 gridTemplateColumns={gridTemplateColumns}
                 cellStyle={bodyCell}
                 statusButtonStyle={todoStatusButtonBaseStyle}
+                inProgressButtonStyle={inProgressButtonBaseStyle}
                 iconButtonStyle={iconButtonBaseStyle}
                 controlStyle={controlBaseStyle}
                 editForm={editForm}

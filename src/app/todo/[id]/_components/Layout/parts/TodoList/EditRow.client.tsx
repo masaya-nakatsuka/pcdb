@@ -8,6 +8,7 @@ type EditRowProps = {
   gridTemplateColumns: string
   cellStyle: CSSProperties
   statusButtonStyle: CSSProperties
+  inProgressButtonStyle: CSSProperties
   iconButtonStyle: CSSProperties
   controlStyle: CSSProperties
   editForm: EditFormState
@@ -20,6 +21,7 @@ export default function EditRow({
   gridTemplateColumns,
   cellStyle,
   statusButtonStyle,
+  inProgressButtonStyle,
   iconButtonStyle,
   controlStyle,
   editForm,
@@ -27,6 +29,8 @@ export default function EditRow({
   onCancel,
   onSave
 }: EditRowProps) {
+  const isInProgress = editForm.status === '着手中'
+
   return (
     <div
       data-todo-container
@@ -68,6 +72,24 @@ export default function EditRow({
           >
             ✓
           </span>
+        </button>
+      </div>
+      <div style={{ ...cellStyle, justifyContent: 'center' }}>
+        <button
+          type="button"
+          onClick={() =>
+            onEditFormChange({ status: isInProgress ? '未着手' : '着手中' })
+          }
+          style={{
+            ...inProgressButtonStyle,
+            background: isInProgress
+              ? 'linear-gradient(135deg, rgba(56, 189, 248, 0.8) 0%, rgba(59, 130, 246, 0.9) 100%)'
+              : inProgressButtonStyle.background,
+            borderColor: isInProgress ? 'rgba(59, 130, 246, 0.6)' : 'rgba(148, 163, 184, 0.35)',
+            color: isInProgress ? '#0f172a' : 'rgba(226, 232, 240, 0.75)'
+          }}
+        >
+          {isInProgress ? '着手中' : '未着手'}
         </button>
       </div>
       <div style={{ ...cellStyle, flexDirection: 'column', alignItems: 'stretch' }}>

@@ -13,7 +13,9 @@ type TodoTableRowProps = {
   cellStyle: CSSProperties
   cellPadding: string
   statusButtonStyle: CSSProperties
+  inProgressButtonStyle: CSSProperties
   iconButtonStyle: CSSProperties
+  onToggleTodoInProgress: (todo: TodoItem) => void
   onToggleTodoCompletion: (todo: TodoItem) => void
   onStartEditing: (todo: TodoItem) => void
   onToggleExpanded: (todoId: string) => void
@@ -35,7 +37,9 @@ export default function Row({
   cellStyle,
   cellPadding,
   statusButtonStyle,
+  inProgressButtonStyle,
   iconButtonStyle,
+  onToggleTodoInProgress,
   onToggleTodoCompletion,
   onStartEditing,
   onToggleExpanded,
@@ -51,6 +55,7 @@ export default function Row({
   newlyCreatedTodos
 }: TodoTableRowProps) {
   const isCompleted = todo.status === '完了'
+  const isInProgress = todo.status === '着手中'
   const isDeleting = deletingTodos.has(todo.id)
   const isNew = newlyCreatedTodos.has(todo.id)
 
@@ -110,6 +115,29 @@ export default function Row({
             >
               ✓
             </span>
+          </button>
+        </div>
+        <div style={{ ...cellStyle, justifyContent: 'center' }}>
+          <button
+            onClick={(event) => {
+              event.stopPropagation()
+              onToggleTodoInProgress(todo)
+            }}
+            aria-pressed={isInProgress}
+            disabled={updatingTodoId === todo.id}
+            style={{
+              ...inProgressButtonStyle,
+              opacity: updatingTodoId === todo.id ? 0.6 : 1,
+              cursor: updatingTodoId === todo.id ? 'not-allowed' : 'pointer',
+              background: isInProgress
+                ? 'linear-gradient(135deg, rgba(56, 189, 248, 0.8) 0%, rgba(59, 130, 246, 0.9) 100%)'
+                : inProgressButtonStyle.background,
+              borderColor: isInProgress ? 'rgba(59, 130, 246, 0.6)' : 'rgba(148, 163, 184, 0.35)',
+              color: isInProgress ? '#0f172a' : 'rgba(226, 232, 240, 0.75)'
+            }}
+            title={isInProgress ? 'クリックで着手中を解除' : 'クリックで着手を開始'}
+          >
+            {isInProgress ? '着手中' : '未着手'}
           </button>
         </div>
         <div style={{ ...cellStyle, flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'center' }}>

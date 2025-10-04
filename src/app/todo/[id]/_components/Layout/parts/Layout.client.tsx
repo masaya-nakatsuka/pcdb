@@ -1,12 +1,12 @@
 "use client"
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import LoadingOverlay from '@/components/LoadingOverlay'
 import { supabaseTodo } from '@/lib/supabaseTodoClient'
 import type { TodoItem } from '@/lib/todoTypes'
 
-import { editFormSchema, type EditFormState, type SimpleStatus } from '../../../types'
+import { editFormSchema, type EditFormState, type SimpleStatus, type TodoStatus } from '../../../types'
 import LoginPromptCard from '../_shared/LoginPromptCard.client'
 import Header from './Header.client'
 import SummaryHeader from './SummaryHeader.client'
@@ -62,6 +62,7 @@ export default function LayoutClient({ listId }: LayoutProps) {
   const [isMobile, setIsMobile] = useState<boolean>(false)
 
   const [editForm, setEditForm] = useState<EditFormState>(editFormSchema.parse({}))
+  const previousStatusRef = useRef<Map<string, TodoStatus>>(new Map())
 
   const redirectTo = useMemo(() => {
     if (typeof window === 'undefined') return undefined
@@ -136,7 +137,7 @@ export default function LayoutClient({ listId }: LayoutProps) {
     setEditingTodo(todo.id)
     setEditForm({
       title: todo.title,
-      status: todo.status === '完了' ? '完了' : '未着手',
+      status: todo.status,
       priority: todo.priority,
       tags: todo.tags.join(', '),
       markdown_text: todo.markdown_text || ''
@@ -201,7 +202,7 @@ export default function LayoutClient({ listId }: LayoutProps) {
 
     const currentTodo = isNew ? null : todos.find((t) => t.id === editingTodo)
     const isCompletingNow = editForm.status === '完了' && currentTodo?.status !== '完了'
-    const isReopening = editForm.status === '未着手' && currentTodo?.status === '完了'
+    const isReopening = editForm.status !== '完了' && currentTodo?.status === '完了'
 
     const todoData = {
       title: editForm.title.trim(),
@@ -231,6 +232,7 @@ export default function LayoutClient({ listId }: LayoutProps) {
       if (!error && data) {
         const newTodo = data as TodoItem
         setTodos((prev) => [newTodo, ...prev])
+        previousStatusRef.current.set(newTodo.id, newTodo.status)
         setNewlyCreatedTodos((prev) => new Set(prev).add(newTodo.id))
         setTimeout(() => {
           setNewlyCreatedTodos((prev) => {
@@ -254,6 +256,7 @@ export default function LayoutClient({ listId }: LayoutProps) {
         setTodos((prev) =>
           prev.map((todo) => (todo.id === editingTodo ? ({ ...todo, ...todoData } as TodoItem) : todo))
         )
+        previousStatusRef.current.set(editingTodo, todoData.status as TodoStatus)
         setEditingTodo(null)
         resetEditForm()
       }
@@ -293,11 +296,25 @@ export default function LayoutClient({ listId }: LayoutProps) {
   const toggleTodoCompletion = useCallback(async (todo: TodoItem) => {
     if (updatingTodo || !userId) return
 
-    const nextStatus: SimpleStatus = todo.status === '完了' ? '未着手' : '完了'
+    const wasCompleted = todo.status === '完了'
+    const fallbackStatus = wasCompleted
+      ? previousStatusRef.current.get(todo.id) ?? '未着手'
+      : todo.status
+    const nextStatus: TodoStatus = wasCompleted ? fallbackStatus : '完了'
     const nextDoneDate = nextStatus === '完了' ? new Date().toISOString() : null
 
+    if (!wasCompleted) {
+      previousStatusRef.current.set(todo.id, todo.status)
+    }
+
     setUpdatingTodo(todo.id)
-    setOverlayMessage(nextStatus === '完了' ? '完了に更新中...' : '未着手に戻しています...')
+    setOverlayMessage(
+      nextStatus === '完了'
+        ? '完了に更新中...'
+        : nextStatus === '着手中'
+          ? '着手中に戻しています...'
+          : '未着手に戻しています...'
+    )
 
     const { error } = await supabaseTodo
       .from('todo_items')
@@ -316,6 +333,42 @@ export default function LayoutClient({ listId }: LayoutProps) {
           item.id === todo.id ? { ...item, status: nextStatus, done_date: nextDoneDate } : item
         )
       )
+
+      if (nextStatus !== '完了') {
+        previousStatusRef.current.set(todo.id, nextStatus)
+      }
+    }
+
+    setUpdatingTodo(null)
+    setOverlayMessage('')
+  }, [updatingTodo, userId, listId])
+
+  const toggleTodoInProgress = useCallback(async (todo: TodoItem) => {
+    if (updatingTodo || !userId) return
+
+    const nextStatus: TodoStatus = todo.status === '着手中' ? '未着手' : '着手中'
+
+    setUpdatingTodo(todo.id)
+    setOverlayMessage(nextStatus === '着手中' ? '着手中に更新中...' : '未着手に戻しています...')
+
+    const { error } = await supabaseTodo
+      .from('todo_items')
+      .update({
+        status: nextStatus,
+        done_date: null,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', todo.id)
+      .eq('user_id', userId)
+      .eq('list_id', listId)
+
+    if (!error) {
+      setTodos((prev) =>
+        prev.map((item) =>
+          item.id === todo.id ? { ...item, status: nextStatus, done_date: null } : item
+        )
+      )
+      previousStatusRef.current.set(todo.id, nextStatus)
     }
 
     setUpdatingTodo(null)
@@ -365,7 +418,7 @@ export default function LayoutClient({ listId }: LayoutProps) {
 
   const sortedTodos = useMemo(() => {
     const priorityOrder = { high: 3, medium: 2, low: 1, null: 0 }
-    const statusOrder = { '未着手': 1, '完了': 2 }
+    const statusOrder = { '未着手': 1, '着手中': 2, '完了': 3 } as const
 
     const cloned = [...todos]
     cloned.sort((a, b) => {
@@ -408,14 +461,15 @@ export default function LayoutClient({ listId }: LayoutProps) {
   }, [todos, sortField, sortDirection, showCompleted])
 
   const statusSummary = useMemo(() => ({
-    未着手: todos.filter((todo) => todo.status !== '完了').length,
+    未着手: todos.filter((todo) => todo.status === '未着手').length,
+    着手中: todos.filter((todo) => todo.status === '着手中').length,
     完了: todos.filter((todo) => todo.status === '完了').length
   }), [todos])
 
   const columnWidths = isMobile
-    ? ['5%', '60%', '10%', '15%', '5%', '5%']
-    : ['5%', '60%', '10%', '15%', '5%', '5%']
-  const tableCellPadding = isMobile ? '12px 6px' : '16px 8px'
+    ? ['8%', '12%', '38%', '14%', '14%', '7%', '7%']
+    : ['7%', '12%', '38%', '14%', '14%', '7%', '8%']
+  const tableCellPadding = isMobile ? '12px 8px' : '16px 10px'
 
   if (loading) {
     return <LoadingOverlay message="読み込み中..." />
@@ -473,6 +527,7 @@ export default function LayoutClient({ listId }: LayoutProps) {
             onStartEditingMarkdown={startEditingMarkdown}
             tempMarkdown={tempMarkdown}
             onTempMarkdownChange={handleTempMarkdownChange}
+            onToggleTodoInProgress={toggleTodoInProgress}
             onToggleTodoCompletion={toggleTodoCompletion}
             updatingTodoId={updatingTodo}
             expandedTodos={expandedTodos}

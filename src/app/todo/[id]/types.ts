@@ -1,6 +1,10 @@
 import { z } from 'zod'
 
-export const simpleStatusSchema = z.union([z.literal('未着手'), z.literal('完了')])
+export const simpleStatusSchema = z.union([
+  z.literal('未着手'),
+  z.literal('着手中'),
+  z.literal('完了')
+])
 
 export const todoStatusSchema = z.union([
   z.literal('未着手'),
@@ -17,6 +21,7 @@ export const editFormSchema = z.object({
 })
 
 export type SimpleStatus = z.infer<typeof simpleStatusSchema>
+export type TodoStatus = z.infer<typeof todoStatusSchema>
 export type EditFormState = z.infer<typeof editFormSchema>
 
 export const todoItemSchema = z.object({

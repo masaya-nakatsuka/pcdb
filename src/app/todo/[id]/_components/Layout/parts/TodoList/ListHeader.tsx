@@ -73,6 +73,7 @@ export default function ListHeader({
   return (
     <div style={headerRowStyle(gridTemplateColumns)}>
       {sortableCell('status', '状況', 'center')}
+      <div style={{ ...headerCellBaseStyle(cellPadding), justifyContent: 'center' }}>着手</div>
       {sortableCell('title', 'タイトル')}
       {sortableCell('priority', '優先度', 'center')}
       <div style={{ ...headerCellBaseStyle(cellPadding), justifyContent: 'center' }}>タグ</div>
