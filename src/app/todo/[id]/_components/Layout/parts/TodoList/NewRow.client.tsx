@@ -54,7 +54,7 @@ export default function NewRow({
             background: editForm.status === '完了'
               ? 'linear-gradient(135deg, rgba(52, 211, 153, 0.95) 0%, rgba(16, 185, 129, 0.95) 100%)'
               : 'transparent',
-            borderColor: editForm.status === '完了' ? 'rgba(52, 211, 153, 0.6)' : 'rgba(148, 163, 184, 0.35)'
+            border: editForm.status === '完了' ? '1px solid rgba(52, 211, 153, 0.6)' : '1px solid rgba(148, 163, 184, 0.35)'
           }}
         >
           <span
@@ -85,7 +85,7 @@ export default function NewRow({
             width: '24px',
             height: '24px',
             background: isInProgress ? 'rgba(59, 130, 246, 0.12)' : 'rgba(15, 23, 42, 0.6)',
-            borderColor: isInProgress ? 'rgba(59, 130, 246, 0.6)' : 'rgba(148, 163, 184, 0.35)',
+            border: isInProgress ? '1px solid rgba(59, 130, 246, 0.6)' : '1px solid rgba(148, 163, 184, 0.35)',
             color: isInProgress ? '#60a5fa' : 'rgba(226, 232, 240, 0.75)',
             fontSize: '14px'
           }}

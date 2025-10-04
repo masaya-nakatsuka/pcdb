@@ -96,7 +96,7 @@ export default function Row({
               background: isCompleted
                 ? 'linear-gradient(135deg, rgba(52, 211, 153, 0.95) 0%, rgba(16, 185, 129, 0.95) 100%)'
                 : 'transparent',
-              borderColor: isCompleted ? 'rgba(52, 211, 153, 0.6)' : 'rgba(148, 163, 184, 0.35)'
+              border: isCompleted ? '1px solid rgba(52, 211, 153, 0.6)' : '1px solid rgba(148, 163, 184, 0.35)'
             }}
             title={isCompleted ? '完了に設定されています。クリックで未着手に戻す' : '未着手です。クリックで完了に設定'}
           >
@@ -133,7 +133,7 @@ export default function Row({
               opacity: updatingTodoId === todo.id ? 0.6 : 1,
               cursor: updatingTodoId === todo.id ? 'not-allowed' : 'pointer',
               background: isInProgress ? 'rgba(59, 130, 246, 0.12)' : 'rgba(15, 23, 42, 0.6)',
-              borderColor: isInProgress ? 'rgba(59, 130, 246, 0.6)' : 'rgba(148, 163, 184, 0.35)',
+              border: isInProgress ? '1px solid rgba(59, 130, 246, 0.6)' : '1px solid rgba(148, 163, 184, 0.35)',
               color: isInProgress ? '#60a5fa' : 'rgba(226, 232, 240, 0.75)',
               fontSize: '14px'
             }}
