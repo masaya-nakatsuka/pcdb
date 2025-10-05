@@ -466,7 +466,7 @@ export default function LayoutClient({ listId }: LayoutProps) {
     完了: todos.filter((todo) => todo.status === '完了').length
   }), [todos])
 
-  const columnWidths = ['5%', '5%', '40%', '15%', '25%', '5%', '5%']
+  const columnWidths = ['7%', '7%', '32%', '15%', '25%', '7%', '7%']
   const tableCellPadding = isMobile ? '12px 8px' : '16px 10px'
 
   if (loading) {
