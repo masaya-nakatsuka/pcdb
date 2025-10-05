@@ -70,7 +70,7 @@ export default function Row({
       <div
         data-todo-container
         onClick={() => onStartEditing(todo)}
-        className={`grid cursor-pointer items-stretch transition-colors ${isNew ? 'animate-slide-in-bottom bg-night-highlight' : 'hover:bg-night-highlight/60'}`}
+        className={`grid justify-center cursor-pointer items-stretch transition-colors ${isNew ? 'animate-slide-in-bottom bg-night-highlight' : 'hover:bg-night-highlight/60'}`}
         style={{ gridTemplateColumns }}
       >
         <div className={`${cellPaddingClass} flex items-center justify-center`}>
@@ -115,6 +115,15 @@ export default function Row({
               {PRIORITY_LABEL[todo.priority ?? 'none']}
             </span>
           </div>
+        </div>
+        <div className={`${cellPaddingClass} flex items-center justify-center`}>
+          {todo.group ? (
+            <span className="rounded-full border border-night-border bg-night-glass px-3 py-1 text-xs font-semibold text-frost-soft">
+              {todo.group}
+            </span>
+          ) : (
+            <span className="text-frost-subtle">-</span>
+          )}
         </div>
         <div className={`${cellPaddingClass} flex items-center justify-center`}>
           <div className="flex flex-wrap items-center justify-center gap-1.5 text-xs">

@@ -16,6 +16,19 @@ type LayoutProps = {
   listId: string
 }
 
+const STATUS_RANK: Record<TodoStatus, number> = {
+  未着手: 0,
+  着手中: 0,
+  完了: 1,
+}
+
+const PRIORITY_RANK: Record<NonNullable<TodoItem['priority']> | 'none', number> = {
+  high: 0,
+  medium: 1,
+  low: 2,
+  none: 3,
+}
+
 export default function LayoutClient({ listId }: LayoutProps) {
   const [userId, setUserId] = useState<string | null>(null)
   const [todos, setTodos] = useState<TodoItem[]>([])
@@ -29,7 +42,7 @@ export default function LayoutClient({ listId }: LayoutProps) {
   const [tempMarkdown, setTempMarkdown] = useState<string>("")
   const [deletingTodos, setDeletingTodos] = useState<Set<string>>(new Set())
   const [newlyCreatedTodos, setNewlyCreatedTodos] = useState<Set<string>>(new Set())
-  const [sortField, setSortField] = useState<string>('created_at')
+  const [sortField, setSortField] = useState<string>('default')
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
   const [showCompleted, setShowCompleted] = useState<boolean>(false)
 
@@ -100,6 +113,7 @@ export default function LayoutClient({ listId }: LayoutProps) {
       title: todo.title,
       status: todo.status,
       priority: todo.priority,
+      group: todo.group ?? '',
       tags: todo.tags.join(', '),
       markdown_text: todo.markdown_text || ''
     })
@@ -169,6 +183,7 @@ export default function LayoutClient({ listId }: LayoutProps) {
       title: editForm.title.trim(),
       status: editForm.status,
       priority: editForm.priority,
+      group: editForm.group.trim() || null,
       tags: editForm.tags
         ? editForm.tags.split(',').map((tag) => tag.trim()).filter(Boolean)
         : [],
@@ -377,23 +392,64 @@ export default function LayoutClient({ listId }: LayoutProps) {
     })
   }, [])
 
-  const sortedTodos = useMemo(() => {
-    const priorityOrder = { high: 3, medium: 2, low: 1, null: 0 }
-    const statusOrder = { '未着手': 1, '着手中': 2, '完了': 3 } as const
+  const defaultSorter = useCallback(
+    (a: TodoItem, b: TodoItem) => {
+      const statusDiff = STATUS_RANK[a.status] - STATUS_RANK[b.status]
+      if (statusDiff !== 0) return statusDiff
 
+      const aTags = a.tags.join(',').toLowerCase()
+      const bTags = b.tags.join(',').toLowerCase()
+      if (aTags !== bTags) {
+        if (!aTags) return 1
+        if (!bTags) return -1
+        return aTags.localeCompare(bTags, 'ja')
+      }
+
+      const aGroup = (a.group ?? '').toLowerCase()
+      const bGroup = (b.group ?? '').toLowerCase()
+      if (aGroup !== bGroup) {
+        if (!aGroup) return 1
+        if (!bGroup) return -1
+        return aGroup.localeCompare(bGroup, 'ja')
+      }
+
+      const priorityDiff = PRIORITY_RANK[a.priority ?? 'none'] - PRIORITY_RANK[b.priority ?? 'none']
+      if (priorityDiff !== 0) return priorityDiff
+
+      const aCreated = a.created_at ? new Date(a.created_at).getTime() : 0
+      const bCreated = b.created_at ? new Date(b.created_at).getTime() : 0
+      if (aCreated !== bCreated) {
+        return bCreated - aCreated
+      }
+
+      return a.title.localeCompare(b.title, 'ja')
+    },
+    []
+  )
+
+  const sortedTodos = useMemo(() => {
     const cloned = [...todos]
+
     cloned.sort((a, b) => {
+      if (sortField === 'default') {
+        return defaultSorter(a, b)
+      }
+
       let aValue: number | string = 0
       let bValue: number | string = 0
 
       switch (sortField) {
+        case 'group':
+          aValue = a.group ? a.group.toLowerCase() : '\uffff'
+          bValue = b.group ? b.group.toLowerCase() : '\uffff'
+          break
         case 'priority':
-          aValue = priorityOrder[a.priority as keyof typeof priorityOrder] || 0
-          bValue = priorityOrder[b.priority as keyof typeof priorityOrder] || 0
+          aValue = PRIORITY_RANK[a.priority ?? 'none']
+          bValue = PRIORITY_RANK[b.priority ?? 'none']
           break
         case 'status':
-          aValue = statusOrder[a.status as keyof typeof statusOrder] || 0
-          bValue = statusOrder[b.status as keyof typeof statusOrder] || 0
+          aValue = STATUS_RANK[a.status]
+          bValue = STATUS_RANK[b.status]
           break
         case 'title':
           aValue = a.title.toLowerCase()
@@ -408,18 +464,17 @@ export default function LayoutClient({ listId }: LayoutProps) {
           bValue = b.created_at ? new Date(b.created_at).getTime() : 0
           break
         default:
-          aValue = 0
-          bValue = 0
+          return defaultSorter(a, b)
       }
 
       if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1
       if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1
-      return 0
+      return defaultSorter(a, b)
     })
 
     if (showCompleted) return cloned
     return cloned.filter((todo) => todo.status !== '完了')
-  }, [todos, sortField, sortDirection, showCompleted])
+  }, [todos, sortField, sortDirection, showCompleted, defaultSorter])
 
   const statusSummary = useMemo(() => ({
     未着手: todos.filter((todo) => todo.status === '未着手').length,
@@ -427,7 +482,7 @@ export default function LayoutClient({ listId }: LayoutProps) {
     完了: todos.filter((todo) => todo.status === '完了').length
   }), [todos])
 
-  const columnWidths = ['7%', '7%', '32%', '15%', '25%', '7%', '7%']
+  const columnWidths = ['8%', '8%', '44%', '8%', '8%', '8%', '8%', '8%']
 
   if (loading) {
     return <LoadingOverlay message="読み込み中..." />

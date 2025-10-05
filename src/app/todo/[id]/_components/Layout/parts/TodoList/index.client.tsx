@@ -74,7 +74,7 @@ export default function TodoList({
   return (
     <div className="w-full">
       <div className="overflow-x-auto">
-        <div className="flex w-full min-w-[47.5rem] flex-col sm:min-w-[67.5rem]">
+        <div className="flex w-full flex-col">
           <TodoListHeader
             gridTemplateColumns={gridTemplateColumns}
             sortField={sortField}

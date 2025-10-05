@@ -25,7 +25,7 @@ export default function NewRow({
   return (
     <div
       data-todo-container
-      className={`grid animate-slide-in-top border-b border-night-border-muted bg-night-highlight/40`}
+      className={`grid justify-center animate-slide-in-top border-b border-night-border-muted bg-night-highlight/40`}
       style={{ gridTemplateColumns }}
     >
       <div className={`${cellPaddingClass} flex items-center justify-center`}>
@@ -76,6 +76,21 @@ export default function NewRow({
           <option value="medium">中</option>
           <option value="high">高</option>
         </select>
+      </div>
+      <div className={`${cellPaddingClass} flex flex-col justify-center`}>
+        <input
+          type="text"
+          value={editForm.group}
+          onChange={(event) => onEditFormChange({ group: event.target.value })}
+          className={fieldClass}
+          placeholder="グループ"
+          onKeyDown={(event) => {
+            if (event.key === 'Enter' && !event.nativeEvent.isComposing) {
+              event.preventDefault()
+              onSave()
+            }
+          }}
+        />
       </div>
       <div className={`${cellPaddingClass} flex flex-col justify-center`}>
         <input

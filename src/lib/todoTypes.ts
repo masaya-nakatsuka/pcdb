@@ -5,6 +5,7 @@ export interface TodoItem {
   title: string
   status: '未着手' | '着手中' | '完了'
   priority: 'low' | 'medium' | 'high' | null
+  group: string | null
   tags: string[]
   branch_names: string[]
   pr_links: string[]

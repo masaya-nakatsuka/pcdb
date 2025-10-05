@@ -33,11 +33,12 @@ export default function ListHeader({
   )
 
   return (
-    <div className="grid rounded-3xl border border-night-border bg-night-glass" style={{ gridTemplateColumns }}>
+    <div className="grid justify-center rounded-3xl border border-night-border bg-night-glass" style={{ gridTemplateColumns }}>
       {sortableCell('status', '状況', 'center')}
       <div className={`${baseCellClass} justify-center`}>着手</div>
       {sortableCell('title', 'タイトル')}
       {sortableCell('priority', '優先度', 'center')}
+      {sortableCell('group', 'グループ', 'center')}
       <div className={`${baseCellClass} justify-center`}>タグ</div>
       <div className={`${baseCellClass} justify-center`}>詳細</div>
       <div className={`${baseCellClass} justify-center`}>削除</div>
