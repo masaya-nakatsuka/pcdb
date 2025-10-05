@@ -1,0 +1,28 @@
+0 verbose cli /Users/masaya/.nvm/versions/node/v22.17.1/bin/node /Users/masaya/.nvm/versions/node/v22.17.1/lib/node_modules/npm/bin/npm-cli.js
+1 info using npm@10.9.2
+2 info using node@v22.17.1
+3 silly config load:file:/Users/masaya/.nvm/versions/node/v22.17.1/lib/node_modules/npm/npmrc
+4 silly config load:file:/Users/masaya/source/my_app/pcdb/.npmrc
+5 silly config load:file:/Users/masaya/.npmrc
+6 silly config load:file:/Users/masaya/.nvm/versions/node/v22.17.1/etc/npmrc
+7 verbose title npm exec tailwindcss -i ./src/app/global.css -o ./tmp.css
+8 verbose argv "exec" "--" "tailwindcss" "-i" "./src/app/global.css" "-o" "./tmp.css"
+9 verbose logfile logs-max:10 dir:/Users/masaya/source/my_app/pcdb/.npm/_logs/2025-10-05T19_34_02_615Z-
+10 verbose logfile /Users/masaya/source/my_app/pcdb/.npm/_logs/2025-10-05T19_34_02_615Z-debug-0.log
+11 silly logfile done cleaning log files
+12 http fetch GET https://registry.npmjs.org/npm attempt 1 failed with ENOTFOUND
+13 silly packumentCache heap:4345298944 maxSize:1086324736 maxEntrySize:543162368
+14 verbose stack Error: could not determine executable to run
+14 verbose stack     at getBinFromManifest (/Users/masaya/.nvm/versions/node/v22.17.1/lib/node_modules/npm/node_modules/libnpmexec/lib/get-bin-from-manifest.js:17:23)
+14 verbose stack     at exec (/Users/masaya/.nvm/versions/node/v22.17.1/lib/node_modules/npm/node_modules/libnpmexec/lib/index.js:202:15)
+14 verbose stack     at async Npm.exec (/Users/masaya/.nvm/versions/node/v22.17.1/lib/node_modules/npm/lib/npm.js:207:9)
+14 verbose stack     at async module.exports (/Users/masaya/.nvm/versions/node/v22.17.1/lib/node_modules/npm/lib/cli/entry.js:74:5)
+15 verbose pkgid tailwindcss@4.1.14
+16 error could not determine executable to run
+17 verbose cwd /Users/masaya/source/my_app/pcdb
+18 verbose os Darwin 24.6.0
+19 verbose node v22.17.1
+20 verbose npm  v10.9.2
+21 verbose exit 1
+22 verbose code 1
+23 error A complete log of this run can be found in: /Users/masaya/source/my_app/pcdb/.npm/_logs/2025-10-05T19_34_02_615Z-debug-0.log

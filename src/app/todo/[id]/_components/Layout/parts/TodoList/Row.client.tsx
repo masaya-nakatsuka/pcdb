@@ -1,20 +1,14 @@
 "use client"
 
-import type { CSSProperties } from 'react'
-
 import type { TodoItem } from '@/lib/todoTypes'
-import { getPriorityColor } from '@/styles/commonStyles'
 
 import DetailDrawer from './DetailDrawer.client'
 
 type TodoTableRowProps = {
   todo: TodoItem
   gridTemplateColumns: string
-  cellStyle: CSSProperties
-  cellPadding: string
-  statusButtonStyle: CSSProperties
-  inProgressButtonStyle: CSSProperties
-  iconButtonStyle: CSSProperties
+  cellPaddingClass: string
+  horizontalPaddingClass: string
   onToggleTodoInProgress: (todo: TodoItem) => void
   onToggleTodoCompletion: (todo: TodoItem) => void
   onStartEditing: (todo: TodoItem) => void
@@ -24,21 +18,33 @@ type TodoTableRowProps = {
   onTempMarkdownChange: (value: string) => void
   editingMarkdownId: string | null
   tempMarkdown: string
-  controlStyle: CSSProperties
   expanded: boolean
   updatingTodoId: string | null
   deletingTodos: Set<string>
   newlyCreatedTodos: Set<string>
 }
 
+type PriorityKey = NonNullable<TodoItem['priority']> | 'none'
+
+const PRIORITY_LABEL: Record<PriorityKey, string> = {
+  high: '高',
+  medium: '中',
+  low: '低',
+  none: '―',
+}
+
+const PRIORITY_DOT_COLOR: Record<PriorityKey, string> = {
+  high: 'bg-red-500',
+  medium: 'bg-amber-500',
+  low: 'bg-emerald-500',
+  none: 'bg-slate-500/60',
+}
+
 export default function Row({
   todo,
   gridTemplateColumns,
-  cellStyle,
-  cellPadding,
-  statusButtonStyle,
-  inProgressButtonStyle,
-  iconButtonStyle,
+  cellPaddingClass,
+  horizontalPaddingClass,
   onToggleTodoInProgress,
   onToggleTodoCompletion,
   onStartEditing,
@@ -48,208 +54,100 @@ export default function Row({
   onTempMarkdownChange,
   editingMarkdownId,
   tempMarkdown,
-  controlStyle,
   expanded,
   updatingTodoId,
   deletingTodos,
-  newlyCreatedTodos
+  newlyCreatedTodos,
 }: TodoTableRowProps) {
   const isCompleted = todo.status === '完了'
   const isInProgress = todo.status === '着手中'
   const isDeleting = deletingTodos.has(todo.id)
   const isNew = newlyCreatedTodos.has(todo.id)
-
-  const containerStyle: CSSProperties = {
-    borderBottom: '1px solid rgba(148, 163, 184, 0.18)',
-    opacity: isDeleting ? 0.35 : 1,
-    animation: isNew ? 'slideInFromBottom 0.3s ease-out' : undefined
-  }
-
-  const gridRowStyle: CSSProperties = {
-    display: 'grid',
-    gridTemplateColumns,
-    alignItems: 'stretch',
-    cursor: 'pointer',
-    background: isNew ? 'rgba(59, 130, 246, 0.08)' : 'transparent'
-  }
+  const isUpdating = updatingTodoId === todo.id
 
   return (
-    <div style={containerStyle}>
+    <div className={`border-b border-night-border-muted transition-opacity ${isDeleting ? 'opacity-[0.35]' : ''}`}>
       <div
         data-todo-container
         onClick={() => onStartEditing(todo)}
-        style={gridRowStyle}
+        className={`grid cursor-pointer items-stretch transition-colors ${isNew ? 'animate-slide-in-bottom bg-night-highlight' : 'hover:bg-night-highlight/60'}`}
+        style={{ gridTemplateColumns }}
       >
-        <div style={{ ...cellStyle, justifyContent: 'center' }}>
+        <div className={`${cellPaddingClass} flex items-center justify-center`}>
           <button
-            className="todo-hit-expand"
+            type="button"
+            className={`todo-hit-expand flex h-6 w-6 items-center justify-center rounded-full border text-[12px] font-bold transition-all ${isCompleted ? 'border-emerald-300 bg-gradient-to-br from-emerald-400/90 to-emerald-500/90 text-charcoal-deep shadow-[0_0_18px_rgba(16,185,129,0.35)]' : 'border-night-border-strong text-transparent hover:border-emerald-300 hover:bg-emerald-400/20 hover:text-charcoal-deep/40'} ${isUpdating ? 'cursor-not-allowed opacity-60' : ''}`}
             onClick={(event) => {
               event.stopPropagation()
-              onToggleTodoCompletion(todo)
+              if (!isUpdating) onToggleTodoCompletion(todo)
             }}
             aria-pressed={isCompleted}
-            disabled={updatingTodoId === todo.id}
-            style={{
-              ...statusButtonStyle,
-              margin: '0 auto',
-              cursor: updatingTodoId === todo.id ? 'not-allowed' : 'pointer',
-              opacity: updatingTodoId === todo.id ? 0.6 : 1,
-              background: isCompleted
-                ? 'linear-gradient(135deg, rgba(52, 211, 153, 0.95) 0%, rgba(16, 185, 129, 0.95) 100%)'
-                : 'transparent',
-              border: isCompleted ? '1px solid rgba(52, 211, 153, 0.6)' : '1px solid rgba(148, 163, 184, 0.35)'
-            }}
+            disabled={isUpdating}
             title={isCompleted ? '完了に設定されています。クリックで未着手に戻す' : '未着手です。クリックで完了に設定'}
           >
-            <span
-              style={{
-                width: '14px',
-                height: '14px',
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: isCompleted ? '#0f172a' : 'transparent',
-                fontSize: '12px',
-                fontWeight: 700,
-                transition: 'color 0.2s ease'
-              }}
-            >
-              ✓
-            </span>
+            ✓
           </button>
         </div>
-        <div style={{ ...cellStyle, justifyContent: 'center' }}>
+        <div className={`${cellPaddingClass} flex items-center justify-center`}>
           <button
-            className="todo-hit-expand"
+            type="button"
+            className={`todo-hit-expand flex h-6 w-6 items-center justify-center rounded-full border text-[12px] font-semibold transition-colors ${isInProgress ? 'border-sky-400/60 bg-sky-500/20 text-sky-300' : 'border-night-border bg-night-glass text-frost-soft hover:border-sky-400/60 hover:text-sky-200'} ${isUpdating ? 'cursor-not-allowed opacity-60' : ''}`}
             onClick={(event) => {
               event.stopPropagation()
-              onToggleTodoInProgress(todo)
+              if (!isUpdating) onToggleTodoInProgress(todo)
             }}
             aria-pressed={isInProgress}
-            disabled={updatingTodoId === todo.id}
-            style={{
-              ...iconButtonStyle,
-              width: '24px',
-              height: '24px',
-              margin: '0 auto',
-              opacity: updatingTodoId === todo.id ? 0.6 : 1,
-              cursor: updatingTodoId === todo.id ? 'not-allowed' : 'pointer',
-              background: isInProgress ? 'rgba(59, 130, 246, 0.12)' : 'rgba(15, 23, 42, 0.6)',
-              border: isInProgress ? '1px solid rgba(59, 130, 246, 0.6)' : '1px solid rgba(148, 163, 184, 0.35)',
-              color: isInProgress ? '#60a5fa' : 'rgba(226, 232, 240, 0.75)',
-              fontSize: '14px'
-            }}
+            disabled={isUpdating}
             title={isInProgress ? '着手中です。クリックで解除' : '未着手です。クリックで着手'}
           >
             {isInProgress ? '🚩' : '⚑'}
           </button>
         </div>
-        <div style={{ ...cellStyle, flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'center' }}>
-          <div
-            style={{
-              textDecoration: isCompleted ? 'line-through' : 'none',
-              color: isCompleted ? 'rgba(148, 163, 184, 0.7)' : '#f8fafc',
-              fontSize: '14px',
-              wordBreak: 'break-word',
-              overflowWrap: 'anywhere'
-            }}
-          >
+        <div className={`${cellPaddingClass} flex flex-col items-start justify-center`}>
+          <p className={`break-words text-sm font-medium leading-relaxed text-frost-soft ${isCompleted ? 'line-through text-frost-muted' : ''}`}>
             {todo.title}
-          </div>
+          </p>
         </div>
-        <div style={{ ...cellStyle, justifyContent: 'center' }}>
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              justifyContent: 'center'
-            }}
-          >
-            <span
-              style={{
-                width: '12px',
-                height: '12px',
-                borderRadius: '50%',
-                backgroundColor: getPriorityColor(todo.priority)
-              }}
-            />
-            <span
-              style={{
-                fontSize: '13px',
-                fontWeight: 600,
-                color: todo.priority ? 'rgba(226, 232, 240, 0.9)' : 'rgba(226, 232, 240, 0.5)'
-              }}
-            >
-              {todo.priority ? (todo.priority === 'high' ? '高' : todo.priority === 'medium' ? '中' : '低') : '―'}
+        <div className={`${cellPaddingClass} flex items-center justify-center`}>
+          <div className="flex items-center gap-2">
+            <span className={`h-3 w-3 rounded-full ${PRIORITY_DOT_COLOR[todo.priority ?? 'none']}`} />
+            <span className={`text-sm font-semibold ${todo.priority ? 'text-frost-soft' : 'text-frost-subtle'}`}>
+              {PRIORITY_LABEL[todo.priority ?? 'none']}
             </span>
           </div>
         </div>
-        <div style={{ ...cellStyle, justifyContent: 'center' }}>
-          <div
-            style={{
-              fontSize: '12px',
-              display: 'flex',
-              flexWrap: 'wrap',
-              gap: '6px',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}
-          >
+        <div className={`${cellPaddingClass} flex items-center justify-center`}>
+          <div className="flex flex-wrap items-center justify-center gap-1.5 text-xs">
             {todo.tags.length ? (
               todo.tags.map((tag, index) => (
-                <span
-                  key={index}
-                  style={{
-                    padding: '4px 10px',
-                    borderRadius: '999px',
-                    background: 'rgba(148, 163, 184, 0.18)',
-                    color: 'rgba(226, 232, 240, 0.85)'
-                  }}
-                >
+                <span key={`${tag}-${index}`} className="rounded-full border border-night-border bg-night-glass px-3 py-1 text-frost-soft">
                   {tag}
                 </span>
               ))
             ) : (
-              <span style={{ color: 'rgba(226, 232, 240, 0.45)' }}>-</span>
+              <span className="text-frost-subtle">-</span>
             )}
           </div>
         </div>
-        <div style={{ ...cellStyle, justifyContent: 'center' }}>
+        <div className={`${cellPaddingClass} flex items-center justify-center`}>
           <button
-            className="todo-hit-expand"
+            type="button"
+            className="todo-hit-expand flex h-6 w-6 items-center justify-center rounded-xl border border-night-border bg-night-glass text-sm text-frost-soft transition-colors hover:border-night-border-strong hover:text-white"
             onClick={(event) => {
               event.stopPropagation()
               onToggleExpanded(todo.id)
-            }}
-            style={{
-              ...iconButtonStyle,
-              width: '24px',
-              height: '24px',
-              margin: '0 auto',
-              background: 'rgba(15, 23, 42, 0.6)',
-              fontSize: '14px'
             }}
           >
             {expanded ? '▲' : '▼'}
           </button>
         </div>
-        <div style={{ ...cellStyle, justifyContent: 'center' }}>
+        <div className={`${cellPaddingClass} flex items-center justify-center`}>
           <button
-            className="todo-hit-expand"
+            type="button"
+            className="todo-hit-expand flex h-6 w-6 items-center justify-center rounded-xl border border-red-400/40 bg-red-500/20 text-base text-rose-200 transition-colors hover:border-red-400/60 hover:bg-red-500/30"
             onClick={(event) => {
               event.stopPropagation()
               onDeleteTodo(todo.id)
-            }}
-            style={{
-              ...iconButtonStyle,
-              width: '24px',
-              height: '24px',
-              margin: '0 auto',
-              background: 'rgba(239, 68, 68, 0.12)',
-              color: '#fda4af',
-              fontSize: '16px',
-              textAlign: 'center'
             }}
           >
             🗑
@@ -259,8 +157,7 @@ export default function Row({
       <DetailDrawer
         todo={todo}
         isExpanded={expanded}
-        cellPadding={cellPadding}
-        controlStyle={controlStyle}
+        horizontalPaddingClass={horizontalPaddingClass}
         editingMarkdownId={editingMarkdownId}
         tempMarkdown={tempMarkdown}
         onTempMarkdownChange={onTempMarkdownChange}

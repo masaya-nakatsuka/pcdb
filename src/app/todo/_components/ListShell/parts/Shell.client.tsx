@@ -1,67 +1,25 @@
 "use client"
 
-import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 
 import LoadingOverlay from '@/components/LoadingOverlay'
 import LoginScreen from '@/components/LoginScreen'
-import Button from '@/components/ui/Button'
-import Card from '@/components/ui/Card'
 import { useAuth } from '@/hooks/useAuth'
 import { supabaseTodo } from '@/lib/supabaseTodoClient'
-import {
-  PRIMARY_GRADIENT,
-  SECONDARY_GRADIENT,
-  glassCardStyle,
-  pillButtonStyle,
-  controlBaseStyle,
-  pageBackgroundStyle,
-  getStatusColor
-} from '@/styles/commonStyles'
+import { listSchema, statusCountsSchema, type StatusCounts, type TodoListDTO } from '../../../types'
 
-import { listSchema, statusCountsSchema, type TodoListDTO, type StatusCounts } from '../../../types'
+const primaryButtonClass =
+  'inline-flex items-center justify-center gap-2 rounded-full bg-primary-gradient px-5 py-3 text-sm font-semibold text-white shadow-button-primary transition duration-200 hover:-translate-y-0.5 hover:shadow-button-primary-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-300'
+const secondaryButtonClass =
+  'inline-flex items-center justify-center gap-2 rounded-full bg-secondary-gradient px-5 py-3 text-sm font-semibold text-white shadow-button-secondary transition duration-200 hover:-translate-y-0.5 hover:shadow-button-secondary-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200'
+const ghostButtonClass =
+  'inline-flex items-center justify-center gap-2 rounded-full bg-night-highlight px-4 py-2 text-sm font-semibold text-frost-soft transition hover:bg-sky-500/25 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-200/40'
+const destructiveButtonClass =
+  'inline-flex items-center justify-center gap-2 rounded-full bg-destructive-gradient px-4 py-2 text-sm font-semibold text-white shadow-button-destructive transition duration-200 hover:-translate-y-0.5 hover:shadow-button-destructive-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-200'
 
-const listContainerStyle: CSSProperties = {
-  display: 'grid',
-  gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
-  gap: '24px'
-}
-
-const emptyStateStyle: CSSProperties = {
-  ...glassCardStyle,
-  padding: '48px 32px',
-  textAlign: 'center',
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '16px',
-  alignItems: 'center'
-}
-
-const createFormStyle: CSSProperties = {
-  ...glassCardStyle,
-  padding: '24px',
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '16px'
-}
-
-const statRowStyle: CSSProperties = {
-  display: 'flex',
-  gap: '12px',
-  alignItems: 'center'
-}
-
-const badgeStyle: CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
-  gap: '6px',
-  padding: '6px 12px',
-  borderRadius: '999px',
-  background: 'rgba(15, 23, 42, 0.65)',
-  border: '1px solid rgba(148, 163, 184, 0.25)',
-  color: '#e2e8f0',
-  fontSize: '12px'
-}
+const inputClass =
+  'w-full rounded-xl border border-night-border-strong bg-night-glass-strong px-3 py-2 text-sm text-frost-soft placeholder:text-frost-subtle focus:border-sky-400 focus:outline-none focus:ring-1 focus:ring-sky-400'
 
 export default function Shell() {
   const { userId, loading, signIn, signOut } = useAuth(supabaseTodo, { redirectPath: '/todo' })
@@ -77,7 +35,7 @@ export default function Shell() {
 
   useEffect(() => {
     if (userId) {
-      loadLists(userId)
+      void loadLists(userId)
     }
   }, [userId])
 
@@ -135,17 +93,11 @@ export default function Shell() {
     setOverlayMessage('リストを作成中...')
     const { data, error } = await supabaseTodo
       .from('todo_lists')
-      .insert({
-        user_id: userId,
-        name,
-        sort_order: null,
-        created_at: new Date().toISOString()
-      })
+      .insert({ user_id: userId, name, sort_order: null, created_at: new Date().toISOString() })
       .select('*')
       .single()
 
     setOverlayMessage('')
-
     if (error || !data) return
 
     const created = listSchema.parse(data)
@@ -195,11 +147,14 @@ export default function Shell() {
     }
   }, [userId])
 
-  const goToDetail = useCallback((id: string) => {
-    router.push(`/todo/${id}`)
-  }, [router])
+  const goToDetail = useCallback(
+    (id: string) => {
+      router.push(`/todo/${id}`)
+    },
+    [router]
+  )
 
-  const hasLists = lists.length > 0
+  const hasLists = useMemo(() => lists.length > 0, [lists])
 
   if (loading) {
     return <LoadingOverlay message="読み込み中..." />
@@ -207,7 +162,7 @@ export default function Shell() {
 
   if (!userId) {
     return (
-      <div style={pageBackgroundStyle}>
+      <div className="flex min-h-screen items-center justify-center bg-page-gradient px-4 py-12">
         <LoginScreen
           title="Specsy Todo"
           subtitle="TODO リストを管理するにはログインしてください。"
@@ -218,47 +173,47 @@ export default function Shell() {
   }
 
   return (
-    <div style={pageBackgroundStyle}>
-      <div style={{ maxWidth: '1240px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '32px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h1 style={{ fontSize: '32px', color: '#f8fafc', margin: 0 }}>Todo リスト</h1>
-          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-            <Button onClick={handleSignOut} variant="secondary">
+    <div className="min-h-screen bg-page-gradient px-4 pb-16 pt-12 sm:px-6">
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 text-frost-soft">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <h1 className="text-3xl font-bold text-white">Todo リスト</h1>
+          <div className="flex flex-wrap items-center gap-3">
+            <button type="button" className={ghostButtonClass} onClick={() => void handleSignOut()}>
               ログアウト
-            </Button>
-            <Button onClick={() => setShowCreate(true)}>新規リスト</Button>
+            </button>
+            <button type="button" className={primaryButtonClass} onClick={() => setShowCreate(true)}>
+              新規リスト
+            </button>
           </div>
         </div>
 
         {showCreate && (
-          <div style={createFormStyle}>
-            <h2 style={{ margin: 0 }}>新しいリストを作成</h2>
+          <div className="flex flex-col gap-4 rounded-3xl border border-night-border bg-night-glass p-6 text-frost-soft shadow-glass-xl backdrop-blur-[22px]">
+            <h2 className="text-lg font-semibold">新しいリストを作成</h2>
             <input
               type="text"
               value={newListName}
               onChange={(e) => setNewListName(e.target.value)}
-              style={{ ...controlBaseStyle, fontSize: '14px' }}
+              className={inputClass}
               placeholder="リスト名"
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.nativeEvent.isComposing) {
                   e.preventDefault()
-                  createList()
+                  void createList()
                 }
               }}
             />
-            <div style={{ display: 'flex', gap: '12px' }}>
-              <button
-                onClick={createList}
-                style={{ ...pillButtonStyle, background: PRIMARY_GRADIENT }}
-              >
+            <div className="flex flex-wrap gap-3">
+              <button type="button" className={primaryButtonClass} onClick={() => void createList()}>
                 作成する
               </button>
               <button
+                type="button"
+                className={ghostButtonClass}
                 onClick={() => {
                   setShowCreate(false)
                   setNewListName('')
                 }}
-                style={{ ...pillButtonStyle, background: 'rgba(148, 163, 184, 0.24)' }}
               >
                 キャンセル
               </button>
@@ -267,78 +222,97 @@ export default function Shell() {
         )}
 
         {hasLists ? (
-          <div style={listContainerStyle}>
+          <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
             {lists.map((list) => {
               const summary = summaries[list.id]
+              const isEditing = editingListId === list.id
+
               return (
-                <Card key={list.id} className="cursor-pointer" onClick={() => goToDetail(list.id)}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                    {editingListId === list.id ? (
+                <div
+                  key={list.id}
+                  role="button"
+                  tabIndex={0}
+                  className="flex h-full flex-col gap-4 rounded-3xl border border-night-border bg-night-glass p-6 text-frost-soft shadow-glass-xl transition duration-200 hover:-translate-y-1 hover:shadow-card-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-300"
+                  onClick={() => goToDetail(list.id)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' && !event.nativeEvent.isComposing) {
+                      event.preventDefault()
+                      goToDetail(list.id)
+                    }
+                  }}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    {isEditing ? (
                       <input
                         value={editingName}
                         onChange={(e) => setEditingName(e.target.value)}
                         onBlur={() => {
-                          if (!savingRef.current) updateListName()
+                          if (!savingRef.current) void updateListName()
                         }}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter' && !e.nativeEvent.isComposing) {
                             e.preventDefault()
-                            updateListName()
+                            void updateListName()
                           }
                         }}
-                        style={{ ...controlBaseStyle, fontSize: '15px', width: '100%' }}
+                        className={`${inputClass} text-base font-semibold`}
                         autoFocus
                       />
                     ) : (
-                      <h3 style={{ margin: 0, fontSize: '18px', color: '#f8fafc' }}>{list.name}</h3>
+                      <h3 className="text-lg font-semibold text-white">{list.name}</h3>
                     )}
-                    <div style={{ display: 'flex', gap: '8px' }}>
-                      <Button
-                        size="sm"
-                        variant="ghost"
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        className={ghostButtonClass}
                         onClick={(e) => {
                           e.stopPropagation()
-                          if (editingListId === list.id) {
-                            updateListName()
+                          if (isEditing) {
+                            void updateListName()
                           } else {
                             setEditingListId(list.id)
                             setEditingName(list.name)
                           }
                         }}
                       >
-                        {editingListId === list.id ? '保存' : '編集'}
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="destructive"
+                        {isEditing ? '保存' : '編集'}
+                      </button>
+                      <button
+                        type="button"
+                        className={destructiveButtonClass}
                         onClick={(e) => {
                           e.stopPropagation()
-                          deleteList(list.id)
+                          void deleteList(list.id)
                         }}
                       >
                         削除
-                      </Button>
+                      </button>
                     </div>
                   </div>
 
-                  <div style={statRowStyle}>
-                    <span style={badgeStyle}>合計 {summary?.total ?? 0}</span>
-                    <span style={badgeStyle}>未着手 {summary?.未着手 ?? 0}</span>
-                    <span style={badgeStyle}>着手中 {summary?.着手中 ?? 0}</span>
-                    <span style={badgeStyle}>完了 {summary?.完了 ?? 0}</span>
+                  <div className="flex flex-wrap items-center gap-2 text-xs text-frost-soft">
+                    <span className="rounded-full border border-night-border bg-night-glass px-3 py-1">
+                      合計 {summary?.total ?? 0}
+                    </span>
+                    <span className="rounded-full border border-night-border bg-night-glass px-3 py-1">
+                      未着手 {summary?.未着手 ?? 0}
+                    </span>
+                    <span className="rounded-full border border-night-border bg-night-glass px-3 py-1">
+                      着手中 {summary?.着手中 ?? 0}
+                    </span>
+                    <span className="rounded-full border border-night-border bg-night-glass px-3 py-1">
+                      完了 {summary?.完了 ?? 0}
+                    </span>
                   </div>
-                </Card>
+                </div>
               )
             })}
           </div>
         ) : (
-          <div style={emptyStateStyle}>
-            <div style={{ fontSize: '14px', color: 'rgba(226, 232, 240, 0.75)' }}>まだリストがありません</div>
-            <h2 style={{ margin: 0, fontSize: '24px', color: '#f8fafc' }}>最初のリストを作成しましょう</h2>
-            <button
-              onClick={() => setShowCreate(true)}
-              style={{ ...pillButtonStyle, background: SECONDARY_GRADIENT }}
-            >
+          <div className="flex flex-col items-center gap-4 rounded-3xl border border-night-border bg-night-glass p-12 text-center text-frost-soft shadow-glass-xl backdrop-blur-[22px]">
+            <p className="text-sm text-frost-muted">まだリストがありません</p>
+            <h2 className="text-2xl font-semibold text-white">最初のリストを作成しましょう</h2>
+            <button type="button" className={secondaryButtonClass} onClick={() => setShowCreate(true)}>
               新しいリストを作成
             </button>
           </div>

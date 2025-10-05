@@ -1,7 +1,5 @@
 "use client"
 
-import type { CSSProperties } from 'react'
-
 import type { TodoItem } from '@/lib/todoTypes'
 
 import type { EditFormState } from '../../../../types'
@@ -17,8 +15,6 @@ type SortDirection = 'asc' | 'desc'
 type TodoTableProps = {
   todos: TodoItem[]
   columnWidths: string[]
-  cellPadding: string
-  isMobile: boolean
   sortField: string
   sortDirection: SortDirection
   onSort: (field: string) => void
@@ -44,92 +40,9 @@ type TodoTableProps = {
   onSaveTodo: (isNew: boolean) => void
 }
 
-const listShellStyle: CSSProperties = {
-  width: '100%'
-}
-
-const scrollContainerStyle: CSSProperties = {
-  overflowX: 'auto'
-}
-
-const rowsWrapperStyle: CSSProperties = {
-  display: 'flex',
-  flexDirection: 'column'
-}
-
-const bodyCellStyle = (padding: string): CSSProperties => ({
-  padding,
-  display: 'flex',
-  alignItems: 'center',
-  boxSizing: 'border-box'
-})
-
-const iconButtonBaseStyle: CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  width: '46px',
-  height: '46px',
-  borderRadius: '14px',
-  border: 'none',
-  fontSize: '18px',
-  background: 'rgba(15, 23, 42, 0.55)',
-  color: '#e2e8f0',
-  cursor: 'pointer',
-  transition: 'transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease, color 0.25s ease'
-}
-
-const todoStatusButtonBaseStyle: CSSProperties = {
-  display: 'inline-flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  width: '24px',
-  height: '24px',
-  borderRadius: '12px',
-  border: '1px solid rgba(148, 163, 184, 0.35)',
-  background: 'transparent',
-  color: '#0f172a',
-  fontSize: '14px',
-  fontWeight: 700,
-  cursor: 'pointer',
-  transition: 'background 0.2s ease, border-color 0.2s ease, transform 0.15s ease, opacity 0.2s ease'
-}
-
-const inProgressButtonBaseStyle: CSSProperties = {
-  display: 'inline-flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  padding: '8px 14px',
-  borderRadius: '999px',
-  border: '1px solid rgba(148, 163, 184, 0.35)',
-  background: 'rgba(15, 23, 42, 0.55)',
-  color: '#e2e8f0',
-  fontSize: '12px',
-  fontWeight: 600,
-  letterSpacing: '0.04em',
-  cursor: 'pointer',
-  minWidth: '80px',
-  transition: 'background 0.2s ease, border-color 0.2s ease, color 0.2s ease, opacity 0.2s ease'
-}
-
-const controlBaseStyle: CSSProperties = {
-  borderRadius: '12px',
-  padding: '10px 12px',
-  fontSize: '13px',
-  backgroundColor: 'rgba(15, 23, 42, 0.6)',
-  border: '1px solid rgba(148, 163, 184, 0.35)',
-  color: '#e2e8f0',
-  outline: 'none',
-  transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
-  boxSizing: 'border-box',
-  minWidth: 0
-}
-
 export default function TodoList({
   todos,
   columnWidths,
-  cellPadding,
-  isMobile,
   sortField,
   sortDirection,
   onSort,
@@ -152,32 +65,25 @@ export default function TodoList({
   onDeleteTodo,
   deletingTodos,
   newlyCreatedTodos,
-  onSaveTodo
+  onSaveTodo,
 }: TodoTableProps) {
-  const bodyCell = bodyCellStyle(cellPadding)
   const gridTemplateColumns = columnWidths.join(' ')
-  const minTableWidth = isMobile ? '760px' : '1080px'
+  const cellPaddingClass = 'px-3 py-3 sm:px-4 sm:py-4'
+  const horizontalPaddingClass = 'px-3 sm:px-4'
 
   return (
-    <div style={listShellStyle}>
-      <div style={scrollContainerStyle}>
-        <div
-          style={{
-            minWidth: minTableWidth,
-            display: 'flex',
-            flexDirection: 'column',
-            width: '100%'
-          }}
-        >
+    <div className="w-full">
+      <div className="overflow-x-auto">
+        <div className="flex w-full min-w-[47.5rem] flex-col sm:min-w-[67.5rem]">
           <TodoListHeader
             gridTemplateColumns={gridTemplateColumns}
             sortField={sortField}
             sortDirection={sortDirection}
             onSort={onSort}
-            cellPadding={cellPadding}
+            cellPaddingClass={cellPaddingClass}
           />
 
-          <div style={rowsWrapperStyle}>
+          <div className="flex flex-col">
             {todos.map((todo) => {
               const expanded = expandedTodos.has(todo.id)
 
@@ -185,13 +91,9 @@ export default function TodoList({
                 return (
                   <EditRow
                     key={todo.id}
-                  gridTemplateColumns={gridTemplateColumns}
-                  cellStyle={bodyCell}
-                  statusButtonStyle={todoStatusButtonBaseStyle}
-                  inProgressButtonStyle={inProgressButtonBaseStyle}
-                  iconButtonStyle={iconButtonBaseStyle}
-                  controlStyle={controlBaseStyle}
-                  editForm={editForm}
+                    gridTemplateColumns={gridTemplateColumns}
+                    cellPaddingClass={cellPaddingClass}
+                    editForm={editForm}
                     onEditFormChange={onEditFormChange}
                     onCancel={onCancelEditing}
                     onSave={() => onSaveTodo(false)}
@@ -204,11 +106,8 @@ export default function TodoList({
                   key={todo.id}
                   todo={todo}
                   gridTemplateColumns={gridTemplateColumns}
-                  cellStyle={bodyCell}
-                  cellPadding={cellPadding}
-                  statusButtonStyle={todoStatusButtonBaseStyle}
-                  inProgressButtonStyle={inProgressButtonBaseStyle}
-                  iconButtonStyle={iconButtonBaseStyle}
+                  cellPaddingClass={cellPaddingClass}
+                  horizontalPaddingClass={horizontalPaddingClass}
                   onToggleTodoInProgress={onToggleTodoInProgress}
                   onToggleTodoCompletion={onToggleTodoCompletion}
                   onStartEditing={onStartEditing}
@@ -218,7 +117,6 @@ export default function TodoList({
                   onTempMarkdownChange={onTempMarkdownChange}
                   editingMarkdownId={editingMarkdownId}
                   tempMarkdown={tempMarkdown}
-                  controlStyle={controlBaseStyle}
                   expanded={expanded}
                   updatingTodoId={updatingTodoId}
                   deletingTodos={deletingTodos}
@@ -230,11 +128,7 @@ export default function TodoList({
             {showNewTodo ? (
               <NewRow
                 gridTemplateColumns={gridTemplateColumns}
-                cellStyle={bodyCell}
-                statusButtonStyle={todoStatusButtonBaseStyle}
-                inProgressButtonStyle={inProgressButtonBaseStyle}
-                iconButtonStyle={iconButtonBaseStyle}
-                controlStyle={controlBaseStyle}
+                cellPaddingClass={cellPaddingClass}
                 editForm={editForm}
                 onEditFormChange={onEditFormChange}
                 onCancel={onCancelEditing}
@@ -243,7 +137,7 @@ export default function TodoList({
             ) : (
               <AddRow
                 gridTemplateColumns={gridTemplateColumns}
-                cellPadding={cellPadding}
+                cellPaddingClass={cellPaddingClass}
                 onStartCreating={onStartCreating}
               />
             )}

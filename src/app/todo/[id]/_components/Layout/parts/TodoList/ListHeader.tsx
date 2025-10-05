@@ -1,7 +1,5 @@
 "use client"
 
-import type { CSSProperties } from 'react'
-
 type SortDirection = 'asc' | 'desc'
 
 type TableHeaderProps = {
@@ -9,37 +7,7 @@ type TableHeaderProps = {
   sortField: string
   sortDirection: SortDirection
   onSort: (field: string) => void
-  cellPadding: string
-}
-
-const headerRowStyle = (gridTemplateColumns: string): CSSProperties => ({
-  display: 'grid',
-  gridTemplateColumns,
-  background: 'rgba(148, 163, 184, 0.12)',
-  justifyContent: 'center',
-})
-
-const headerCellBaseStyle = (cellPadding: string): CSSProperties => ({
-  padding: cellPadding,
-  fontSize: '12px',
-  letterSpacing: '0.05em',
-  textTransform: 'uppercase',
-  color: 'rgba(226, 232, 240, 0.75)',
-  fontWeight: 700,
-  borderRadius: '24px',
-  whiteSpace: 'nowrap',
-  display: 'flex',
-  alignItems: 'center',
-  gap: '6px'
-})
-
-const sortableButtonStyle: CSSProperties = {
-  all: 'unset',
-  cursor: 'pointer',
-  display: 'flex',
-  alignItems: 'center',
-  gap: '6px',
-  width: '100%'
+  cellPaddingClass: string
 }
 
 export default function ListHeader({
@@ -47,23 +15,16 @@ export default function ListHeader({
   sortField,
   sortDirection,
   onSort,
-  cellPadding
+  cellPaddingClass,
 }: TableHeaderProps) {
-  const sortableCell = (
-    field: string,
-    label: string,
-    align: CSSProperties['justifyContent'] = 'flex-start'
-  ) => (
-    <div style={{ ...headerCellBaseStyle(cellPadding), justifyContent: align }}>
+  const baseCellClass = `flex items-center gap-1 rounded-full text-[12px] font-semibold uppercase tracking-[0.15em] text-frost-muted ${cellPaddingClass}`
+
+  const sortableCell = (field: string, label: string, align: 'center' | 'flex-start' = 'flex-start') => (
+    <div className={`${baseCellClass} ${align === 'center' ? 'justify-center text-center' : 'justify-start'}`}>
       <button
         type="button"
         onClick={() => onSort(field)}
-        style={{
-          ...sortableButtonStyle,
-          justifyContent: align,
-          textAlign: align === 'center' ? 'center' : 'left',
-          color: 'inherit'
-        }}
+        className={`flex w-full items-center gap-1 text-left transition-colors hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-200/40 ${align === 'center' ? 'justify-center text-center' : ''}`}
       >
         <span>{label}</span>
         {sortField === field && <span>{sortDirection === 'asc' ? '↑' : '↓'}</span>}
@@ -72,14 +33,14 @@ export default function ListHeader({
   )
 
   return (
-    <div style={headerRowStyle(gridTemplateColumns)}>
+    <div className="grid rounded-3xl border border-night-border bg-night-glass" style={{ gridTemplateColumns }}>
       {sortableCell('status', '状況', 'center')}
-      <div style={{ ...headerCellBaseStyle(cellPadding), justifyContent: 'center' }}>着手</div>
+      <div className={`${baseCellClass} justify-center`}>着手</div>
       {sortableCell('title', 'タイトル')}
       {sortableCell('priority', '優先度', 'center')}
-      <div style={{ ...headerCellBaseStyle(cellPadding), justifyContent: 'center' }}>タグ</div>
-      <div style={{ ...headerCellBaseStyle(cellPadding), justifyContent: 'center' }}>詳細</div>
-      <div style={{ ...headerCellBaseStyle(cellPadding), justifyContent: 'center' }}>削除</div>
+      <div className={`${baseCellClass} justify-center`}>タグ</div>
+      <div className={`${baseCellClass} justify-center`}>詳細</div>
+      <div className={`${baseCellClass} justify-center`}>削除</div>
     </div>
   )
 }

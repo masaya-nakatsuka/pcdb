@@ -16,33 +16,6 @@ type LayoutProps = {
   listId: string
 }
 
-const pageBackgroundStyle = {
-  minHeight: '100vh',
-  background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
-  padding: '48px 16px 64px',
-  overflowX: 'auto'
-} as const
-
-const pageContentStyle = {
-  maxWidth: '1240px',
-  margin: '0 auto',
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '32px'
-} as const
-
-const cardStyle = {
-  background: 'rgba(15, 23, 42, 0.55)',
-  border: '1px solid rgba(148, 163, 184, 0.25)',
-  borderRadius: '24px',
-  color: '#e2e8f0',
-  display: 'flex',
-  flexDirection: 'column',
-  boxShadow: '0 45px 80px -40px rgba(15, 23, 42, 0.8)',
-  backdropFilter: 'blur(22px)',
-  WebkitBackdropFilter: 'blur(22px)'
-} as const
-
 export default function LayoutClient({ listId }: LayoutProps) {
   const [userId, setUserId] = useState<string | null>(null)
   const [todos, setTodos] = useState<TodoItem[]>([])
@@ -59,7 +32,6 @@ export default function LayoutClient({ listId }: LayoutProps) {
   const [sortField, setSortField] = useState<string>('created_at')
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
   const [showCompleted, setShowCompleted] = useState<boolean>(false)
-  const [isMobile, setIsMobile] = useState<boolean>(false)
 
   const [editForm, setEditForm] = useState<EditFormState>(editFormSchema.parse({}))
   const previousStatusRef = useRef<Map<string, TodoStatus>>(new Map())
@@ -88,17 +60,6 @@ export default function LayoutClient({ listId }: LayoutProps) {
       isMounted = false
     }
   }, [listId])
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-
-    const updateIsMobile = () => setIsMobile(window.innerWidth <= 640)
-    updateIsMobile()
-    window.addEventListener('resize', updateIsMobile)
-
-    return () => window.removeEventListener('resize', updateIsMobile)
-  }, [])
-
   const loadTodos = useCallback(async (uid: string, lId: string) => {
     const { data, error } = await supabaseTodo
       .from('todo_items')
@@ -467,7 +428,6 @@ export default function LayoutClient({ listId }: LayoutProps) {
   }), [todos])
 
   const columnWidths = ['7%', '7%', '32%', '15%', '25%', '7%', '7%']
-  const tableCellPadding = isMobile ? '12px 8px' : '16px 10px'
 
   if (loading) {
     return <LoadingOverlay message="読み込み中..." />
@@ -478,32 +438,19 @@ export default function LayoutClient({ listId }: LayoutProps) {
   }
 
   return (
-    <div style={pageBackgroundStyle}>
-      <div style={pageContentStyle}>
+    <div className="min-h-screen overflow-x-auto bg-page-gradient px-4 pb-16 pt-12 sm:px-6">
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 text-frost-soft">
         <Header onSignOut={handleSignOut} />
-        <div style={{ ...cardStyle, padding: isMobile ? '16px' : '24px' }}>
+        <div className="flex flex-col rounded-3xl border border-night-border bg-night-glass p-4 text-frost-soft shadow-glass-xl backdrop-blur-[22px] sm:p-6">
           <SummaryHeader
             statusSummary={statusSummary}
             showCompleted={showCompleted}
             onToggleShowCompleted={() => setShowCompleted((prev) => !prev)}
           />
 
-          <style jsx>{`
-            @keyframes slideInFromBottom {
-              from { transform: translateY(12px); opacity: 0; }
-              to { transform: translateY(0); opacity: 1; }
-            }
-            @keyframes slideInFromTop {
-              from { transform: translateY(-16px); opacity: 0; }
-              to { transform: translateY(0); opacity: 1; }
-            }
-          `}</style>
-
           <TodoList
             todos={sortedTodos}
             columnWidths={columnWidths}
-            cellPadding={tableCellPadding}
-            isMobile={isMobile}
             sortField={sortField}
             sortDirection={sortDirection}
             onSort={(field) => {

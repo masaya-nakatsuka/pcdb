@@ -1,9 +1,5 @@
 "use client"
 
-import type { CSSProperties } from 'react'
-
-import { getStatusColor } from '@/styles/commonStyles'
-
 import type { SimpleStatus } from '../../../types'
 
 type SummaryHeaderProps = {
@@ -14,72 +10,31 @@ type SummaryHeaderProps = {
 
 const STATUS_ORDER: SimpleStatus[] = ['未着手', '着手中', '完了']
 
-const containerStyle: CSSProperties = {
-  display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  marginBottom: '16px',
-  flexWrap: 'wrap',
-  gap: '12px'
-}
-
-const statusListStyle: CSSProperties = {
-  display: 'flex',
-  gap: '12px',
-  flexWrap: 'wrap'
-}
-
-const statusChipBaseStyle: CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
-  gap: '8px',
-  padding: '10px 14px',
-  borderRadius: '16px',
-  background: 'rgba(15, 23, 42, 0.55)',
-  border: '1px solid rgba(148, 163, 184, 0.2)',
-  color: 'rgba(226, 232, 240, 0.85)'
-}
-
-const toggleButtonBaseStyle: CSSProperties = {
-  display: 'inline-flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  gap: '8px',
-  padding: '8px 16px',
-  borderRadius: '999px',
-  fontWeight: 600,
-  fontSize: '12px',
-  border: 'none',
-  color: '#e2e8f0',
-  cursor: 'pointer',
-  boxShadow: 'none'
+const STATUS_DOT_COLOR: Record<SimpleStatus, string> = {
+  未着手: 'bg-slate-400',
+  着手中: 'bg-sky-400',
+  完了: 'bg-emerald-400',
 }
 
 export default function SummaryHeader({ statusSummary, showCompleted, onToggleShowCompleted }: SummaryHeaderProps) {
   return (
-    <div style={containerStyle}>
-      <div style={statusListStyle}>
+    <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-wrap items-center gap-3">
         {STATUS_ORDER.map((status) => (
-          <div key={status} style={statusChipBaseStyle}>
-            <span
-              style={{
-                width: '10px',
-                height: '10px',
-                borderRadius: '50%',
-                backgroundColor: getStatusColor(status)
-              }}
-            />
-            <span style={{ fontSize: '13px', fontWeight: 600 }}>{status}</span>
-            <span style={{ fontSize: '13px', opacity: 0.7 }}>{statusSummary[status]}</span>
+          <div
+            key={status}
+            className="flex items-center gap-2 rounded-2xl border border-night-border bg-night-glass px-4 py-2 text-sm text-frost-soft"
+          >
+            <span className={`h-2.5 w-2.5 rounded-full ${STATUS_DOT_COLOR[status]}`} />
+            <span className="font-semibold">{status}</span>
+            <span className="text-frost-muted">{statusSummary[status]}</span>
           </div>
         ))}
       </div>
       <button
+        type="button"
         onClick={onToggleShowCompleted}
-        style={{
-          ...toggleButtonBaseStyle,
-          background: showCompleted ? 'rgba(59, 130, 246, 0.25)' : 'rgba(148, 163, 184, 0.22)'
-        }}
+        className={`inline-flex items-center justify-center gap-2 rounded-full px-4 py-2 text-xs font-semibold text-frost-soft transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-200/40 ${showCompleted ? 'bg-primary-gradient shadow-button-primary hover:-translate-y-0.5 hover:shadow-button-primary-hover' : 'bg-night-highlight hover:bg-sky-500/30'}`}
       >
         {showCompleted ? '完了タスクを非表示' : '完了タスクを表示'}
       </button>
