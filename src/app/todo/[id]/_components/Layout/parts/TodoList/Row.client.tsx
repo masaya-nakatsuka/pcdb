@@ -82,6 +82,7 @@ export default function Row({
       >
         <div style={{ ...cellStyle, justifyContent: 'center' }}>
           <button
+            className="todo-hit-expand"
             onClick={(event) => {
               event.stopPropagation()
               onToggleTodoCompletion(todo)
@@ -119,6 +120,7 @@ export default function Row({
         </div>
         <div style={{ ...cellStyle, justifyContent: 'center' }}>
           <button
+            className="todo-hit-expand"
             onClick={(event) => {
               event.stopPropagation()
               onToggleTodoInProgress(todo)
@@ -215,6 +217,7 @@ export default function Row({
         </div>
         <div style={{ ...cellStyle, justifyContent: 'center' }}>
           <button
+            className="todo-hit-expand"
             onClick={(event) => {
               event.stopPropagation()
               onToggleExpanded(todo.id)
@@ -233,6 +236,7 @@ export default function Row({
         </div>
         <div style={{ ...cellStyle, justifyContent: 'center' }}>
           <button
+            className="todo-hit-expand"
             onClick={(event) => {
               event.stopPropagation()
               onDeleteTodo(todo.id)

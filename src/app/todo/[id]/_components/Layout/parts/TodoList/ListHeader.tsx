@@ -15,7 +15,8 @@ type TableHeaderProps = {
 const headerRowStyle = (gridTemplateColumns: string): CSSProperties => ({
   display: 'grid',
   gridTemplateColumns,
-  background: 'rgba(148, 163, 184, 0.12)'
+  background: 'rgba(148, 163, 184, 0.12)',
+  justifyContent: 'center',
 })
 
 const headerCellBaseStyle = (cellPadding: string): CSSProperties => ({

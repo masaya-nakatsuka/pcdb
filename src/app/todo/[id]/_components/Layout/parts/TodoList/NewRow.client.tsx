@@ -44,6 +44,7 @@ export default function NewRow({
     >
       <div style={{ ...cellStyle, justifyContent: 'center' }}>
         <button
+          className="todo-hit-expand"
           type="button"
           onClick={() =>
             onEditFormChange({ status: editForm.status === '完了' ? '未着手' : '完了' })
@@ -76,6 +77,7 @@ export default function NewRow({
       </div>
       <div style={{ ...cellStyle, justifyContent: 'center' }}>
         <button
+          className="todo-hit-expand"
           type="button"
           onClick={() =>
             onEditFormChange({ status: isInProgress ? '未着手' : '着手中' })
