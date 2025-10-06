@@ -1,5 +1,6 @@
 "use client"
 
+import { useEffect, useRef } from 'react'
 import ReactMarkdown from 'react-markdown'
 
 import type { TodoItem } from '@/lib/todoTypes'
@@ -27,6 +28,19 @@ export default function DetailDrawer({
   const doneDateLabel = todo.done_date ? new Date(todo.done_date).toLocaleDateString('ja-JP') : '-'
 
   const fieldClass = 'w-full rounded-xl border border-night-border-strong bg-night-glass-strong px-3 py-2 text-sm text-frost-soft placeholder:text-frost-subtle focus:border-sky-400 focus:outline-none focus:ring-1 focus:ring-sky-400'
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null)
+
+  const adjustTextareaHeight = (el: HTMLTextAreaElement | null) => {
+    if (!el) return
+    el.style.height = 'auto'
+    el.style.height = `${el.scrollHeight}px`
+  }
+
+  useEffect(() => {
+    if (editingMarkdownId === todo.id) {
+      adjustTextareaHeight(textareaRef.current)
+    }
+  }, [editingMarkdownId, tempMarkdown, todo.id])
 
   return (
     <div
@@ -52,9 +66,16 @@ export default function DetailDrawer({
 
           {editingMarkdownId === todo.id ? (
             <textarea
+              ref={textareaRef}
               value={tempMarkdown}
-              onChange={(event) => onTempMarkdownChange(event.target.value)}
-              className={`${fieldClass} min-h-fit resize-y`}
+              onInput={(event) => {
+                const el = event.currentTarget
+                onTempMarkdownChange(el.value)
+                // 入力ごとに高さを内容に合わせて更新
+                el.style.height = 'auto'
+                el.style.height = `${el.scrollHeight}px`
+              }}
+              className={`${fieldClass} min-h-fit resize-y overflow-hidden`}
               placeholder="詳細を記述、マークダウン形式にも対応しています..."
               autoFocus
             />
