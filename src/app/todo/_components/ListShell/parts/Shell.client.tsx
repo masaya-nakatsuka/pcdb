@@ -263,9 +263,6 @@ export default function Shell() {
                       <input
                         value={editingName}
                         onChange={(e) => setEditingName(e.target.value)}
-                        onBlur={() => {
-                          if (!savingRef.current) void updateListName()
-                        }}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter' && !e.nativeEvent.isComposing) {
                             e.preventDefault()
