@@ -1,6 +1,8 @@
 "use client"
 
-import type { TodoItem } from '@/lib/todoTypes'
+import type { CSSProperties } from 'react'
+
+import type { TodoGroup, TodoItem } from '@/lib/todoTypes'
 
 import DetailDrawer from './DetailDrawer.client'
 
@@ -22,6 +24,10 @@ type TodoTableRowProps = {
   updatingTodoId: string | null
   deletingTodos: Set<string>
   newlyCreatedTodos: Set<string>
+  recentlyMovedTodoId: string | null
+  reappearingTodos: Set<string>
+  disappearingTodos: Set<string>
+  groupsById: Record<string, TodoGroup>
 }
 
 type PriorityKey = NonNullable<TodoItem['priority']> | 'none'
@@ -58,19 +64,34 @@ export default function Row({
   updatingTodoId,
   deletingTodos,
   newlyCreatedTodos,
+  recentlyMovedTodoId,
+  reappearingTodos,
+  disappearingTodos,
+  groupsById,
 }: TodoTableRowProps) {
   const isCompleted = todo.status === '完了'
   const isInProgress = todo.status === '着手中'
   const isDeleting = deletingTodos.has(todo.id)
   const isNew = newlyCreatedTodos.has(todo.id)
   const isUpdating = updatingTodoId === todo.id
+  const isRecentlyMoved = recentlyMovedTodoId === todo.id
+  const isReappearing = reappearingTodos.has(todo.id)
+  const isDisappearing = disappearingTodos.has(todo.id)
+  const group = todo.group_id ? groupsById[todo.group_id] : undefined
+  const groupBadgeStyle: CSSProperties | undefined = group?.color?.startsWith('#')
+    ? {
+        backgroundColor: `${group.color}1f`,
+        borderColor: `${group.color}66`,
+        color: group.color,
+      }
+    : undefined
 
   return (
     <div className={`border-b border-night-border-muted transition-opacity ${isDeleting ? 'opacity-[0.35]' : ''}`}>
       <div
         data-todo-container
         onClick={() => onStartEditing(todo)}
-        className={`grid justify-center cursor-pointer items-stretch transition-colors ${isNew ? 'animate-slide-in-bottom bg-night-highlight' : 'hover:bg-night-highlight/60'}`}
+        className={`relative z-0 grid cursor-pointer items-stretch transition-colors ${isNew ? 'animate-slide-in-bottom bg-night-highlight' : 'hover:bg-night-highlight/60'} ${isRecentlyMoved ? 'animate-row-highlight' : ''} ${isReappearing ? 'animate-row-highlight' : ''} ${isDisappearing ? 'animate-row-complete' : ''}`}
         style={{ gridTemplateColumns }}
       >
         <div className={`${cellPaddingClass} flex items-center justify-center`}>
@@ -103,6 +124,19 @@ export default function Row({
             {isInProgress ? '🚩' : '⚑'}
           </button>
         </div>
+        <div className={`${cellPaddingClass} flex items-center justify-center`}>
+          {group ? (
+            <span
+              className="inline-flex items-center gap-1 rounded-full border border-night-border bg-night-glass px-3 py-1 text-xs font-semibold text-frost-soft"
+              style={groupBadgeStyle}
+            >
+              {group.emoji && <span>{group.emoji}</span>}
+              <span>{group.name}</span>
+            </span>
+          ) : (
+            <span className="text-frost-subtle">-</span>
+          )}
+        </div>
         <div className={`${cellPaddingClass} flex flex-col items-start justify-center`}>
           <p className={`break-words text-sm font-medium leading-relaxed text-frost-soft ${isCompleted ? 'line-through text-frost-muted' : ''}`}>
             {todo.title}
@@ -115,15 +149,6 @@ export default function Row({
               {PRIORITY_LABEL[todo.priority ?? 'none']}
             </span>
           </div>
-        </div>
-        <div className={`${cellPaddingClass} flex items-center justify-center`}>
-          {todo.group ? (
-            <span className="rounded-full border border-night-border bg-night-glass px-3 py-1 text-xs font-semibold text-frost-soft">
-              {todo.group}
-            </span>
-          ) : (
-            <span className="text-frost-subtle">-</span>
-          )}
         </div>
         <div className={`${cellPaddingClass} flex items-center justify-center`}>
           <div className="flex flex-wrap items-center justify-center gap-1.5 text-xs">

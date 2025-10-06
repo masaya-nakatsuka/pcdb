@@ -1,6 +1,9 @@
 "use client"
 
+import type { TodoGroup } from '@/lib/todoTypes'
+
 import type { EditFormState } from '../../../../types'
+import GroupSelectDropdown from './GroupSelectDropdown.client'
 
 type EditRowProps = {
   gridTemplateColumns: string
@@ -9,6 +12,11 @@ type EditRowProps = {
   onEditFormChange: (values: Partial<EditFormState>) => void
   onCancel: () => void
   onSave: () => void
+  groups: TodoGroup[]
+  onCreateGroup: (name: string) => Promise<TodoGroup | null>
+  onOpenGroupCreateModal: (callback: (groupId: string) => void) => void
+  onDeleteGroup: (groupId: string) => void
+  onReorderGroups: (groups: TodoGroup[]) => void
 }
 
 export default function EditRow({
@@ -18,6 +26,11 @@ export default function EditRow({
   onEditFormChange,
   onCancel,
   onSave,
+  groups,
+  onCreateGroup,
+  onOpenGroupCreateModal,
+  onDeleteGroup,
+  onReorderGroups,
 }: EditRowProps) {
   const isInProgress = editForm.status === '着手中'
   const fieldClass = 'w-full rounded-xl border border-night-border-strong bg-night-glass-strong px-3 py-2 text-sm text-frost-soft placeholder:text-frost-subtle focus:border-sky-400 focus:outline-none focus:ring-1 focus:ring-sky-400'
@@ -25,7 +38,7 @@ export default function EditRow({
   return (
     <div
       data-todo-container
-      className="grid justify-center animate-slide-in-top border-b border-night-border-muted bg-night-highlight/40"
+      className="relative z-10 grid items-stretch border-b border-night-border-muted bg-night-highlight/40 pointer-events-auto"
       style={{ gridTemplateColumns }}
     >
       <div className={`${cellPaddingClass} flex items-center justify-center`}>
@@ -46,6 +59,20 @@ export default function EditRow({
         >
           {isInProgress ? '🚩' : '⚑'}
         </button>
+      </div>
+      <div className={`${cellPaddingClass} flex items-center justify-center`}>
+        <GroupSelectDropdown
+          value={editForm.group_id}
+          groups={groups}
+          onChange={(groupId) => onEditFormChange({ group_id: groupId })}
+          onCreateNew={() => {
+            onOpenGroupCreateModal((groupId) => {
+              onEditFormChange({ group_id: groupId })
+            })
+          }}
+          onDeleteGroup={onDeleteGroup}
+          onReorderGroups={onReorderGroups}
+        />
       </div>
       <div className={`${cellPaddingClass} flex flex-col justify-center`}>
         <input
@@ -76,21 +103,6 @@ export default function EditRow({
           <option value="medium">中</option>
           <option value="high">高</option>
         </select>
-      </div>
-      <div className={`${cellPaddingClass} flex flex-col justify-center`}>
-        <input
-          type="text"
-          value={editForm.group}
-          onChange={(event) => onEditFormChange({ group: event.target.value })}
-          className={fieldClass}
-          placeholder="グループ"
-          onKeyDown={(event) => {
-            if (event.key === 'Enter' && !event.nativeEvent.isComposing) {
-              event.preventDefault()
-              onSave()
-            }
-          }}
-        />
       </div>
       <div className={`${cellPaddingClass} flex flex-col justify-center`}>
         <input

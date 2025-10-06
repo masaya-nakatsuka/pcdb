@@ -36,10 +36,45 @@ module.exports = {
           from: { transform: "translateY(-16px)", opacity: "0" },
           to: { transform: "translateY(0)", opacity: "1" },
         },
+        rowHighlight: {
+          "0%": {
+            backgroundColor: "rgba(59, 130, 246, 0.22)",
+            boxShadow: "0 25px 60px -30px rgba(59, 130, 246, 0.55)",
+          },
+          "55%": {
+            backgroundColor: "rgba(59, 130, 246, 0.14)",
+            boxShadow: "0 18px 40px -28px rgba(59, 130, 246, 0.45)",
+          },
+          "100%": {
+            backgroundColor: "transparent",
+            boxShadow: "0 0 0 rgba(59, 130, 246, 0)",
+          },
+        },
+        rowComplete: {
+          "0%": {
+            opacity: "1",
+            transform: "translateY(0) scale(1)",
+            backgroundColor: "transparent",
+          },
+          "55%": {
+            opacity: "0.8",
+            transform: "translateY(-4px) scale(0.995)",
+            backgroundColor: "rgba(148, 163, 184, 0.14)",
+            boxShadow: "0 18px 42px -26px rgba(148, 163, 184, 0.35)",
+          },
+          "100%": {
+            opacity: "0",
+            transform: "translateY(-12px) scale(0.985)",
+            backgroundColor: "transparent",
+            boxShadow: "0 0 0 rgba(0, 0, 0, 0)",
+          },
+        },
       },
       animation: {
         "slide-in-bottom": "slideInFromBottom 0.3s ease-out",
         "slide-in-top": "slideInFromTop 0.3s ease",
+        "row-highlight": "rowHighlight 1.5s ease-out forwards",
+        "row-complete": "rowComplete 0.5s ease forwards",
       },
       boxShadow: {
         "glass-xl": "0 45px 80px -40px rgba(15, 23, 42, 0.8)",

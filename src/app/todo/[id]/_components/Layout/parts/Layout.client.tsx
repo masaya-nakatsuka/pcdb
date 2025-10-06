@@ -4,13 +4,14 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import LoadingOverlay from '@/components/LoadingOverlay'
 import { supabaseTodo } from '@/lib/supabaseTodoClient'
-import type { TodoItem } from '@/lib/todoTypes'
+import type { TodoGroup, TodoItem } from '@/lib/todoTypes'
 
 import { editFormSchema, type EditFormState, type SimpleStatus, type TodoStatus } from '../../../types'
 import LoginPromptCard from '../_shared/LoginPromptCard.client'
 import Header from './Header.client'
 import SummaryHeader from './SummaryHeader.client'
 import TodoList from './TodoList'
+import GroupCreateModal from './TodoList/GroupCreateModal.client'
 
 type LayoutProps = {
   listId: string
@@ -42,12 +43,32 @@ export default function LayoutClient({ listId }: LayoutProps) {
   const [tempMarkdown, setTempMarkdown] = useState<string>("")
   const [deletingTodos, setDeletingTodos] = useState<Set<string>>(new Set())
   const [newlyCreatedTodos, setNewlyCreatedTodos] = useState<Set<string>>(new Set())
+  const [groups, setGroups] = useState<TodoGroup[]>([])
   const [sortField, setSortField] = useState<string>('default')
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
   const [showCompleted, setShowCompleted] = useState<boolean>(false)
+  const [recentlyMovedTodoId, setRecentlyMovedTodoId] = useState<string | null>(null)
+  const [disappearingTodos, setDisappearingTodos] = useState<Set<string>>(new Set())
+  const [reappearingTodos, setReappearingTodos] = useState<Set<string>>(new Set())
+  const [showGroupCreateModal, setShowGroupCreateModal] = useState<boolean>(false)
+  const [pendingGroupSelectionCallback, setPendingGroupSelectionCallback] = useState<((groupId: string) => void) | null>(null)
 
   const [editForm, setEditForm] = useState<EditFormState>(editFormSchema.parse({}))
   const previousStatusRef = useRef<Map<string, TodoStatus>>(new Map())
+  const highlightTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const disappearingTimeoutsRef = useRef<Map<string, NodeJS.Timeout>>(new Map())
+  const reappearingTimeoutRef = useRef<Map<string, NodeJS.Timeout>>(new Map())
+  const disappearingMetaRef = useRef<
+    Map<
+      string,
+      {
+        status: TodoStatus
+        group_id: string | null
+        priority: TodoItem['priority']
+        tags: string[]
+      }
+    >
+  >(new Map())
 
   const redirectTo = useMemo(() => {
     if (typeof window === 'undefined') return undefined
@@ -55,24 +76,14 @@ export default function LayoutClient({ listId }: LayoutProps) {
     return `${baseUrl}/todo`
   }, [])
 
-  useEffect(() => {
-    let isMounted = true
-    ;(async () => {
-      const { data } = await supabaseTodo.auth.getUser()
-      const uid = data.user?.id ?? null
-      if (!isMounted) return
-
-      setUserId(uid)
-      if (uid) {
-        await loadTodos(uid, listId)
-      }
-      setLoading(false)
-    })()
-
-    return () => {
-      isMounted = false
+  const groupsById = useMemo(() => {
+    const map: Record<string, TodoGroup> = {}
+    for (const group of groups) {
+      map[group.id] = group
     }
-  }, [listId])
+    return map
+  }, [groups])
+
   const loadTodos = useCallback(async (uid: string, lId: string) => {
     const { data, error } = await supabaseTodo
       .from('todo_items')
@@ -86,6 +97,74 @@ export default function LayoutClient({ listId }: LayoutProps) {
     }
   }, [])
 
+  const loadGroups = useCallback(async (uid: string) => {
+    const { data, error } = await supabaseTodo
+      .from('todo_groups')
+      .select('*')
+      .eq('user_id', uid)
+      .order('sort_order', { ascending: true })
+      .order('created_at', { ascending: true })
+
+    if (!error && data) {
+      setGroups(data as TodoGroup[])
+    }
+  }, [])
+
+  const createGroup = useCallback(
+    async (name: string, color?: string) => {
+      if (!userId) return null
+      const trimmed = name.trim()
+      if (!trimmed) return null
+
+      const payload = {
+        user_id: userId,
+        name: trimmed,
+        color: color || null,
+        sort_order: groups.length,
+      }
+
+      const { data, error } = await supabaseTodo
+        .from('todo_groups')
+        .insert(payload)
+        .select('*')
+        .single()
+
+      if (error || !data) {
+        return null
+      }
+
+      setGroups((prev) => {
+        const next = [...prev, data as TodoGroup]
+        next.sort((a, b) => {
+          if (a.sort_order !== b.sort_order) return a.sort_order - b.sort_order
+          return (a.created_at ?? '').localeCompare(b.created_at ?? '')
+        })
+        return next
+      })
+      return data as TodoGroup
+    },
+    [userId, groups]
+  )
+
+  useEffect(() => {
+    let isMounted = true
+    ;(async () => {
+      const { data } = await supabaseTodo.auth.getUser()
+      const uid = data.user?.id ?? null
+      if (!isMounted) return
+
+      setUserId(uid)
+      if (uid) {
+        await Promise.all([loadTodos(uid, listId), loadGroups(uid)])
+      }
+      setLoading(false)
+    })()
+
+    return () => {
+      isMounted = false
+    }
+  }, [listId, loadGroups, loadTodos])
+
   const handleSignIn = useCallback(async () => {
     await supabaseTodo.auth.signInWithOAuth({
       provider: 'google',
@@ -97,6 +176,7 @@ export default function LayoutClient({ listId }: LayoutProps) {
     await supabaseTodo.auth.signOut()
     setUserId(null)
     setTodos([])
+    setGroups([])
   }, [])
 
   const resetEditForm = useCallback(() => {
@@ -113,7 +193,7 @@ export default function LayoutClient({ listId }: LayoutProps) {
       title: todo.title,
       status: todo.status,
       priority: todo.priority,
-      group: todo.group ?? '',
+      group_id: todo.group_id,
       tags: todo.tags.join(', '),
       markdown_text: todo.markdown_text || ''
     })
@@ -172,10 +252,33 @@ export default function LayoutClient({ listId }: LayoutProps) {
   const saveTodo = useCallback(async (isNew: boolean) => {
     if (!userId || !editForm.title.trim()) return
 
+    const currentTodo = isNew ? null : todos.find((t) => t.id === editingTodo)
+
+    // 変更がない場合は保存せずに終了（新規作成は除く）
+    if (!isNew && currentTodo) {
+      const currentTags = currentTodo.tags.join(',')
+      const newTags = editForm.tags
+        ? editForm.tags.split(',').map((tag) => tag.trim()).filter(Boolean).join(',')
+        : ''
+
+      const hasChanges =
+        currentTodo.title !== editForm.title.trim() ||
+        currentTodo.status !== editForm.status ||
+        currentTodo.priority !== editForm.priority ||
+        currentTodo.group_id !== (editForm.group_id ?? null) ||
+        currentTags !== newTags ||
+        (currentTodo.markdown_text ?? '') !== (editForm.markdown_text.trim() || '')
+
+      if (!hasChanges) {
+        setEditingTodo(null)
+        resetEditForm()
+        return
+      }
+    }
+
     setUpdatingTodo(isNew ? 'new' : editingTodo || '')
     setOverlayMessage(isNew ? 'TODO作成中...' : 'TODO更新中...')
 
-    const currentTodo = isNew ? null : todos.find((t) => t.id === editingTodo)
     const isCompletingNow = editForm.status === '完了' && currentTodo?.status !== '完了'
     const isReopening = editForm.status !== '完了' && currentTodo?.status === '完了'
 
@@ -183,7 +286,7 @@ export default function LayoutClient({ listId }: LayoutProps) {
       title: editForm.title.trim(),
       status: editForm.status,
       priority: editForm.priority,
-      group: editForm.group.trim() || null,
+      group_id: editForm.group_id ?? null,
       tags: editForm.tags
         ? editForm.tags.split(',').map((tag) => tag.trim()).filter(Boolean)
         : [],
@@ -233,6 +336,16 @@ export default function LayoutClient({ listId }: LayoutProps) {
           prev.map((todo) => (todo.id === editingTodo ? ({ ...todo, ...todoData } as TodoItem) : todo))
         )
         previousStatusRef.current.set(editingTodo, todoData.status as TodoStatus)
+
+        if (highlightTimeoutRef.current) {
+          clearTimeout(highlightTimeoutRef.current)
+        }
+        setRecentlyMovedTodoId(editingTodo)
+        highlightTimeoutRef.current = setTimeout(() => {
+          setRecentlyMovedTodoId(null)
+          highlightTimeoutRef.current = null
+        }, 1400)
+
         setEditingTodo(null)
         resetEditForm()
       }
@@ -242,20 +355,18 @@ export default function LayoutClient({ listId }: LayoutProps) {
     setOverlayMessage('')
   }, [userId, editForm, editingTodo, listId, todos, resetEditForm])
 
+  const handleOverlayClick = useCallback(() => {
+    if (editingTodo || showNewTodo) {
+      if (editForm.title.trim()) {
+        saveTodo(showNewTodo)
+      } else {
+        cancelEditing()
+      }
+    }
+  }, [editingTodo, showNewTodo, editForm.title, saveTodo, cancelEditing])
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (editingTodo || showNewTodo) {
-        const target = event.target as HTMLElement
-        const todoContainer = target.closest('[data-todo-container]')
-        if (!todoContainer) {
-          if (editForm.title.trim()) {
-            saveTodo(showNewTodo)
-          } else {
-            cancelEditing()
-          }
-        }
-      }
-
       if (editingMarkdown) {
         const target = event.target as HTMLElement
         const markdownContainer = target.closest('[data-markdown-container]')
@@ -267,7 +378,20 @@ export default function LayoutClient({ listId }: LayoutProps) {
 
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [editingTodo, showNewTodo, editForm.title, editingMarkdown, saveTodo, saveMarkdown, cancelEditing])
+  }, [editingMarkdown, saveMarkdown])
+
+  useEffect(() => {
+    return () => {
+      if (highlightTimeoutRef.current) {
+        clearTimeout(highlightTimeoutRef.current)
+      }
+      disappearingTimeoutsRef.current.forEach((timeout) => clearTimeout(timeout))
+      disappearingTimeoutsRef.current.clear()
+      reappearingTimeoutRef.current.forEach((timeout) => clearTimeout(timeout))
+      reappearingTimeoutRef.current.clear()
+      disappearingMetaRef.current.clear()
+    }
+  }, [])
 
   const toggleTodoCompletion = useCallback(async (todo: TodoItem) => {
     if (updatingTodo || !userId) return
@@ -312,12 +436,74 @@ export default function LayoutClient({ listId }: LayoutProps) {
 
       if (nextStatus !== '完了') {
         previousStatusRef.current.set(todo.id, nextStatus)
+        if (disappearingTimeoutsRef.current.has(todo.id)) {
+          clearTimeout(disappearingTimeoutsRef.current.get(todo.id)!)
+          disappearingTimeoutsRef.current.delete(todo.id)
+        }
+        setDisappearingTodos((prev) => {
+          if (!prev.has(todo.id)) return prev
+          const next = new Set(prev)
+          next.delete(todo.id)
+          return next
+        })
+        disappearingMetaRef.current.delete(todo.id)
+        if (todo.status === '完了') {
+          setReappearingTodos((prev) => {
+            const next = new Set(prev)
+            next.add(todo.id)
+            return next
+          })
+
+          const timeout = setTimeout(() => {
+            setReappearingTodos((prev) => {
+              if (!prev.has(todo.id)) return prev
+              const next = new Set(prev)
+              next.delete(todo.id)
+              return next
+            })
+            reappearingTimeoutRef.current.delete(todo.id)
+          }, 1500)
+
+          if (reappearingTimeoutRef.current.has(todo.id)) {
+            clearTimeout(reappearingTimeoutRef.current.get(todo.id)!)
+          }
+          reappearingTimeoutRef.current.set(todo.id, timeout)
+        }
+      } else if (!showCompleted) {
+        setDisappearingTodos((prev) => {
+          const next = new Set(prev)
+          next.add(todo.id)
+          return next
+        })
+
+        disappearingMetaRef.current.set(todo.id, {
+          status: todo.status,
+          group_id: todo.group_id ?? null,
+          priority: todo.priority,
+          tags: [...todo.tags],
+        })
+
+        const timeout = setTimeout(() => {
+          setDisappearingTodos((prev) => {
+            if (!prev.has(todo.id)) return prev
+            const next = new Set(prev)
+            next.delete(todo.id)
+            return next
+          })
+          disappearingTimeoutsRef.current.delete(todo.id)
+          disappearingMetaRef.current.delete(todo.id)
+        }, 500)
+
+        if (disappearingTimeoutsRef.current.has(todo.id)) {
+          clearTimeout(disappearingTimeoutsRef.current.get(todo.id)!)
+        }
+        disappearingTimeoutsRef.current.set(todo.id, timeout)
       }
     }
 
     setUpdatingTodo(null)
     setOverlayMessage('')
-  }, [updatingTodo, userId, listId])
+  }, [updatingTodo, userId, listId, showCompleted])
 
   const toggleTodoInProgress = useCallback(async (todo: TodoItem) => {
     if (updatingTodo || !userId) return
@@ -392,39 +578,129 @@ export default function LayoutClient({ listId }: LayoutProps) {
     })
   }, [])
 
+  const handleGroupCreateModalOpen = useCallback((callback: (groupId: string) => void) => {
+    setPendingGroupSelectionCallback(() => callback)
+    setShowGroupCreateModal(true)
+  }, [])
+
+  const handleGroupCreate = useCallback(async (name: string, color: string) => {
+    const created = await createGroup(name, color)
+    if (created && pendingGroupSelectionCallback) {
+      pendingGroupSelectionCallback(created.id)
+    }
+    setShowGroupCreateModal(false)
+    setPendingGroupSelectionCallback(null)
+  }, [createGroup, pendingGroupSelectionCallback])
+
+  const handleGroupCreateModalClose = useCallback(() => {
+    setShowGroupCreateModal(false)
+    setPendingGroupSelectionCallback(null)
+  }, [])
+
+  const deleteGroup = useCallback(async (groupId: string) => {
+    if (!userId) return
+
+    setUpdatingTodo('deleting-group')
+    setOverlayMessage('グループ削除中...')
+
+    // まず、そのグループを使用しているTODOのgroup_idをnullに更新
+    await supabaseTodo
+      .from('todo_items')
+      .update({ group_id: null })
+      .eq('group_id', groupId)
+      .eq('user_id', userId)
+
+    // その後、グループを削除
+    const { error } = await supabaseTodo
+      .from('todo_groups')
+      .delete()
+      .eq('id', groupId)
+      .eq('user_id', userId)
+
+    if (!error) {
+      setGroups((prev) => prev.filter((g) => g.id !== groupId))
+      setTodos((prev) =>
+        prev.map((todo) =>
+          todo.group_id === groupId ? { ...todo, group_id: null } : todo
+        )
+      )
+    }
+
+    setUpdatingTodo(null)
+    setOverlayMessage('')
+  }, [userId])
+
+  const reorderGroups = useCallback(async (reorderedGroups: TodoGroup[]) => {
+    if (!userId) return
+
+    setUpdatingTodo('reordering-groups')
+    setOverlayMessage('グループ並び替え中...')
+
+    const updates = reorderedGroups.map((group, index) => ({
+      id: group.id,
+      sort_order: index,
+    }))
+
+    for (const update of updates) {
+      await supabaseTodo
+        .from('todo_groups')
+        .update({ sort_order: update.sort_order })
+        .eq('id', update.id)
+        .eq('user_id', userId)
+    }
+
+    setGroups(reorderedGroups.map((g, i) => ({ ...g, sort_order: i })))
+
+    setUpdatingTodo(null)
+    setOverlayMessage('')
+  }, [userId])
+
   const defaultSorter = useCallback(
     (a: TodoItem, b: TodoItem) => {
-      const statusDiff = STATUS_RANK[a.status] - STATUS_RANK[b.status]
+      const snapshotA = disappearingMetaRef.current.get(a.id)
+      const snapshotB = disappearingMetaRef.current.get(b.id)
+
+      const aStatus = snapshotA?.status ?? a.status
+      const bStatus = snapshotB?.status ?? b.status
+      const statusDiff = STATUS_RANK[aStatus] - STATUS_RANK[bStatus]
       if (statusDiff !== 0) return statusDiff
 
-      const aTags = a.tags.join(',').toLowerCase()
-      const bTags = b.tags.join(',').toLowerCase()
+      const groupIdA = snapshotA?.group_id ?? a.group_id
+      const groupIdB = snapshotB?.group_id ?? b.group_id
+
+      // グループが異なる場合は sort_order で比較
+      if (groupIdA !== groupIdB) {
+        // グループなしは最後に配置
+        if (!groupIdA) return 1
+        if (!groupIdB) return -1
+
+        const sortOrderA = groupsById[groupIdA]?.sort_order ?? 999999
+        const sortOrderB = groupsById[groupIdB]?.sort_order ?? 999999
+        return sortOrderA - sortOrderB
+      }
+
+      const aPriority = snapshotA?.priority ?? a.priority ?? 'none'
+      const bPriority = snapshotB?.priority ?? b.priority ?? 'none'
+      const priorityDiff = PRIORITY_RANK[aPriority] - PRIORITY_RANK[bPriority]
+      if (priorityDiff !== 0) return priorityDiff
+
+      const aTags = (snapshotA?.tags ?? a.tags).join(',').toLowerCase()
+      const bTags = (snapshotB?.tags ?? b.tags).join(',').toLowerCase()
       if (aTags !== bTags) {
         if (!aTags) return 1
         if (!bTags) return -1
         return aTags.localeCompare(bTags, 'ja')
       }
 
-      const aGroup = (a.group ?? '').toLowerCase()
-      const bGroup = (b.group ?? '').toLowerCase()
-      if (aGroup !== bGroup) {
-        if (!aGroup) return 1
-        if (!bGroup) return -1
-        return aGroup.localeCompare(bGroup, 'ja')
-      }
-
-      const priorityDiff = PRIORITY_RANK[a.priority ?? 'none'] - PRIORITY_RANK[b.priority ?? 'none']
-      if (priorityDiff !== 0) return priorityDiff
-
       const aCreated = a.created_at ? new Date(a.created_at).getTime() : 0
       const bCreated = b.created_at ? new Date(b.created_at).getTime() : 0
       if (aCreated !== bCreated) {
-        return bCreated - aCreated
+        return aCreated - bCreated
       }
 
       return a.title.localeCompare(b.title, 'ja')
     },
-    []
+    [groupsById]
   )
 
   const sortedTodos = useMemo(() => {
@@ -440,8 +716,10 @@ export default function LayoutClient({ listId }: LayoutProps) {
 
       switch (sortField) {
         case 'group':
-          aValue = a.group ? a.group.toLowerCase() : '\uffff'
-          bValue = b.group ? b.group.toLowerCase() : '\uffff'
+          aValue = a.group_id ? (groupsById[a.group_id]?.name?.toLowerCase() ?? '') : ''
+          bValue = b.group_id ? (groupsById[b.group_id]?.name?.toLowerCase() ?? '') : ''
+          if (!aValue) aValue = '\uffff'
+          if (!bValue) bValue = '\uffff'
           break
         case 'priority':
           aValue = PRIORITY_RANK[a.priority ?? 'none']
@@ -473,8 +751,8 @@ export default function LayoutClient({ listId }: LayoutProps) {
     })
 
     if (showCompleted) return cloned
-    return cloned.filter((todo) => todo.status !== '完了')
-  }, [todos, sortField, sortDirection, showCompleted, defaultSorter])
+    return cloned.filter((todo) => todo.status !== '完了' || disappearingTodos.has(todo.id))
+  }, [todos, sortField, sortDirection, showCompleted, defaultSorter, disappearingTodos, groupsById])
 
   const statusSummary = useMemo(() => ({
     未着手: todos.filter((todo) => todo.status === '未着手').length,
@@ -482,7 +760,7 @@ export default function LayoutClient({ listId }: LayoutProps) {
     完了: todos.filter((todo) => todo.status === '完了').length
   }), [todos])
 
-  const columnWidths = ['8%', '8%', '44%', '8%', '8%', '8%', '8%', '8%']
+  const columnWidths = ['8%', '8%', '14%', '32%', '10%', '14%', '7%', '7%']
 
   if (loading) {
     return <LoadingOverlay message="読み込み中..." />
@@ -496,7 +774,7 @@ export default function LayoutClient({ listId }: LayoutProps) {
     <div className="min-h-screen overflow-x-auto bg-page-gradient px-4 pb-16 pt-12 sm:px-6">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 text-frost-soft">
         <Header onSignOut={handleSignOut} />
-        <div className="flex flex-col rounded-3xl border border-night-border bg-night-glass p-4 text-frost-soft shadow-glass-xl backdrop-blur-[22px] sm:p-6">
+        <div className="relative flex flex-col rounded-3xl border border-night-border bg-night-glass p-4 text-frost-soft shadow-glass-xl sm:p-6">
           <SummaryHeader
             statusSummary={statusSummary}
             showCompleted={showCompleted}
@@ -535,11 +813,35 @@ export default function LayoutClient({ listId }: LayoutProps) {
             onDeleteTodo={deleteTodo}
             deletingTodos={deletingTodos}
             newlyCreatedTodos={newlyCreatedTodos}
+            recentlyMovedTodoId={recentlyMovedTodoId}
+            reappearingTodos={reappearingTodos}
+            disappearingTodos={disappearingTodos}
+            groups={groups}
+            groupsById={groupsById}
+            onCreateGroup={createGroup}
             onSaveTodo={saveTodo}
+            onOpenGroupCreateModal={handleGroupCreateModalOpen}
+            onDeleteGroup={deleteGroup}
+            onReorderGroups={reorderGroups}
           />
         </div>
       </div>
       {overlayMessage && <LoadingOverlay message={overlayMessage} />}
+
+      {/* 編集中のオーバーレイ */}
+      {(editingTodo || showNewTodo) && (
+        <div
+          className="fixed inset-0 z-[5] bg-black/10 pointer-events-auto"
+          onClick={handleOverlayClick}
+          aria-hidden="true"
+        />
+      )}
+
+      <GroupCreateModal
+        isOpen={showGroupCreateModal}
+        onClose={handleGroupCreateModalClose}
+        onCreate={handleGroupCreate}
+      />
     </div>
   )
 }

@@ -114,6 +114,15 @@ export default function Shell() {
     if (!userId || !editingListId) return
     const name = editingName.trim()
     if (!name) return
+
+    // 変更がない場合は保存せずに終了
+    const currentList = lists.find((list) => list.id === editingListId)
+    if (currentList && currentList.name === name) {
+      setEditingListId(null)
+      setEditingName('')
+      return
+    }
+
     savingRef.current = true
     const { error } = await supabaseTodo
       .from('todo_lists')
@@ -126,7 +135,13 @@ export default function Shell() {
       setEditingListId(null)
       setEditingName('')
     }
-  }, [editingListId, editingName, userId])
+  }, [editingListId, editingName, userId, lists])
+
+  const handleOverlayClick = useCallback(() => {
+    if (editingListId) {
+      void updateListName()
+    }
+  }, [editingListId, updateListName])
 
   const deleteList = useCallback(async (listId: string) => {
     if (!userId) return
@@ -232,10 +247,12 @@ export default function Shell() {
                   key={list.id}
                   role="button"
                   tabIndex={0}
-                  className="flex h-full flex-col gap-4 rounded-3xl border border-night-border bg-night-glass p-6 text-frost-soft shadow-glass-xl transition duration-200 hover:-translate-y-1 hover:shadow-card-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-300"
-                  onClick={() => goToDetail(list.id)}
+                  className={`flex h-full flex-col gap-4 rounded-3xl border border-night-border bg-night-glass p-6 text-frost-soft shadow-glass-xl transition duration-200 ${isEditing ? '' : 'hover:-translate-y-1 hover:shadow-card-hover'} focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-300`}
+                  onClick={() => {
+                    if (!isEditing) goToDetail(list.id)
+                  }}
                   onKeyDown={(event) => {
-                    if (event.key === 'Enter' && !event.nativeEvent.isComposing) {
+                    if (event.key === 'Enter' && !event.nativeEvent.isComposing && !isEditing) {
                       event.preventDefault()
                       goToDetail(list.id)
                     }
@@ -255,7 +272,8 @@ export default function Shell() {
                             void updateListName()
                           }
                         }}
-                        className={`${inputClass} text-base font-semibold`}
+                        onClick={(e) => e.stopPropagation()}
+                        className={`${inputClass} relative z-10 text-base font-semibold`}
                         autoFocus
                       />
                     ) : (
@@ -319,6 +337,15 @@ export default function Shell() {
         )}
       </div>
       {overlayMessage && <LoadingOverlay message={overlayMessage} />}
+
+      {/* 編集中のオーバーレイ */}
+      {editingListId && (
+        <div
+          className="fixed inset-0 z-[5] bg-black/10 pointer-events-auto"
+          onClick={handleOverlayClick}
+          aria-hidden="true"
+        />
+      )}
     </div>
   )
 }

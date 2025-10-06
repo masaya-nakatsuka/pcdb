@@ -1,6 +1,6 @@
 "use client"
 
-import type { TodoItem } from '@/lib/todoTypes'
+import type { TodoGroup, TodoItem } from '@/lib/todoTypes'
 
 import type { EditFormState } from '../../../../types'
 import AddRow from './AddRow.client'
@@ -38,6 +38,15 @@ type TodoTableProps = {
   deletingTodos: Set<string>
   newlyCreatedTodos: Set<string>
   onSaveTodo: (isNew: boolean) => void
+  recentlyMovedTodoId: string | null
+  reappearingTodos: Set<string>
+  disappearingTodos: Set<string>
+  groups: TodoGroup[]
+  groupsById: Record<string, TodoGroup>
+  onCreateGroup: (name: string) => Promise<TodoGroup | null>
+  onOpenGroupCreateModal: (callback: (groupId: string) => void) => void
+  onDeleteGroup: (groupId: string) => void
+  onReorderGroups: (groups: TodoGroup[]) => void
 }
 
 export default function TodoList({
@@ -66,6 +75,15 @@ export default function TodoList({
   deletingTodos,
   newlyCreatedTodos,
   onSaveTodo,
+  recentlyMovedTodoId,
+  reappearingTodos,
+  disappearingTodos,
+  groups,
+  groupsById,
+  onCreateGroup,
+  onOpenGroupCreateModal,
+  onDeleteGroup,
+  onReorderGroups,
 }: TodoTableProps) {
   const gridTemplateColumns = columnWidths.join(' ')
   const cellPaddingClass = 'px-3 py-3 sm:px-4 sm:py-4'
@@ -97,6 +115,11 @@ export default function TodoList({
                     onEditFormChange={onEditFormChange}
                     onCancel={onCancelEditing}
                     onSave={() => onSaveTodo(false)}
+                    groups={groups}
+                    onCreateGroup={onCreateGroup}
+                    onOpenGroupCreateModal={onOpenGroupCreateModal}
+                    onDeleteGroup={onDeleteGroup}
+                    onReorderGroups={onReorderGroups}
                   />
                 )
               }
@@ -121,6 +144,10 @@ export default function TodoList({
                   updatingTodoId={updatingTodoId}
                   deletingTodos={deletingTodos}
                   newlyCreatedTodos={newlyCreatedTodos}
+                  recentlyMovedTodoId={recentlyMovedTodoId}
+                  reappearingTodos={reappearingTodos}
+                  disappearingTodos={disappearingTodos}
+                  groupsById={groupsById}
                 />
               )
             })}
@@ -133,6 +160,11 @@ export default function TodoList({
                 onEditFormChange={onEditFormChange}
                 onCancel={onCancelEditing}
                 onSave={() => onSaveTodo(true)}
+                groups={groups}
+                onCreateGroup={onCreateGroup}
+                onOpenGroupCreateModal={onOpenGroupCreateModal}
+                onDeleteGroup={onDeleteGroup}
+                onReorderGroups={onReorderGroups}
               />
             ) : (
               <AddRow

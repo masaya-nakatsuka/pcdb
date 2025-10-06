@@ -16,7 +16,7 @@ export const editFormSchema = z.object({
   title: z.string().default(''),
   status: simpleStatusSchema.default('未着手'),
   priority: z.union([z.literal('low'), z.literal('medium'), z.literal('high'), z.null()]).default(null),
-  group: z.string().default(''),
+  group_id: z.union([z.string().uuid(), z.null()]).default(null),
   tags: z.string().default(''),
   markdown_text: z.string().default('')
 })
@@ -32,7 +32,7 @@ export const todoItemSchema = z.object({
   title: z.string(),
   status: todoStatusSchema,
   priority: z.union([z.literal('low'), z.literal('medium'), z.literal('high'), z.null()]),
-  group: z.string().nullable().optional().default(null),
+  group_id: z.string().uuid().nullable(),
   tags: z.array(z.string()),
   branch_names: z.array(z.string()).default([]),
   pr_links: z.array(z.string()).default([]),
