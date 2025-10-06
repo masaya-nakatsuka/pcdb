@@ -376,8 +376,8 @@ export default function LayoutClient({ listId }: LayoutProps) {
       }
     }
 
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
+    document.addEventListener('click', handleClickOutside)
+    return () => document.removeEventListener('click', handleClickOutside)
   }, [editingMarkdown, saveMarkdown])
 
   useEffect(() => {

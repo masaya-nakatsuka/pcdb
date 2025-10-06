@@ -33,7 +33,7 @@ export default function DetailDrawer({
       className="overflow-hidden transition-[max-height] duration-300 ease-in-out"
       style={{ maxHeight: isExpanded ? '320px' : '0px' }}
     >
-      <div className={`${horizontalPaddingClass} pb-4`}>
+      <div className={`${horizontalPaddingClass} pb-4`} data-markdown-container>
         <div className="rounded-xl border border-night-border bg-night-glass p-4">
           <div className="mb-3 flex flex-wrap items-center gap-4 text-xs text-frost-muted">
             <div className="flex items-center gap-1.5">
