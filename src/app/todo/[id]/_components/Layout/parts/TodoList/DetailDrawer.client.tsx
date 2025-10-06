@@ -31,7 +31,7 @@ export default function DetailDrawer({
   return (
     <div
       className="overflow-hidden transition-[max-height] duration-300 ease-in-out"
-      style={{ maxHeight: isExpanded ? '320px' : '0px' }}
+      style={{ maxHeight: isExpanded ? 'fit-content' : '0px' }}
     >
       <div className={`${horizontalPaddingClass} pb-4`} data-markdown-container>
         <div className="rounded-xl border border-night-border bg-night-glass p-4">
@@ -54,8 +54,8 @@ export default function DetailDrawer({
             <textarea
               value={tempMarkdown}
               onChange={(event) => onTempMarkdownChange(event.target.value)}
-              className={`${fieldClass} h-36 resize-y`}
-              placeholder="マークダウンで記述してください..."
+              className={`${fieldClass} min-h-fit resize-y`}
+              placeholder="詳細を記述、マークダウン形式にも対応しています..."
               autoFocus
             />
           ) : (
