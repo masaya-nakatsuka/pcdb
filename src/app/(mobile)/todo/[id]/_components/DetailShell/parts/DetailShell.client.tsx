@@ -318,10 +318,10 @@ function MobileTodoRow({
   return (
     <div className='overflow-hidden rounded-2xl border border-night-border-muted bg-night-surface-soft shadow-sm'>
       <div className='flex items-center gap-3 p-4'>
-        <div className='flex items-center gap-1 pt-1'>
+        <div className='flex flex-col items-center gap-2 pt-1'>
           <button
             type='button'
-            className={`flex h-7 w-7 items-center justify-center rounded-full border text-xs font-semibold transition-all ${
+            className={`flex h-9 w-9 items-center justify-center rounded-full border text-sm font-semibold transition-all ${
               isCompleted
                 ? 'border-emerald-300 bg-emerald-500/20 text-emerald-200'
                 : 'border-night-border bg-night-glass text-frost-subtle hover:border-emerald-300 hover:text-emerald-200'
@@ -334,7 +334,7 @@ function MobileTodoRow({
           </button>
           <button
             type='button'
-            className={`flex h-7 w-7 items-center justify-center rounded-full border text-xs transition-colors ${
+            className={`flex h-9 w-9 items-center justify-center rounded-full border text-sm transition-colors ${
               isInProgress
                 ? 'border-sky-400/70 bg-sky-500/25 text-sky-200'
                 : 'border-night-border bg-night-glass text-frost-soft hover:border-sky-400/60 hover:text-sky-200'
