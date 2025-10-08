@@ -45,7 +45,7 @@ export default function DetailDrawer({
   return (
     <div
       className="overflow-hidden transition-[max-height] duration-300 ease-in-out"
-      style={{ maxHeight: isExpanded ? 'fit-content' : '0px' }}
+      style={{ maxHeight: isExpanded ? '4000px' : '0px' }}
     >
       <div className={`${horizontalPaddingClass} pb-4`} data-markdown-container>
         <div className="rounded-xl border border-night-border bg-night-glass p-4">

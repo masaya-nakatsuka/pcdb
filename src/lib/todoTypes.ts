@@ -19,6 +19,7 @@ export interface TodoItem {
 export interface TodoGroup {
   id: string
   user_id: string
+  list_id: string
   name: string
   color: string | null
   emoji: string | null

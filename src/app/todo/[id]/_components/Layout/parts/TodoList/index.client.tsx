@@ -91,7 +91,7 @@ export default function TodoList({
 
   return (
     <div className="w-full">
-      <div className="overflow-x-auto">
+      <div>
         <div className="flex w-full flex-col">
           <TodoListHeader
             gridTemplateColumns={gridTemplateColumns}

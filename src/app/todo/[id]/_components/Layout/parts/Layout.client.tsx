@@ -97,11 +97,12 @@ export default function LayoutClient({ listId }: LayoutProps) {
     }
   }, [])
 
-  const loadGroups = useCallback(async (uid: string) => {
+  const loadGroups = useCallback(async (uid: string, lId: string) => {
     const { data, error } = await supabaseTodo
       .from('todo_groups')
       .select('*')
       .eq('user_id', uid)
+      .eq('list_id', lId)
       .order('sort_order', { ascending: true })
       .order('created_at', { ascending: true })
 
@@ -118,6 +119,7 @@ export default function LayoutClient({ listId }: LayoutProps) {
 
       const payload = {
         user_id: userId,
+        list_id: listId,
         name: trimmed,
         color: color || null,
         sort_order: groups.length,
@@ -143,7 +145,7 @@ export default function LayoutClient({ listId }: LayoutProps) {
       })
       return data as TodoGroup
     },
-    [userId, groups]
+    [userId, listId, groups]
   )
 
   useEffect(() => {
@@ -155,7 +157,7 @@ export default function LayoutClient({ listId }: LayoutProps) {
 
       setUserId(uid)
       if (uid) {
-        await Promise.all([loadTodos(uid, listId), loadGroups(uid)])
+        await Promise.all([loadTodos(uid, listId), loadGroups(uid, listId)])
       }
       setLoading(false)
     })()
@@ -609,6 +611,7 @@ export default function LayoutClient({ listId }: LayoutProps) {
       .update({ group_id: null })
       .eq('group_id', groupId)
       .eq('user_id', userId)
+      .eq('list_id', listId)
 
     // その後、グループを削除
     const { error } = await supabaseTodo
@@ -616,6 +619,7 @@ export default function LayoutClient({ listId }: LayoutProps) {
       .delete()
       .eq('id', groupId)
       .eq('user_id', userId)
+      .eq('list_id', listId)
 
     if (!error) {
       setGroups((prev) => prev.filter((g) => g.id !== groupId))
@@ -628,7 +632,7 @@ export default function LayoutClient({ listId }: LayoutProps) {
 
     setUpdatingTodo(null)
     setOverlayMessage('')
-  }, [userId])
+  }, [userId, listId])
 
   const reorderGroups = useCallback(async (reorderedGroups: TodoGroup[]) => {
     if (!userId) return
@@ -647,13 +651,14 @@ export default function LayoutClient({ listId }: LayoutProps) {
         .update({ sort_order: update.sort_order })
         .eq('id', update.id)
         .eq('user_id', userId)
+        .eq('list_id', listId)
     }
 
     setGroups(reorderedGroups.map((g, i) => ({ ...g, sort_order: i })))
 
     setUpdatingTodo(null)
     setOverlayMessage('')
-  }, [userId])
+  }, [userId, listId])
 
   const defaultSorter = useCallback(
     (a: TodoItem, b: TodoItem) => {
