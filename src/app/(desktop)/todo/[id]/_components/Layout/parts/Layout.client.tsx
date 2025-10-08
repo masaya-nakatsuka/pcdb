@@ -6,7 +6,12 @@ import LoadingOverlay from '@/components/LoadingOverlay'
 import { supabaseTodo } from '@/lib/supabaseTodoClient'
 import type { TodoGroup, TodoItem } from '@/lib/todoTypes'
 
-import { editFormSchema, type EditFormState, type SimpleStatus, type TodoStatus } from '../../../types'
+import {
+  editFormSchema,
+  type EditFormState,
+  type SimpleStatus,
+  type TodoStatus
+} from '@/features/todo/detail/types'
 import LoginPromptCard from '../_shared/LoginPromptCard.client'
 import Header from './Header.client'
 import SummaryHeader from './SummaryHeader.client'

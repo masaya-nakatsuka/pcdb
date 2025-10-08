@@ -1,7 +1,7 @@
 import { supabaseTodo } from '@/lib/supabaseTodoClient'
 import type { TodoItem } from '@/lib/todoTypes'
 
-import { todoCollectionSchema } from './types'
+import { todoCollectionSchema } from '../../detail/types'
 
 export async function fetchTodoItems(userId: string, listId: string) {
   const { data, error } = await supabaseTodo

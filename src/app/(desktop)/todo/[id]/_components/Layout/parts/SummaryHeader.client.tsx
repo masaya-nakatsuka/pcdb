@@ -1,6 +1,6 @@
 "use client"
 
-import type { SimpleStatus } from '../../../types'
+import type { SimpleStatus } from '@/features/todo/detail/types'
 
 type SummaryHeaderProps = {
   statusSummary: Record<SimpleStatus, number>

@@ -1,7 +1,18 @@
-import Layout from './_components/Layout'
+import { headers } from 'next/headers';
 
-export default async function TodoDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params
+import DesktopTodoDetailPage from '../../(desktop)/todo/[id]/DesktopTodoDetailPage';
+import MobileTodoDetailPage from '../../(mobile)/todo/[id]/MobileTodoDetailPage';
+import { DEVICE_VARIANT_HEADER } from '../device-constants';
 
-  return <Layout listId={id} />
+type DetailPageProps = Parameters<typeof DesktopTodoDetailPage>[0];
+
+export default async function TodoDetailEntryPage(props: DetailPageProps) {
+  const headerList = await headers();
+  const deviceVariant = headerList.get(DEVICE_VARIANT_HEADER);
+
+  if (!(deviceVariant === 'mobile')) {
+    return <MobileTodoDetailPage {...props} />;
+  }
+
+  return <DesktopTodoDetailPage {...props} />;
 }

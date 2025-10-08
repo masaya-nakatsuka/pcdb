@@ -2,7 +2,7 @@
 
 import type { TodoGroup, TodoItem } from '@/lib/todoTypes'
 
-import type { EditFormState } from '../../../../types'
+import type { EditFormState } from '@/features/todo/detail/types'
 import AddRow from './AddRow.client'
 import EditRow from './EditRow.client'
 import NewRow from './NewRow.client'

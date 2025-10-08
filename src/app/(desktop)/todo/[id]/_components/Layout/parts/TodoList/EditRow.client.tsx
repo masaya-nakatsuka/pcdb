@@ -2,10 +2,10 @@
 
 import type { TodoGroup } from '@/lib/todoTypes'
 
-import type { EditFormState } from '../../../../types'
+import type { EditFormState } from '@/features/todo/detail/types'
 import GroupSelectDropdown from './GroupSelectDropdown.client'
 
-type NewRowProps = {
+type EditRowProps = {
   gridTemplateColumns: string
   cellPaddingClass: string
   editForm: EditFormState
@@ -19,7 +19,7 @@ type NewRowProps = {
   onReorderGroups: (groups: TodoGroup[]) => void
 }
 
-export default function NewRow({
+export default function EditRow({
   gridTemplateColumns,
   cellPaddingClass,
   editForm,
@@ -31,7 +31,7 @@ export default function NewRow({
   onOpenGroupCreateModal,
   onDeleteGroup,
   onReorderGroups,
-}: NewRowProps) {
+}: EditRowProps) {
   const isInProgress = editForm.status === '着手中'
   const fieldClass = 'w-full rounded-xl border border-night-border-strong bg-night-glass-strong px-3 py-2 text-sm text-frost-soft placeholder:text-frost-subtle focus:border-sky-400 focus:outline-none focus:ring-1 focus:ring-sky-400'
 
@@ -119,7 +119,7 @@ export default function NewRow({
           }}
         />
       </div>
-      <div className={`${cellPaddingClass}`} />
+      <div className={cellPaddingClass} />
       <div className={`${cellPaddingClass} flex items-center justify-center`}>
         <button
           type="button"

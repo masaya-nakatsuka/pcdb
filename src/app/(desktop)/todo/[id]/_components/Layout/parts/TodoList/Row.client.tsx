@@ -94,6 +94,9 @@ export default function Row({
         className={`relative z-0 grid cursor-pointer items-stretch transition-colors ${isNew ? 'animate-slide-in-bottom bg-night-highlight' : 'hover:bg-night-highlight/60'} ${isRecentlyMoved ? 'animate-row-highlight' : ''} ${isReappearing ? 'animate-row-highlight' : ''} ${isDisappearing ? 'animate-row-complete' : ''}`}
         style={{ gridTemplateColumns }}
       >
+        {/**
+         * チェックボタン
+         * */}
         <div className={`${cellPaddingClass} flex items-center justify-center`}>
           <button
             type="button"
@@ -109,6 +112,10 @@ export default function Row({
             ✓
           </button>
         </div>
+
+        {/**
+         * 着手中ボタン
+         * */}
         <div className={`${cellPaddingClass} flex items-center justify-center`}>
           <button
             type="button"
@@ -124,6 +131,10 @@ export default function Row({
             {isInProgress ? '🚩' : '⚑'}
           </button>
         </div>
+
+        {/**
+         * グループ
+         * */}
         <div className={`${cellPaddingClass} flex items-center justify-center`}>
           {group ? (
             <span
@@ -137,11 +148,19 @@ export default function Row({
             <span className="text-frost-subtle">-</span>
           )}
         </div>
+
+        {/**
+         * タイトル
+         * */}
         <div className={`${cellPaddingClass} flex flex-col items-start justify-center`}>
           <p className={`break-words text-sm font-medium leading-relaxed text-frost-soft ${isCompleted ? 'line-through text-frost-muted' : ''}`}>
             {todo.title}
           </p>
         </div>
+
+        {/**
+         * 優先度
+         * */}
         <div className={`${cellPaddingClass} flex items-center justify-center`}>
           <div className="flex items-center gap-2">
             <span className={`h-3 w-3 rounded-full ${PRIORITY_DOT_COLOR[todo.priority ?? 'none']}`} />
@@ -150,6 +169,10 @@ export default function Row({
             </span>
           </div>
         </div>
+
+        {/**
+         * タグ
+         * */}
         <div className={`${cellPaddingClass} flex items-center justify-center`}>
           <div className="flex flex-wrap items-center justify-center gap-1.5 text-xs">
             {todo.tags.length ? (
@@ -163,6 +186,10 @@ export default function Row({
             )}
           </div>
         </div>
+
+        {/**
+         * 操作ボタン
+         * */}
         <div className={`${cellPaddingClass} flex items-center justify-center`}>
           <button
             type="button"
@@ -175,6 +202,10 @@ export default function Row({
             {expanded ? '▲' : '▼'}
           </button>
         </div>
+
+        {/**
+         * 削除ボタン
+         * */}
         <div className={`${cellPaddingClass} flex items-center justify-center`}>
           <button
             type="button"

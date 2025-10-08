@@ -7,7 +7,12 @@ import LoadingOverlay from '@/components/LoadingOverlay'
 import LoginScreen from '@/components/LoginScreen'
 import { useAuth } from '@/hooks/useAuth'
 import { supabaseTodo } from '@/lib/supabaseTodoClient'
-import { listSchema, statusCountsSchema, type StatusCounts, type TodoListDTO } from '../../../types'
+import {
+  listSchema,
+  statusCountsSchema,
+  type StatusCounts,
+  type TodoListDTO
+} from '@/features/todo/types'
 
 const primaryButtonClass =
   'inline-flex items-center justify-center gap-2 rounded-full bg-primary-gradient px-5 py-3 text-sm font-semibold text-white shadow-button-primary transition duration-200 hover:-translate-y-0.5 hover:shadow-button-primary-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-300'
