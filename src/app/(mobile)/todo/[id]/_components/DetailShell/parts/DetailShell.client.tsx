@@ -18,12 +18,41 @@ type DetailShellClientProps = {
 
 type TodoGroupMap = Record<string, TodoGroupDTO>;
 
-const PRIORITY_DOT_COLOR: Record<NonNullable<TodoItem['priority']> | 'none', string> = {
-  high: 'bg-red-500',
-  medium: 'bg-amber-500',
-  low: 'bg-emerald-500',
-  none: 'bg-slate-500/60',
+const STATUS_BADGE_STYLE: Record<TodoItem['status'], string> = {
+  未着手: 'border-night-border bg-night-glass text-frost-soft',
+  着手中: 'border-sky-400/70 bg-sky-500/15 text-sky-100',
+  完了: 'border-emerald-400/70 bg-emerald-500/15 text-emerald-100',
 };
+
+const PRIORITY_META: Record<
+  NonNullable<TodoItem['priority']> | 'none',
+  { className: string; dotClass: string }
+> = {
+  high: {
+    className: 'border-rose-400/70 bg-rose-500/15 text-rose-100',
+    dotClass: 'bg-red-400',
+  },
+  medium: {
+    className: 'border-amber-400/70 bg-amber-500/15 text-amber-100',
+    dotClass: 'bg-amber-300',
+  },
+  low: {
+    className: 'border-emerald-400/70 bg-emerald-500/15 text-emerald-100',
+    dotClass: 'bg-emerald-300',
+  },
+  none: {
+    className: 'border-night-border bg-night-glass text-frost-subtle',
+    dotClass: 'bg-slate-500/60',
+  },
+};
+
+type IconProps = {
+  className?: string;
+};
+
+function withIconClass(className?: string) {
+  return className ? `h-4 w-4 ${className}` : 'h-4 w-4';
+}
 
 export default function DetailShellClient({ listId }: DetailShellClientProps) {
   const { userId, loading: authLoading, signIn } = useAuth(supabaseTodo, {
@@ -218,41 +247,148 @@ export default function DetailShellClient({ listId }: DetailShellClientProps) {
     });
   }, [todos]);
 
+  const statusSummary = useMemo(() => {
+    const base: Record<TodoItem['status'], number> = { 未着手: 0, 着手中: 0, 完了: 0 };
+
+    for (const todoItem of todos) {
+      base[todoItem.status] += 1;
+    }
+
+    const total = todos.length;
+    const completionRate =
+      total === 0 ? 0 : Math.round((base['完了'] / total) * 100);
+
+    return {
+      ...base,
+      total,
+      completionRate,
+    };
+  }, [todos]);
+
+  const focusTodo = useMemo(
+    () => sortedTodos.find((todo) => todo.status !== '完了'),
+    [sortedTodos]
+  );
+
   if (authLoading || loading) {
     return (
-      <div className='p-6 text-center text-sm text-frost-subtle'>
-        読み込み中です...
-      </div>
+      <section className='flex flex-col gap-4 p-4'>
+        <LoadingPlaceholder />
+      </section>
     );
   }
 
   if (!userId) {
     return (
-      <div className='flex flex-col items-center gap-4 p-6 text-center'>
-        <p className='text-sm text-frost-subtle'>Todo を表示するにはログインが必要です。</p>
-        <button
-          type='button'
-          className='rounded-full bg-sky-500 px-5 py-2 text-sm font-semibold text-white shadow-lg transition hover:bg-sky-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-300'
-          onClick={() => void signIn()}
-        >
-          Googleでログイン
-        </button>
-      </div>
+      <section className='flex min-h-[70vh] flex-col items-center justify-center gap-6 px-6 py-10 text-center'>
+        <div className='relative w-full max-w-sm overflow-hidden rounded-3xl border border-night-border bg-night-glass-soft px-6 py-8 text-frost-soft shadow-glass-xl'>
+          <div
+            aria-hidden
+            className='pointer-events-none absolute inset-x-0 top-0 h-44 bg-primary-gradient opacity-30 blur-3xl'
+          />
+          <div className='relative z-10 space-y-4'>
+            <p className='text-sm font-medium'>Todo を表示するにはログインが必要です。</p>
+            <p className='text-xs text-frost-subtle'>
+              Google アカウントでログインして、進捗をモバイルでも確認しましょう。
+            </p>
+            <button
+              type='button'
+              className='inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary-gradient px-5 py-2.5 text-sm font-semibold text-white shadow-button-primary transition hover:shadow-button-primary-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-300'
+              onClick={() => void signIn()}
+            >
+              <span className='text-base'>🔐</span>
+              <span>Googleでログイン</span>
+            </button>
+          </div>
+        </div>
+      </section>
     );
   }
 
   return (
-    <section className='flex flex-col gap-4 p-4'>
+    <section className='flex flex-col gap-5 p-4 pb-16'>
+      <div className='relative overflow-hidden rounded-3xl border border-night-border bg-night-glass-soft px-5 py-6 shadow-glass-xl'>
+        <div
+          aria-hidden
+          className='pointer-events-none absolute inset-0 bg-primary-gradient opacity-25 blur-[120px]'
+        />
+        <div className='relative z-10 space-y-5'>
+          <div className='flex items-start justify-between gap-4'>
+            <div>
+              <p className='text-[11px] uppercase tracking-[0.3em] text-frost-subtle'>
+                Progress
+              </p>
+              <p className='mt-2 text-3xl font-semibold text-frost-soft'>
+                {statusSummary.completionRate}%
+              </p>
+              <p className='mt-1 text-xs text-frost-muted'>
+                完了 {statusSummary['完了']} / {statusSummary.total}
+              </p>
+            </div>
+            <div className='flex flex-col items-end gap-2 text-xs text-frost-subtle'>
+              <StatPill label='未着手' value={statusSummary['未着手']} accent='from-slate-400 to-slate-200' />
+              <StatPill label='着手中' value={statusSummary['着手中']} accent='from-sky-400 to-cyan-300' />
+              <StatPill label='完了' value={statusSummary['完了']} accent='from-emerald-400 to-teal-300' />
+            </div>
+          </div>
+
+          <div
+            role='progressbar'
+            aria-label='完了率'
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={statusSummary.completionRate}
+            className='relative h-2 w-full overflow-hidden rounded-full border border-night-border bg-night-glass-soft'
+          >
+            <div
+              className='h-full rounded-full bg-gradient-to-r from-sky-400 via-cyan-300 to-emerald-300 transition-[width] duration-500 ease-out'
+              style={{ width: `${Math.min(statusSummary.completionRate, 100)}%` }}
+            />
+          </div>
+
+          {focusTodo && (
+            <div className='relative flex items-center justify-between gap-3 rounded-2xl border border-night-border bg-night-glass px-4 py-3 text-xs text-frost-soft'>
+              <div className='flex min-w-0 items-center gap-2'>
+                <span className='text-lg'>✨</span>
+                <span className='text-[10px] uppercase tracking-[0.28em] text-frost-muted'>
+                  Focus
+                </span>
+                <span className='break-words text-sm font-medium text-frost-soft'>
+                  {focusTodo.title}
+                </span>
+              </div>
+              <span className='shrink-0 rounded-full border border-night-border bg-night-glass px-2 py-1 text-[11px] text-frost-muted'>
+                {focusTodo.status}
+              </span>
+            </div>
+          )}
+        </div>
+      </div>
+
       {error && (
-        <div className='rounded-lg border border-rose-400/60 bg-rose-500/10 px-4 py-3 text-sm text-rose-200'>
-          {error}
+        <div className='relative overflow-hidden rounded-2xl border border-rose-500/60 bg-rose-500/10 px-4 py-3 text-sm text-rose-100'>
+          <div
+            aria-hidden
+            className='absolute inset-0 bg-gradient-to-r from-rose-500/25 via-transparent to-orange-500/15 opacity-80'
+          />
+          <div className='relative z-10 flex items-center gap-3'>
+            <span className='flex h-8 w-8 items-center justify-center rounded-full border border-rose-400/60 bg-rose-500/20 text-sm font-semibold text-rose-100'>
+              !
+            </span>
+            <span>{error}</span>
+          </div>
         </div>
       )}
 
       {sortedTodos.length === 0 ? (
-        <p className='text-center text-sm text-frost-subtle'>表示できる Todo はありません。</p>
+        <div className='rounded-3xl border border-night-border bg-night-glass-soft px-6 py-12 text-center text-sm text-frost-subtle'>
+          <p className='text-base font-semibold text-frost-soft'>表示できる Todo はありません。</p>
+          <p className='mt-2 text-xs text-frost-subtle'>
+            新しいタスクを追加すると、ここにモダンなカードで表示されます。
+          </p>
+        </div>
       ) : (
-        <div className='space-y-3'>
+        <div className='space-y-4'>
           {sortedTodos.map((todo) => (
             <MobileTodoRow
               key={todo.id}
@@ -299,6 +435,8 @@ function MobileTodoRow({
   const isCompleted = todo.status === '完了';
   const isInProgress = todo.status === '着手中';
   const priorityKey: NonNullable<TodoItem['priority']> | 'none' = todo.priority ?? 'none';
+  const priorityMeta = PRIORITY_META[priorityKey];
+
   const createdLabel = todo.created_at
     ? new Date(todo.created_at).toLocaleString('ja-JP', { dateStyle: 'short', timeStyle: 'short' })
     : '-';
@@ -306,71 +444,78 @@ function MobileTodoRow({
     ? new Date(todo.done_date).toLocaleString('ja-JP', { dateStyle: 'short', timeStyle: 'short' })
     : '-';
 
-  const groupStyle =
+  const groupBadgeStyle =
     group && group.color?.startsWith('#')
       ? {
-          backgroundColor: `${group.color}1a`,
+          backgroundColor: `${group.color}15`,
           borderColor: `${group.color}4d`,
           color: group.color,
         }
       : undefined;
 
   return (
-    <div className='overflow-hidden rounded-2xl border border-night-border-muted bg-night-surface-soft shadow-sm'>
-      <div className='flex items-center gap-3 p-4'>
-        <div className='flex items-center gap-2 pt-1'>
+    <article className={`group relative overflow-hidden rounded-3xl border border-night-border bg-night-glass-soft transition-all duration-300 ${isCompleted ? 'opacity-80' : 'hover:border-sky-400/80 hover:shadow-card-hover'}`}>
+      <div
+        aria-hidden
+        className='pointer-events-none absolute inset-0 bg-gradient-to-br from-sky-500/10 via-transparent to-purple-500/10 opacity-0 transition-opacity duration-300 group-hover:opacity-100'
+      />
+      <div className='relative flex items-center gap-4 p-4'>
+        <div className='flex items-center gap-2'>
           <button
             type='button'
-            className={`flex h-9 w-9 items-center justify-center rounded-full border text-sm font-semibold transition-all ${
+            className={`flex h-9 w-9 items-center justify-center rounded-full border transition-all duration-200 ${
               isCompleted
-                ? 'border-emerald-300 bg-emerald-500/20 text-emerald-200'
-                : 'border-night-border bg-night-glass text-frost-subtle hover:border-emerald-300 hover:text-emerald-200'
-            } ${isBusy ? 'cursor-not-allowed opacity-60' : ''}`}
+                ? 'border-emerald-300/80 bg-emerald-500/25 text-emerald-100 shadow-button-secondary'
+                : 'border-night-border bg-night-glass text-frost-subtle hover:border-emerald-300/70 hover:text-emerald-100 hover:shadow-button-secondary'
+            } ${isBusy || isDeleting ? 'pointer-events-none opacity-60' : 'active:scale-95'}`}
             onClick={() => onToggleCompletion(todo)}
             disabled={isBusy || isDeleting}
             aria-pressed={isCompleted}
+            aria-label={isCompleted ? '未着手に戻す' : '完了にする'}
           >
-            ✓
+            <CheckIcon />
           </button>
           <button
             type='button'
-            className={`flex h-9 w-9 items-center justify-center rounded-full border text-sm transition-colors ${
+            className={`flex h-9 w-9 items-center justify-center rounded-full border transition-all duration-200 ${
               isInProgress
-                ? 'border-sky-400/70 bg-sky-500/25 text-sky-200'
-                : 'border-night-border bg-night-glass text-frost-soft hover:border-sky-400/60 hover:text-sky-200'
-            } ${isBusy ? 'cursor-not-allowed opacity-60' : ''}`}
+                ? 'border-sky-400/80 bg-sky-500/25 text-sky-100 shadow-button-secondary'
+                : 'border-night-border bg-night-glass text-frost-subtle hover:border-sky-400/70 hover:text-sky-100 hover:shadow-button-secondary'
+            } ${isBusy || isDeleting ? 'pointer-events-none opacity-60' : 'active:scale-95'}`}
             onClick={() => onToggleInProgress(todo)}
             disabled={isBusy || isDeleting}
             aria-pressed={isInProgress}
+            aria-label={isInProgress ? '着手中を解除' : '着手中にする'}
           >
-            {isInProgress ? '🚩' : '⚑'}
+            <FlagIcon />
           </button>
         </div>
 
-        <div className='flex min-w-0 flex-1 flex-col gap-1'>
-          <div className='flex flex-wrap items-center gap-2 text-xs'>
+        <div className='flex min-w-0 flex-1 flex-col gap-2'>
+          <div className='flex flex-wrap items-center gap-2 text-[11px]'>
+            <span className={`h-2 w-2 rounded-full ${priorityMeta.dotClass}`} aria-hidden />
             <span
-              className='inline-flex items-center gap-1 rounded-full border border-night-border bg-night-glass px-2.5 py-1 font-semibold text-frost-soft'
-              style={groupStyle}
+              className='inline-flex items-center gap-1 rounded-full border border-night-border bg-night-glass px-2.5 py-1 text-frost-soft'
+              style={groupBadgeStyle}
             >
-              {group?.emoji && <span>{group.emoji}</span>}
+              {group?.emoji && <span aria-hidden>{group.emoji}</span>}
               <span>{group?.name ?? '未所属'}</span>
             </span>
-            <span className={`h-2.5 w-2.5 rounded-full ${PRIORITY_DOT_COLOR[priorityKey]}`} />
           </div>
           <p
-            className={`break-words text-sm font-medium leading-relaxed ${
-              isCompleted ? 'text-frost-muted line-through' : 'text-frost-soft'
+            className={`break-words text-sm font-semibold leading-relaxed ${
+              isCompleted ? 'text-frost-muted line-through decoration-frost-subtle/60' : 'text-frost-soft'
             }`}
           >
             {todo.title}
           </p>
+
           {todo.tags.length > 0 && (
-            <div className='flex flex-wrap gap-1 text-[11px] text-sky-200'>
+            <div className='flex flex-wrap gap-2 text-[11px] text-sky-100'>
               {todo.tags.map((tag) => (
                 <span
                   key={`${todo.id}-${tag}`}
-                  className='rounded-full bg-sky-500/10 px-2 py-0.5 text-sky-200'
+                  className='rounded-full border border-sky-400/40 bg-sky-500/10 px-2.5 py-0.5'
                 >
                   #{tag}
                 </span>
@@ -379,55 +524,192 @@ function MobileTodoRow({
           )}
         </div>
 
-        <div className='flex flex-col items-end gap-2'>
+        <div className='flex shrink-0 items-start'>
           <button
             type='button'
             aria-expanded={expanded}
             aria-label={expanded ? '詳細を閉じる' : '詳細を開く'}
-            className={`flex h-9 w-9 items-center justify-center rounded-full border text-xs font-semibold transition ${
+            className={`flex h-9 w-9 items-center justify-center rounded-full border transition-all duration-200 ${
               expanded
-                ? 'border-sky-400 bg-sky-500/20 text-sky-200'
-                : 'border-night-border bg-night-glass text-frost-soft hover:border-sky-400 hover:text-sky-200'
-            } ${isDeleting ? 'cursor-not-allowed opacity-60' : ''}`}
+                ? 'border-sky-400/80 bg-sky-500/25 text-sky-100 shadow-button-secondary'
+                : 'border-night-border bg-night-glass text-frost-subtle hover:border-sky-400/70 hover:text-sky-100 hover:shadow-button-secondary'
+            } ${isDeleting ? 'pointer-events-none opacity-60' : 'active:scale-95'}`}
             onClick={() => onToggleExpanded(todo.id)}
             disabled={isDeleting}
           >
-            {expanded ? '▲' : '▼'}
+            {expanded ? <ChevronUpIcon /> : <ChevronDownIcon />}
           </button>
         </div>
       </div>
 
       {expanded && (
-        <div className='space-y-3 border-t border-night-border-muted px-4 py-4 text-sm text-frost-soft'>
-          <div className='flex flex-wrap gap-4 text-xs text-frost-subtle'>
-            <span className='flex items-center gap-1.5'>
-              <span className='font-semibold text-frost-soft'>作成:</span>
-              <span>{createdLabel}</span>
-            </span>
-            <span className='flex items-center gap-1.5'>
-              <span className='font-semibold text-frost-soft'>完了:</span>
-              <span>{doneLabel}</span>
-            </span>
+        <div className='relative space-y-3 border-t border-night-border/70 bg-night-glass-soft px-4 pb-4 pt-4 text-sm text-frost-soft'>
+          <div className='grid grid-cols-2 gap-3 text-xs text-frost-subtle'>
+            <div className='rounded-2xl border border-night-border bg-night-glass px-3 py-2'>
+              <div className='text-[10px] uppercase tracking-[0.25em] text-frost-muted'>作成</div>
+              <div className='mt-1 text-sm text-frost-soft'>{createdLabel}</div>
+            </div>
+            <div className='rounded-2xl border border-night-border bg-night-glass px-3 py-2'>
+              <div className='text-[10px] uppercase tracking-[0.25em] text-frost-muted'>完了</div>
+              <div className='mt-1 text-sm text-frost-soft'>{doneLabel}</div>
+            </div>
           </div>
-          <div className='prose prose-invert max-w-none text-sm [&_code]:rounded [&_code]:bg-night-glass [&_code]:px-1.5 [&_code]:py-0.5 [&_li]:list-disc [&_li]:pl-4'>
+
+          <div className='rounded-2xl border border-night-border bg-night-glass-soft px-4 py-3 text-sm leading-relaxed text-frost-soft shadow-inner'>
             {todo.markdown_text ? (
-              <ReactMarkdown>{todo.markdown_text}</ReactMarkdown>
+              <div className='prose prose-invert max-w-none text-sm [&_code]:rounded [&_code]:bg-night-glass [&_code]:px-1.5 [&_code]:py-0.5 [&_li]:pl-4'>
+                <ReactMarkdown>{todo.markdown_text}</ReactMarkdown>
+              </div>
             ) : (
               <p className='italic text-frost-subtle'>詳細はまだありません。</p>
             )}
           </div>
+
           <div className='flex justify-end pt-1'>
             <button
               type='button'
-              className='flex items-center gap-2 rounded-full border border-rose-400/50 bg-rose-500/10 px-4 py-2 text-xs font-semibold text-rose-200 transition hover:border-rose-400/70 hover:bg-rose-500/20'
+              className={`inline-flex items-center gap-2 rounded-full bg-destructive-gradient px-4 py-2 text-xs font-semibold text-white shadow-button-destructive transition hover:shadow-button-destructive-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-300 ${
+                isDeleting || isBusy ? 'pointer-events-none opacity-60' : ''
+              }`}
               onClick={() => onDelete(todo.id)}
               disabled={isDeleting || isBusy}
             >
-              🗑<span>削除</span>
+              <TrashIcon />
+              <span>削除</span>
             </button>
           </div>
         </div>
       )}
+    </article>
+  );
+}
+
+function LoadingPlaceholder() {
+  return (
+    <>
+      <div className='relative overflow-hidden rounded-3xl border border-night-border bg-night-glass-soft px-5 py-6'>
+        <div
+          aria-hidden
+          className='pointer-events-none absolute inset-0 bg-primary-gradient opacity-20 blur-[120px]'
+        />
+        <div className='relative z-10 space-y-3'>
+          <div className='h-4 w-28 rounded-full bg-night-glass/80 animate-pulse' />
+          <div className='h-3 w-48 rounded-full bg-night-glass/70 animate-pulse' />
+          <div className='h-2 w-full rounded-full bg-night-glass/60 animate-pulse' />
+        </div>
+      </div>
+      <div className='space-y-3'>
+        {Array.from({ length: 2 }).map((_, index) => (
+          <div
+            key={index}
+            className='h-24 w-full rounded-3xl border border-night-border bg-night-glass-soft animate-pulse'
+          />
+        ))}
+      </div>
+    </>
+  );
+}
+
+type StatPillProps = {
+  label: string;
+  value: number;
+  accent: string;
+};
+
+function StatPill({ label, value, accent }: StatPillProps) {
+  return (
+    <div className='inline-flex items-center gap-2 rounded-full border border-night-border bg-night-glass px-3 py-1.5'>
+      <span className={`h-2 w-2 rounded-full bg-gradient-to-r ${accent}`} aria-hidden />
+      <span className='text-[11px] text-frost-muted'>{label}</span>
+      <span className='text-sm font-semibold text-frost-soft'>{value}</span>
     </div>
+  );
+}
+
+function CheckIcon({ className }: IconProps) {
+  return (
+    <svg
+      viewBox='0 0 20 20'
+      fill='none'
+      className={withIconClass(className)}
+      stroke='currentColor'
+      strokeWidth='1.8'
+      strokeLinecap='round'
+      strokeLinejoin='round'
+      aria-hidden
+    >
+      <path d='M5 10.5 8.2 14l6.8-8' />
+    </svg>
+  );
+}
+
+function FlagIcon({ className }: IconProps) {
+  return (
+    <svg
+      viewBox='0 0 20 20'
+      fill='none'
+      className={withIconClass(className)}
+      stroke='currentColor'
+      strokeWidth='1.6'
+      strokeLinecap='round'
+      strokeLinejoin='round'
+      aria-hidden
+    >
+      <path d='M5 3.5v13' />
+      <path d='M6 4h8.5l-2.2 3 2.2 3H6' />
+    </svg>
+  );
+}
+
+function ChevronDownIcon({ className }: IconProps) {
+  return (
+    <svg
+      viewBox='0 0 20 20'
+      fill='none'
+      className={withIconClass(className)}
+      stroke='currentColor'
+      strokeWidth='1.8'
+      strokeLinecap='round'
+      strokeLinejoin='round'
+      aria-hidden
+    >
+      <path d='m5.5 7.75 4.5 4.5 4.5-4.5' />
+    </svg>
+  );
+}
+
+function ChevronUpIcon({ className }: IconProps) {
+  return (
+    <svg
+      viewBox='0 0 20 20'
+      fill='none'
+      className={withIconClass(className)}
+      stroke='currentColor'
+      strokeWidth='1.8'
+      strokeLinecap='round'
+      strokeLinejoin='round'
+      aria-hidden
+    >
+      <path d='m5.5 12.25 4.5-4.5 4.5 4.5' />
+    </svg>
+  );
+}
+
+function TrashIcon({ className }: IconProps) {
+  return (
+    <svg
+      viewBox='0 0 20 20'
+      fill='none'
+      className={withIconClass(className)}
+      stroke='currentColor'
+      strokeWidth='1.6'
+      strokeLinecap='round'
+      strokeLinejoin='round'
+      aria-hidden
+    >
+      <path d='M4.5 6.5h11' />
+      <path d='M8.5 3.5h3a1.5 1.5 0 0 1 1.5 1.5v1.5h-6V5a1.5 1.5 0 0 1 1.5-1.5Z' />
+      <path d='M6.5 6.5v8a1.5 1.5 0 0 0 1.5 1.5h4a1.5 1.5 0 0 0 1.5-1.5v-8' />
+    </svg>
   );
 }
