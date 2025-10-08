@@ -10,7 +10,7 @@ export default async function TodoDetailEntryPage(props: DetailPageProps) {
   const headerList = await headers();
   const deviceVariant = headerList.get(DEVICE_VARIANT_HEADER);
 
-  if (!(deviceVariant === 'mobile')) {
+  if ((deviceVariant === 'mobile')) {
     return <MobileTodoDetailPage {...props} />;
   }
 

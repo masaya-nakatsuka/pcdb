@@ -384,7 +384,7 @@ function MobileTodoRow({
             type='button'
             aria-expanded={expanded}
             aria-label={expanded ? '詳細を閉じる' : '詳細を開く'}
-            className={`flex h-7 w-7 items-center justify-center rounded-full border text-xs font-semibold transition ${
+            className={`flex h-9 w-9 items-center justify-center rounded-full border text-xs font-semibold transition ${
               expanded
                 ? 'border-sky-400 bg-sky-500/20 text-sky-200'
                 : 'border-night-border bg-night-glass text-frost-soft hover:border-sky-400 hover:text-sky-200'
