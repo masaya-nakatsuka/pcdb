@@ -318,7 +318,7 @@ function MobileTodoRow({
   return (
     <div className='overflow-hidden rounded-2xl border border-night-border-muted bg-night-surface-soft shadow-sm'>
       <div className='flex items-center gap-3 p-4'>
-        <div className='flex flex-col items-center gap-2 pt-1'>
+        <div className='flex items-center gap-2 pt-1'>
           <button
             type='button'
             className={`flex h-9 w-9 items-center justify-center rounded-full border text-sm font-semibold transition-all ${
