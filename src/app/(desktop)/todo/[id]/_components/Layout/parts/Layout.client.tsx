@@ -547,6 +547,9 @@ export default function LayoutClient({ listId }: LayoutProps) {
   const deleteTodo = useCallback(async (todoId: string) => {
     if (updatingTodo || !userId) return
 
+    const targetTodo = todos.find((todo) => todo.id === todoId)
+    const targetGroupId = targetTodo?.group_id ?? null
+
     setDeletingTodos((prev) => new Set(prev).add(todoId))
     setUpdatingTodo(todoId)
     setOverlayMessage('削除中...')
@@ -561,6 +564,30 @@ export default function LayoutClient({ listId }: LayoutProps) {
 
       if (!error) {
         setTodos((prev) => prev.filter((todo) => todo.id !== todoId))
+
+        if (targetGroupId) {
+          // Clean up the group when no other TODOs reference it anymore
+          const { data: remainingGroupTodos, error: remainingGroupError } = await supabaseTodo
+            .from('todo_items')
+            .select('id')
+            .eq('group_id', targetGroupId)
+            .eq('user_id', userId)
+            .eq('list_id', listId)
+            .limit(1)
+
+          if (!remainingGroupError && (!remainingGroupTodos || remainingGroupTodos.length === 0)) {
+            const { error: groupDeleteError } = await supabaseTodo
+              .from('todo_groups')
+              .delete()
+              .eq('id', targetGroupId)
+              .eq('user_id', userId)
+              .eq('list_id', listId)
+
+            if (!groupDeleteError) {
+              setGroups((prev) => prev.filter((group) => group.id !== targetGroupId))
+            }
+          }
+        }
       }
 
       setDeletingTodos((prev) => {
@@ -571,7 +598,7 @@ export default function LayoutClient({ listId }: LayoutProps) {
       setUpdatingTodo(null)
       setOverlayMessage('')
     }, 300)
-  }, [updatingTodo, userId, listId])
+  }, [updatingTodo, userId, listId, todos])
 
   const toggleExpanded = useCallback((todoId: string) => {
     setExpandedTodos((prev) => {
