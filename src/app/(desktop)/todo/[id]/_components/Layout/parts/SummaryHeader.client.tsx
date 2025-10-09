@@ -18,7 +18,7 @@ const STATUS_DOT_COLOR: Record<SimpleStatus, string> = {
 
 export default function SummaryHeader({ statusSummary, showCompleted, onToggleShowCompleted }: SummaryHeaderProps) {
   return (
-    <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+    <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
       <div className="flex flex-wrap items-center gap-3">
         {STATUS_ORDER.map((status) => (
           <div
