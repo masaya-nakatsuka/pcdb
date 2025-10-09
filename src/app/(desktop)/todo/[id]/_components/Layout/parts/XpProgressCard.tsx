@@ -1,11 +1,11 @@
 "use client"
 
-type RecentXpGain = {
+export type RecentXpGain = {
   amount: number
   todoId: string
 }
 
-type XpProgressCardProps = {
+export type XpProgressCardProps = {
   level: number
   xpTotal: number
   xpNeededForNextLevel: number
@@ -21,11 +21,11 @@ export default function XpProgressCard({
   recentXpGain,
 }: XpProgressCardProps) {
   return (
-    <div className="mb-6 flex flex-col gap-4 rounded-2xl border border-night-border-muted bg-night-glass-strong p-5">
+    <div className="mb-5 flex flex-col gap-3 rounded-2xl border border-night-border-muted bg-night-glass-strong p-4">
       <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-2 text-sm uppercase tracking-wide text-frost-subtle">
           <span className="rounded-full bg-sky-500/20 px-3 py-1 font-semibold text-sky-300">Lv.{level}</span>
-          <span>成長進捗</span>
+          <span>アドベンチャー進捗</span>
         </div>
         <div className="text-sm text-frost-soft">
           合計 {xpTotal} XP ・ 次のレベルまで {xpNeededForNextLevel} XP

@@ -6,11 +6,13 @@ import ReactMarkdown from 'react-markdown';
 import { useAuth } from '@/hooks/useAuth';
 import { supabaseTodo } from '@/lib/supabaseTodoClient';
 import type { TodoItem } from '@/lib/todoTypes';
+import { rollXpReward, summarizeLevelProgress, type LevelProgress } from '@/lib/todoXp';
 import {
   todoCollectionSchema,
   todoGroupCollectionSchema,
   type TodoGroupDTO,
 } from '@/features/todo/detail/types';
+import XpProgressCard, { type RecentXpGain } from './XpProgressCard';
 
 type DetailShellClientProps = {
   listId: string;
@@ -62,6 +64,10 @@ export default function DetailShellClient({ listId }: DetailShellClientProps) {
   const [loading, setLoading] = useState(true);
   const [todos, setTodos] = useState<TodoItem[]>([]);
   const [groups, setGroups] = useState<TodoGroupMap>({});
+  const [xpLogsByTodo, setXpLogsByTodo] = useState<Record<string, number>>({});
+  const [xpTotal, setXpTotal] = useState(0);
+  const [xpProgress, setXpProgress] = useState<LevelProgress>(() => summarizeLevelProgress(0));
+  const [recentXpGain, setRecentXpGain] = useState<RecentXpGain | null>(null);
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -72,7 +78,7 @@ export default function DetailShellClient({ listId }: DetailShellClientProps) {
       setLoading(true);
       setError(null);
 
-      const [todosResult, groupsResult] = await Promise.all([
+      const [todosResult, groupsResult, xpLogsResult] = await Promise.all([
         supabaseTodo
           .from('todo_items')
           .select('*')
@@ -86,6 +92,10 @@ export default function DetailShellClient({ listId }: DetailShellClientProps) {
           .eq('list_id', listId)
           .order('sort_order', { ascending: true })
           .order('created_at', { ascending: true }),
+        supabaseTodo
+          .from('todo_xp_logs')
+          .select('todo_id, xp')
+          .eq('user_id', uid),
       ]);
 
       if (todosResult.error) {
@@ -110,6 +120,24 @@ export default function DetailShellClient({ listId }: DetailShellClientProps) {
 
       setTodos(parsedTodos as TodoItem[]);
       setGroups(nextGroups);
+      if (xpLogsResult.error) {
+        setError((prev) => prev ?? 'XPの取得に失敗しました。');
+        setXpLogsByTodo({});
+        setXpTotal(0);
+        setXpProgress(summarizeLevelProgress(0));
+      } else {
+        const mapped: Record<string, number> = {};
+        let totalXp = 0;
+        for (const row of (xpLogsResult.data ?? []) as { todo_id?: string | null; xp?: number | null }[]) {
+          if (row.todo_id) {
+            mapped[row.todo_id] = row.xp ?? 0;
+          }
+          totalXp += row.xp ?? 0;
+        }
+        setXpLogsByTodo(mapped);
+        setXpTotal(totalXp);
+        setXpProgress(summarizeLevelProgress(totalXp));
+      }
       setLoading(false);
     },
     [listId]
@@ -125,6 +153,43 @@ export default function DetailShellClient({ listId }: DetailShellClientProps) {
 
     void loadData(userId);
   }, [userId, loadData]);
+
+  const awardXpForTodoCompletion = useCallback(
+    async (todo: TodoItem) => {
+      if (!userId) return;
+      if (xpLogsByTodo[todo.id]) return;
+
+      const reward = rollXpReward();
+      const { data, error } = await supabaseTodo
+        .from('todo_xp_logs')
+        .insert({
+          user_id: userId,
+          todo_id: todo.id,
+          xp: reward,
+        })
+        .select('todo_id, xp')
+        .single();
+
+      if (!error && data) {
+        const xpAwarded = data.xp ?? reward;
+        setXpLogsByTodo((prev) => ({ ...prev, [data.todo_id]: xpAwarded }));
+        setXpTotal((prev) => {
+          const nextTotal = prev + xpAwarded;
+          setXpProgress(summarizeLevelProgress(nextTotal));
+          return nextTotal;
+        });
+        setRecentXpGain({ amount: xpAwarded, todoId: todo.id });
+        return;
+      }
+
+      if (error?.code === '23505') {
+        return;
+      }
+
+      console.error('Failed to award XP', error);
+    },
+    [userId, xpLogsByTodo]
+  );
 
   const toggleExpanded = useCallback((todoId: string) => {
     setExpandedIds((prev) => {
@@ -166,13 +231,16 @@ export default function DetailShellClient({ listId }: DetailShellClientProps) {
               : item
           )
         );
+        if (nextStatus === '完了') {
+          await awardXpForTodoCompletion(todo);
+        }
       } else {
         setError('ステータスの更新に失敗しました。');
       }
 
       setBusyId(null);
     },
-    [userId, busyId, deletingId, listId]
+    [userId, busyId, deletingId, listId, awardXpForTodoCompletion]
   );
 
   const toggleInProgress = useCallback(
@@ -270,6 +338,22 @@ export default function DetailShellClient({ listId }: DetailShellClientProps) {
     [sortedTodos]
   );
 
+  const xpProgressPercent = useMemo(
+    () => Math.min(100, Math.max(0, Math.round(xpProgress.progressToNext * 100))),
+    [xpProgress]
+  );
+
+  const xpNeededForNextLevel = useMemo(
+    () => Math.max(0, xpProgress.xpForNextLevel - xpProgress.xpIntoLevel),
+    [xpProgress]
+  );
+
+  useEffect(() => {
+    if (!recentXpGain) return;
+    const timer = window.setTimeout(() => setRecentXpGain(null), 4000);
+    return () => window.clearTimeout(timer);
+  }, [recentXpGain]);
+
   if (authLoading || loading) {
     return (
       <section className='flex flex-col gap-4 p-4'>
@@ -364,6 +448,13 @@ export default function DetailShellClient({ listId }: DetailShellClientProps) {
           )}
         </div>
       </div>
+      <XpProgressCard
+        level={xpProgress.level}
+        xpTotal={xpTotal}
+        xpNeededForNextLevel={xpNeededForNextLevel}
+        xpProgressPercent={xpProgressPercent}
+        recentXpGain={recentXpGain}
+      />
 
       {error && (
         <div className='relative overflow-hidden rounded-2xl border border-rose-500/60 bg-rose-500/10 px-4 py-3 text-sm text-rose-100'>
