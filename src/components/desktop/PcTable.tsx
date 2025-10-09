@@ -455,7 +455,8 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
                     padding: '12px 8px',
                     fontWeight: '600',
                     color: '#495057',
-                    textAlign: 'center'
+                    textAlign: 'center',
+                    minWidth: '100px'
                   }}>画像</th>
                   <th style={{
                     border: '1px solid #dee2e6',
@@ -583,27 +584,27 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
                               <ImageComponent
                                 src={pc.img_url}
                                 alt={pc.name || 'PC Image'}
-                                style={{width: '80px', height: 'auto', borderRadius: '4px'}}
+                                style={{width: '180px', height: 'auto', borderRadius: '8px'}}
                               />
                             </a>
                           ) : (
                             <ImageComponent
                               src={pc.img_url}
                               alt={pc.name || 'PC Image'}
-                              style={{width: '80px', height: 'auto', borderRadius: '4px'}}
+                              style={{width: '180px', height: 'auto', borderRadius: '8px'}}
                             />
                           )
                         ) : (
                           <div style={{
-                            width: '80px',
-                            height: '60px',
-                            backgroundColor: '#f0f0f0',
+                            width: '180px',
+                            height: '110px',
+                            backgroundColor: '#f8fafc',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            borderRadius: '4px',
-                            fontSize: '10px',
-                            color: '#666'
+                            borderRadius: '8px',
+                            fontSize: '12px',
+                            color: '#94a3b8'
                           }}>
                             No Image
                           </div>
