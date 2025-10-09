@@ -47,10 +47,19 @@ export default function GroupCreateModal({ isOpen, onClose, onCreate }: GroupCre
     onClose()
   }
 
+  const handleBackdropClick = async () => {
+    if (isCreating) return
+    if (name.trim()) {
+      await handleCreate()
+      return
+    }
+    handleClose()
+  }
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
-      onClick={handleClose}
+      onClick={handleBackdropClick}
     >
       <div
         className="w-full max-w-md rounded-2xl border border-night-border bg-night-glass p-6 shadow-glass-xl backdrop-blur-[22px]"
