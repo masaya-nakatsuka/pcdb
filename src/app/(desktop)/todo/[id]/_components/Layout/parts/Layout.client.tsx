@@ -19,6 +19,7 @@ import Header from './Header.client'
 import SummaryHeader from './SummaryHeader.client'
 import TodoList from './TodoList'
 import GroupCreateModal from './TodoList/GroupCreateModal.client'
+import XpProgressCard from './XpProgressCard'
 
 type LayoutProps = {
   listId: string
@@ -903,28 +904,13 @@ export default function LayoutClient({ listId }: LayoutProps) {
             onToggleShowCompleted={() => setShowCompleted((prev) => !prev)}
           />
 
-          <div className="mt-4 flex flex-col gap-3 rounded-2xl border border-night-border-muted bg-night-glass-strong p-4">
-            <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex items-center gap-2 text-sm uppercase tracking-wide text-frost-subtle">
-                <span className="rounded-full bg-sky-500/20 px-3 py-1 font-semibold text-sky-300">Lv.{xpProgress.level}</span>
-                <span>アドベンチャー進捗</span>
-              </div>
-              <div className="text-sm text-frost-soft">
-                合計 {xpTotal} XP ・ 次のレベルまで {xpNeededForNextLevel} XP
-              </div>
-            </div>
-            <div className="h-3 overflow-hidden rounded-full bg-night-border-strong">
-              <div
-                className="h-full rounded-full bg-gradient-to-r from-sky-400 via-indigo-400 to-fuchsia-500 transition-[width] duration-500"
-                style={{ width: `${xpProgressPercent}%` }}
-              />
-            </div>
-            {recentXpGain && (
-              <div className="text-sm font-semibold text-emerald-300">
-                +{recentXpGain.amount} XP 獲得！
-              </div>
-            )}
-          </div>
+          <XpProgressCard
+            level={xpProgress.level}
+            xpTotal={xpTotal}
+            xpNeededForNextLevel={xpNeededForNextLevel}
+            xpProgressPercent={xpProgressPercent}
+            recentXpGain={recentXpGain}
+          />
 
           <TodoList
             todos={sortedTodos}

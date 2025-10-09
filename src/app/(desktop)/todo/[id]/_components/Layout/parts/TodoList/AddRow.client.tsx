@@ -26,7 +26,7 @@ export default function AddRow({ gridTemplateColumns, cellPaddingClass, onStartC
         <div
           className={`col-span-full flex items-center gap-2 text-frost-muted transition-colors focus-visible:text-white focus-visible:outline-none hover:text-white ${cellPaddingClass}`}
         >
-          <span className="text-xl leading-none">＋</span>
+          <span className="flex h-9 w-9 items-center justify-center rounded-full text-xl leading-none">＋</span>
           新しいTODOを追加
         </div>
       </div>
