@@ -426,7 +426,7 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
               scrollbarWidth: 'auto',
               msOverflowStyle: 'auto',
               WebkitOverflowScrolling: 'touch',
-              scrollbarGutter: 'stable'
+              scrollbarGutter: 'auto'
             }}
           >
             <table

@@ -123,23 +123,11 @@ export default function PcListPage() {
       ) : (
         <div
           style={{
-            maxWidth: '1280px',
-            margin: '0 auto',
-            padding: '24px 16px',
+            backgroundColor: '#ffffff',
+            color: '#1f2937'
           }}
         >
-          <div
-            style={{
-              backgroundColor: '#ffffff',
-              border: '1px solid #e2e8f0',
-              borderRadius: '20px',
-              boxShadow: '0 20px 40px rgba(148, 163, 184, 0.25)',
-              padding: '24px',
-              color: '#1f2937'
-            }}
-          >
-            <ClientPcList pcs={pcs} />
-          </div>
+          <ClientPcList pcs={pcs} />
         </div>
       )}
 
