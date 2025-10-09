@@ -5,6 +5,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import LoadingOverlay from '@/components/LoadingOverlay'
 import { supabaseTodo } from '@/lib/supabaseTodoClient'
 import type { TodoGroup, TodoItem } from '@/lib/todoTypes'
+import type { LevelProgress } from '@/lib/todoXp'
+import { rollXpReward, summarizeLevelProgress } from '@/lib/todoXp'
 
 import {
   editFormSchema,
@@ -57,6 +59,10 @@ export default function LayoutClient({ listId }: LayoutProps) {
   const [reappearingTodos, setReappearingTodos] = useState<Set<string>>(new Set())
   const [showGroupCreateModal, setShowGroupCreateModal] = useState<boolean>(false)
   const [pendingGroupSelectionCallback, setPendingGroupSelectionCallback] = useState<((groupId: string) => void) | null>(null)
+  const [xpLogsByTodo, setXpLogsByTodo] = useState<Record<string, number>>({})
+  const [xpTotal, setXpTotal] = useState<number>(0)
+  const [xpProgress, setXpProgress] = useState<LevelProgress>(() => summarizeLevelProgress(0))
+  const [recentXpGain, setRecentXpGain] = useState<{ amount: number; todoId: string } | null>(null)
 
   const [editForm, setEditForm] = useState<EditFormState>(editFormSchema.parse({}))
   const previousStatusRef = useRef<Map<string, TodoStatus>>(new Map())
@@ -116,6 +122,61 @@ export default function LayoutClient({ listId }: LayoutProps) {
     }
   }, [])
 
+  const loadXpLogs = useCallback(async (uid: string) => {
+    const { data, error } = await supabaseTodo
+      .from('todo_xp_logs')
+      .select('todo_id, xp')
+      .eq('user_id', uid)
+
+    if (!error && data) {
+      const mapped: Record<string, number> = {}
+      let total = 0
+      for (const row of data) {
+        if (row.todo_id) {
+          mapped[row.todo_id] = row.xp ?? 0
+        }
+        total += row.xp ?? 0
+      }
+      setXpLogsByTodo(mapped)
+      setXpTotal(total)
+      setXpProgress(summarizeLevelProgress(total))
+    }
+  }, [])
+
+  const awardXpForTodoCompletion = useCallback(async (todo: TodoItem) => {
+    if (!userId) return
+    if (xpLogsByTodo[todo.id]) return
+
+    const reward = rollXpReward()
+    const { data, error } = await supabaseTodo
+      .from('todo_xp_logs')
+      .insert({
+        user_id: userId,
+        todo_id: todo.id,
+        xp: reward,
+      })
+      .select('todo_id, xp')
+      .single()
+
+    if (!error && data) {
+      setXpLogsByTodo((prev) => ({ ...prev, [data.todo_id]: data.xp ?? reward }))
+      setXpTotal((prev) => {
+        const nextTotal = prev + (data.xp ?? reward)
+        setXpProgress(summarizeLevelProgress(nextTotal))
+        return nextTotal
+      })
+      setRecentXpGain({ amount: data.xp ?? reward, todoId: todo.id })
+      return
+    }
+
+    if (error?.code === '23505') {
+      // Unique constraint violation -> XP already awarded for this TODO
+      return
+    }
+
+    console.error('Failed to award XP', error)
+  }, [userId, xpLogsByTodo])
+
   const createGroup = useCallback(
     async (name: string, color?: string) => {
       if (!userId) return null
@@ -162,7 +223,7 @@ export default function LayoutClient({ listId }: LayoutProps) {
 
       setUserId(uid)
       if (uid) {
-        await Promise.all([loadTodos(uid, listId), loadGroups(uid, listId)])
+        await Promise.all([loadTodos(uid, listId), loadGroups(uid, listId), loadXpLogs(uid)])
       }
       setLoading(false)
     })()
@@ -170,7 +231,7 @@ export default function LayoutClient({ listId }: LayoutProps) {
     return () => {
       isMounted = false
     }
-  }, [listId, loadGroups, loadTodos])
+  }, [listId, loadGroups, loadTodos, loadXpLogs])
 
   const handleSignIn = useCallback(async () => {
     await supabaseTodo.auth.signInWithOAuth({
@@ -184,6 +245,10 @@ export default function LayoutClient({ listId }: LayoutProps) {
     setUserId(null)
     setTodos([])
     setGroups([])
+    setXpLogsByTodo({})
+    setXpTotal(0)
+    setXpProgress(summarizeLevelProgress(0))
+    setRecentXpGain(null)
   }, [])
 
   const resetEditForm = useCallback(() => {
@@ -441,6 +506,10 @@ export default function LayoutClient({ listId }: LayoutProps) {
         )
       )
 
+      if (nextStatus === '完了') {
+        await awardXpForTodoCompletion(todo)
+      }
+
       if (nextStatus !== '完了') {
         previousStatusRef.current.set(todo.id, nextStatus)
         if (disappearingTimeoutsRef.current.has(todo.id)) {
@@ -510,7 +579,7 @@ export default function LayoutClient({ listId }: LayoutProps) {
 
     setUpdatingTodo(null)
     setOverlayMessage('')
-  }, [updatingTodo, userId, listId, showCompleted])
+  }, [updatingTodo, userId, listId, showCompleted, awardXpForTodoCompletion])
 
   const toggleTodoInProgress = useCallback(async (todo: TodoItem) => {
     if (updatingTodo || !userId) return
@@ -797,6 +866,22 @@ export default function LayoutClient({ listId }: LayoutProps) {
     完了: todos.filter((todo) => todo.status === '完了').length
   }), [todos])
 
+  const xpProgressPercent = useMemo(
+    () => Math.min(100, Math.max(0, Math.round(xpProgress.progressToNext * 100))),
+    [xpProgress]
+  )
+
+  const xpNeededForNextLevel = useMemo(
+    () => Math.max(0, xpProgress.xpForNextLevel - xpProgress.xpIntoLevel),
+    [xpProgress]
+  )
+
+  useEffect(() => {
+    if (!recentXpGain) return
+    const timer = setTimeout(() => setRecentXpGain(null), 4000)
+    return () => clearTimeout(timer)
+  }, [recentXpGain])
+
   const columnWidths = ['8%', '8%', '14%', '32%', '10%', '14%', '7%', '7%']
 
   if (loading) {
@@ -817,6 +902,29 @@ export default function LayoutClient({ listId }: LayoutProps) {
             showCompleted={showCompleted}
             onToggleShowCompleted={() => setShowCompleted((prev) => !prev)}
           />
+
+          <div className="mt-4 flex flex-col gap-3 rounded-2xl border border-night-border-muted bg-night-glass-strong p-4">
+            <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-center gap-2 text-sm uppercase tracking-wide text-frost-subtle">
+                <span className="rounded-full bg-sky-500/20 px-3 py-1 font-semibold text-sky-300">Lv.{xpProgress.level}</span>
+                <span>アドベンチャー進捗</span>
+              </div>
+              <div className="text-sm text-frost-soft">
+                合計 {xpTotal} XP ・ 次のレベルまで {xpNeededForNextLevel} XP
+              </div>
+            </div>
+            <div className="h-3 overflow-hidden rounded-full bg-night-border-strong">
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-sky-400 via-indigo-400 to-fuchsia-500 transition-[width] duration-500"
+                style={{ width: `${xpProgressPercent}%` }}
+              />
+            </div>
+            {recentXpGain && (
+              <div className="text-sm font-semibold text-emerald-300">
+                +{recentXpGain.amount} XP 獲得！
+              </div>
+            )}
+          </div>
 
           <TodoList
             todos={sortedTodos}
