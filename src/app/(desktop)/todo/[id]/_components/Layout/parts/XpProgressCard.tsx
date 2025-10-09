@@ -25,7 +25,7 @@ export default function XpProgressCard({
       <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-2 text-sm uppercase tracking-wide text-frost-subtle">
           <span className="rounded-full bg-sky-500/20 px-3 py-1 font-semibold text-sky-300">Lv.{level}</span>
-          <span>アドベンチャー進捗</span>
+          <span>level of growth</span>
         </div>
         <div className="text-sm text-frost-soft">
           合計 {xpTotal} XP ・ 次のレベルまで {xpNeededForNextLevel} XP

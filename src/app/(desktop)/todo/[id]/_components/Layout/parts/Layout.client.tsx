@@ -20,6 +20,7 @@ import SummaryHeader from './SummaryHeader.client'
 import TodoList from './TodoList'
 import GroupCreateModal from './TodoList/GroupCreateModal.client'
 import XpProgressCard from './XpProgressCard'
+import XpRewardPopup from './XpRewardPopup'
 
 type LayoutProps = {
   listId: string
@@ -957,6 +958,7 @@ export default function LayoutClient({ listId }: LayoutProps) {
           />
         </div>
       </div>
+      <XpRewardPopup recentXpGain={recentXpGain} />
       {overlayMessage && <LoadingOverlay message={overlayMessage} />}
 
       {/* 編集中のオーバーレイ */}
