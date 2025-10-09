@@ -43,7 +43,7 @@ export default function HomePage() {
           margin: 0,
           opacity: 0.8
         }}>
-          パソコン比較サイト
+          スペックは、積み重ねで創られる。
         </p>
       </div>
 
@@ -83,6 +83,38 @@ export default function HomePage() {
           }}
         >
           PC一覧を見る
+        </Link>
+
+        <Link
+          href="/todo"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '16px 32px',
+            fontSize: '18px',
+            fontWeight: '600',
+            color: 'white',
+            background: 'linear-gradient(135deg, #6366f1 0%, #14b8a6 100%)',
+            borderRadius: '16px',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.1)',
+            textDecoration: 'none',
+            transition: 'all 0.3s ease',
+            position: 'relative',
+            overflow: 'hidden'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'scale(1.05)'
+            e.currentTarget.style.background = 'linear-gradient(135deg, #4f46e5 0%, #0d9488 100%)'
+            e.currentTarget.style.boxShadow = '0 32px 64px -12px rgba(99, 102, 241, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.15)'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'scale(1)'
+            e.currentTarget.style.background = 'linear-gradient(135deg, #6366f1 0%, #14b8a6 100%)'
+            e.currentTarget.style.boxShadow = '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.1)'
+          }}
+        >
+          TODOを管理する
         </Link>
 
         <Link 
