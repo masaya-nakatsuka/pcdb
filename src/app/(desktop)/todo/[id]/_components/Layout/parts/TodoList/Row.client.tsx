@@ -100,7 +100,7 @@ export default function Row({
         <div className={`${cellPaddingClass} flex items-center justify-center`}>
           <button
             type="button"
-            className={`todo-hit-expand flex h-6 w-6 items-center justify-center rounded-full border text-[12px] font-bold transition-all ${isCompleted ? 'border-emerald-300 bg-gradient-to-br from-emerald-400/90 to-emerald-500/90 text-charcoal-deep shadow-[0_0_18px_rgba(16,185,129,0.35)]' : 'border-night-border-strong text-transparent hover:border-emerald-300 hover:bg-emerald-400/20 hover:text-charcoal-deep/40'} ${isUpdating ? 'cursor-not-allowed opacity-60' : ''}`}
+            className={`todo-hit-expand flex h-9 w-9 items-center justify-center rounded-full border text-sm font-bold transition-all ${isCompleted ? 'border-emerald-300 bg-gradient-to-br from-emerald-400/90 to-emerald-500/90 text-charcoal-deep shadow-[0_0_18px_rgba(16,185,129,0.35)]' : 'border-night-border-strong text-transparent hover:border-emerald-300 hover:bg-emerald-400/20 hover:text-charcoal-deep/40'} ${isUpdating ? 'cursor-not-allowed opacity-60' : ''}`}
             onClick={(event) => {
               event.stopPropagation()
               if (!isUpdating) onToggleTodoCompletion(todo)
@@ -119,7 +119,7 @@ export default function Row({
         <div className={`${cellPaddingClass} flex items-center justify-center`}>
           <button
             type="button"
-            className={`todo-hit-expand flex h-6 w-6 items-center justify-center rounded-full border text-[12px] font-semibold transition-colors ${isInProgress ? 'border-sky-400/60 bg-sky-500/20 text-sky-300' : 'border-night-border bg-night-glass text-frost-soft hover:border-sky-400/60 hover:text-sky-200'} ${isUpdating ? 'cursor-not-allowed opacity-60' : ''}`}
+            className={`todo-hit-expand flex h-9 w-9 items-center justify-center rounded-full border text-base font-semibold transition-colors ${isInProgress ? 'border-sky-400/60 bg-sky-500/20 text-sky-300' : 'border-night-border bg-night-glass text-frost-soft hover:border-sky-400/60 hover:text-sky-200'} ${isUpdating ? 'cursor-not-allowed opacity-60' : ''}`}
             onClick={(event) => {
               event.stopPropagation()
               if (!isUpdating) onToggleTodoInProgress(todo)
@@ -193,7 +193,7 @@ export default function Row({
         <div className={`${cellPaddingClass} flex items-center justify-center`}>
           <button
             type="button"
-            className="todo-hit-expand flex h-6 w-6 items-center justify-center rounded-xl border border-night-border bg-night-glass text-sm text-frost-soft transition-colors hover:border-night-border-strong hover:text-white"
+            className="todo-hit-expand flex h-9 w-9 items-center justify-center rounded-full border border-night-border bg-night-glass text-base text-frost-soft transition-colors hover:border-night-border-strong hover:text-white"
             onClick={(event) => {
               event.stopPropagation()
               onToggleExpanded(todo.id)
@@ -209,7 +209,7 @@ export default function Row({
         <div className={`${cellPaddingClass} flex items-center justify-center`}>
           <button
             type="button"
-            className="todo-hit-expand flex h-6 w-6 items-center justify-center rounded-xl border border-red-400/40 bg-red-500/20 text-base text-rose-200 transition-colors hover:border-red-400/60 hover:bg-red-500/30"
+            className="todo-hit-expand flex h-9 w-9 items-center justify-center rounded-full border border-red-400/40 bg-red-500/20 text-lg text-rose-200 transition-colors hover:border-red-400/60 hover:bg-red-500/30"
             onClick={(event) => {
               event.stopPropagation()
               onDeleteTodo(todo.id)
