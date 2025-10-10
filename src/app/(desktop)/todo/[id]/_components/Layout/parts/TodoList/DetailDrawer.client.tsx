@@ -29,6 +29,7 @@ export default function DetailDrawer({
 
   const fieldClass = 'w-full rounded-xl border border-night-border-strong bg-night-glass-strong px-3 py-2 text-sm text-frost-soft placeholder:text-frost-subtle focus:border-sky-400 focus:outline-none focus:ring-1 focus:ring-sky-400'
   const textareaRef = useRef<HTMLTextAreaElement | null>(null)
+  const isEditingMarkdown = editingMarkdownId === todo.id
 
   const adjustTextareaHeight = (el: HTMLTextAreaElement | null) => {
     if (!el) return
@@ -47,8 +48,13 @@ export default function DetailDrawer({
       className="overflow-hidden transition-[max-height] duration-300 ease-in-out"
       style={{ maxHeight: isExpanded ? '4000px' : '0px' }}
     >
-      <div className={`${horizontalPaddingClass} pb-4`} data-markdown-container>
-        <div className="rounded-xl border border-night-border bg-night-glass p-4">
+      <div
+        className={`${horizontalPaddingClass} pb-4 ${isEditingMarkdown ? 'relative z-[60]' : ''}`}
+        data-markdown-container
+      >
+        <div
+          className={`rounded-xl border border-night-border bg-night-glass p-4 transition-shadow ${isEditingMarkdown ? 'ring-2 ring-sky-400 shadow-[0_0_24px_rgba(56,189,248,0.35)]' : ''}`}
+        >
           <div className="mb-3 flex flex-wrap items-center gap-4 text-xs text-frost-muted">
             <div className="flex items-center gap-1.5">
               <span className="text-frost-subtle">作成日</span>

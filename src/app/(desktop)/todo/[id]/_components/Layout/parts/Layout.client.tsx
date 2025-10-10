@@ -440,21 +440,6 @@ export default function LayoutClient({ listId }: LayoutProps) {
   }, [editingTodo, showNewTodo, editForm.title, saveTodo, cancelEditing])
 
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (editingMarkdown) {
-        const target = event.target as HTMLElement
-        const markdownContainer = target.closest('[data-markdown-container]')
-        if (!markdownContainer) {
-          saveMarkdown()
-        }
-      }
-    }
-
-    document.addEventListener('click', handleClickOutside)
-    return () => document.removeEventListener('click', handleClickOutside)
-  }, [editingMarkdown, saveMarkdown])
-
-  useEffect(() => {
     return () => {
       if (highlightTimeoutRef.current) {
         clearTimeout(highlightTimeoutRef.current)
@@ -966,6 +951,15 @@ export default function LayoutClient({ listId }: LayoutProps) {
         <div
           className="fixed inset-0 z-[5] bg-black/10 pointer-events-auto"
           onClick={handleOverlayClick}
+          aria-hidden="true"
+        />
+      )}
+
+      {/* マークダウン編集中のオーバーレイ */}
+      {editingMarkdown && (
+        <div
+          className="fixed inset-0 z-[40] bg-black/50 backdrop-blur-[1px]"
+          onClick={saveMarkdown}
           aria-hidden="true"
         />
       )}
