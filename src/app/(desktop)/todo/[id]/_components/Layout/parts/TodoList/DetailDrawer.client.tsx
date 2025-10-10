@@ -45,7 +45,7 @@ export default function DetailDrawer({
 
   return (
     <div
-      className="overflow-hidden transition-[max-height] duration-300 ease-in-out"
+      className="pt-3 overflow-hidden transition-[max-height] duration-300 ease-in-out"
       style={{ maxHeight: isExpanded ? '4000px' : '0px' }}
     >
       <div
@@ -53,7 +53,7 @@ export default function DetailDrawer({
         data-markdown-container
       >
         <div
-          className={`rounded-xl border border-night-border bg-night-glass p-4 transition-shadow ${isEditingMarkdown ? 'ring-2 ring-sky-400 shadow-[0_0_24px_rgba(56,189,248,0.35)]' : ''}`}
+          className={`rounded-xl border border-night-border bg-night-glass p-4 transition-shadow ${isEditingMarkdown ? 'ring-1 ring-sky-400 shadow-[0_0_24px_rgba(56,189,248,0.35)]' : ''}`}
         >
           <div className="mb-3 flex flex-wrap items-center gap-4 text-xs text-frost-muted">
             <div className="flex items-center gap-1.5">
