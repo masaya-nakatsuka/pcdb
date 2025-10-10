@@ -18,7 +18,6 @@ export default function XpProgressCard({
   xpTotal,
   xpNeededForNextLevel,
   xpProgressPercent,
-  recentXpGain,
 }: XpProgressCardProps) {
   return (
     <div className="mb-5 flex flex-col gap-3 rounded-2xl border border-night-border-muted bg-night-glass-strong p-4">
@@ -33,15 +32,13 @@ export default function XpProgressCard({
       </div>
       <div className="h-3 overflow-hidden rounded-full bg-night-border-strong">
         <div
-          className="h-full rounded-full bg-gradient-to-r from-sky-400 via-indigo-400 to-fuchsia-500 transition-[width] duration-500"
-          style={{ width: `${xpProgressPercent}%` }}
+          className="h-full rounded-full bg-gradient-to-r from-sky-400 via-indigo-400 to-fuchsia-500"
+          style={{
+            width: `${xpProgressPercent}%`,
+            transition: 'width 800ms ease-out',
+          }}
         />
       </div>
-      {recentXpGain && (
-        <div className="text-sm font-semibold text-emerald-300">
-          +{recentXpGain.amount} XP 獲得！
-        </div>
-      )}
     </div>
   )
 }

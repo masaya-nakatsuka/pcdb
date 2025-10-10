@@ -43,7 +43,7 @@ export default function HomePage() {
           margin: 0,
           opacity: 0.8
         }}>
-          スペックは、積み重ねで創られる。
+          自分のスペックを引き上げる総合プラットフォーム
         </p>
       </div>
 
