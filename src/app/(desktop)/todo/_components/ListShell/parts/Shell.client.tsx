@@ -196,7 +196,7 @@ export default function Shell() {
     <div className="min-h-screen bg-page-gradient px-4 pb-16 pt-12 sm:px-6">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 text-frost-soft">
         <div className="flex flex-wrap items-center justify-between gap-4">
-          <h1 className="text-3xl font-bold text-white">Todo リスト</h1>
+          <h1 className="text-3xl font-bold text-white">Todo 一覧</h1>
           <div className="flex flex-wrap items-center gap-3">
             <button type="button" className={ghostButtonClass} onClick={() => void handleSignOut()}>
               ログアウト

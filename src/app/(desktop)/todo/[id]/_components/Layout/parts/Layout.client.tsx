@@ -882,7 +882,7 @@ export default function LayoutClient({ listId }: LayoutProps) {
   return (
     <div className="min-h-screen overflow-x-auto bg-page-gradient px-4 pb-16 pt-12 sm:px-6">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 text-frost-soft">
-        <Header onSignOut={handleSignOut} />
+        <Header onSignOut={handleSignOut} doneHref={`/todo/${listId}/done`} />
         <div className="relative flex flex-col rounded-3xl border border-night-border bg-night-glass p-4 text-frost-soft shadow-glass-xl sm:p-6">
           <SummaryHeader
             statusSummary={statusSummary}
