@@ -2,6 +2,9 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
+import remarkBreaks from 'remark-breaks';
+import remarkGfm from 'remark-gfm';
+import type { Pluggable, PluggableList } from 'unified';
 
 import { useAuth } from '@/hooks/useAuth';
 import { supabaseTodo } from '@/lib/supabaseTodoClient';
@@ -55,6 +58,12 @@ type IconProps = {
 function withIconClass(className?: string) {
   return className ? `h-4 w-4 ${className}` : 'h-4 w-4';
 }
+
+// `remark-breaks` の型が古いため unified v11 に合わせてキャスト
+const markdownPlugins: PluggableList = [
+  remarkGfm as unknown as Pluggable,
+  remarkBreaks as unknown as Pluggable,
+];
 
 export default function DetailShellClient({ listId }: DetailShellClientProps) {
   const { userId, loading: authLoading, signIn } = useAuth(supabaseTodo, {
@@ -649,7 +658,9 @@ function MobileTodoRow({
           <div className='rounded-2xl border border-night-border bg-night-glass-soft px-4 py-3 text-sm leading-relaxed text-frost-soft shadow-inner'>
             {todo.markdown_text ? (
               <div className='prose prose-invert max-w-none text-sm [&_code]:rounded [&_code]:bg-night-glass [&_code]:px-1.5 [&_code]:py-0.5 [&_li]:pl-4'>
-                <ReactMarkdown>{todo.markdown_text}</ReactMarkdown>
+                <ReactMarkdown remarkPlugins={markdownPlugins}>
+                  {todo.markdown_text}
+                </ReactMarkdown>
               </div>
             ) : (
               <p className='italic text-frost-subtle'>詳細はまだありません。</p>

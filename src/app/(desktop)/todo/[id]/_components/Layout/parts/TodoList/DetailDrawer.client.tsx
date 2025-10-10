@@ -2,8 +2,17 @@
 
 import { useEffect, useRef } from 'react'
 import ReactMarkdown from 'react-markdown'
+import remarkBreaks from 'remark-breaks'
+import remarkGfm from 'remark-gfm'
+import type { Pluggable, PluggableList } from 'unified'
 
 import type { TodoItem } from '@/lib/todoTypes'
+
+// `remark-breaks` は unified v11 の型と互換性がないため明示的にキャストして利用する
+const markdownPlugins: PluggableList = [
+  remarkGfm as unknown as Pluggable,
+  remarkBreaks as unknown as Pluggable,
+]
 
 type DetailDrawerProps = {
   todo: TodoItem
@@ -92,7 +101,9 @@ export default function DetailDrawer({
             >
               {todo.markdown_text ? (
                 <div className="space-y-2 text-sm leading-relaxed text-frost-soft [&_a]:text-sky-300 [&_code]:rounded [&_code]:bg-night-glass-strong [&_code]:px-1.5 [&_code]:py-0.5 [&_li]:list-disc [&_li]:pl-4">
-                  <ReactMarkdown>{todo.markdown_text}</ReactMarkdown>
+                  <ReactMarkdown remarkPlugins={markdownPlugins}>
+                    {todo.markdown_text}
+                  </ReactMarkdown>
                 </div>
               ) : (
                 <div className="italic text-frost-subtle">クリックして詳細を追加...</div>
