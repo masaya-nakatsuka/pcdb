@@ -5,7 +5,9 @@ export default function TodoPage() {
   return (
     <>
       <DeviceVariantSync initialVariant="desktop" />
-      <ListShell />
+      <div id="app" className="relative scroll-mt-24">
+        <ListShell />
+      </div>
     </>
   )
 }

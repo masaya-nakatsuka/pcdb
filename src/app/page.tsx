@@ -86,7 +86,7 @@ export default function HomePage() {
         </Link>
 
         <Link
-          href="/todo"
+          href="/todo/lp"
           style={{
             display: 'inline-flex',
             alignItems: 'center',
@@ -114,7 +114,7 @@ export default function HomePage() {
             e.currentTarget.style.boxShadow = '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.1)'
           }}
         >
-          TODOを管理する
+          Specsy Todo を見る
         </Link>
 
         <Link 

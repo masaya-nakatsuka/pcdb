@@ -20,6 +20,10 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  if (pathname === '/todo/lp' || pathname.startsWith('/todo/lp/')) {
+    return NextResponse.next();
+  }
+
   const cookieVariant = request.cookies.get(DEVICE_VARIANT_COOKIE)?.value;
   const userAgent = request.headers.get('user-agent') ?? '';
   const viewportWidthHeader =
