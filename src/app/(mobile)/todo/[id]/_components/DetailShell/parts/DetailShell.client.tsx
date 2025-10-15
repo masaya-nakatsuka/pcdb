@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkBreaks from 'remark-breaks';
 import remarkGfm from 'remark-gfm';
@@ -17,6 +17,7 @@ import {
   type TodoGroupDTO,
 } from '@/features/todo/detail/types';
 import XpProgressCard, { type RecentXpGain } from './XpProgressCard';
+import CreateGroupModal from './CreateGroupModal';
 
 type DetailShellClientProps = {
   listId: string;
@@ -83,6 +84,13 @@ export default function DetailShellClient({ listId }: DetailShellClientProps) {
   const [busyId, setBusyId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [showCompleted, setShowCompleted] = useState(false);
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [newTodoTitle, setNewTodoTitle] = useState('');
+  const [newTodoGroupId, setNewTodoGroupId] = useState<string | 'none'>('none');
+  const [creatingNewTodo, setCreatingNewTodo] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
+  const createFormRef = useRef<HTMLDivElement | null>(null);
+  const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
 
   const loadData = useCallback(
     async (uid: string) => {
@@ -318,6 +326,86 @@ export default function DetailShellClient({ listId }: DetailShellClientProps) {
     [userId, deletingId, busyId, listId]
   );
 
+  const openCreateForm = useCallback(() => {
+    setShowCreateForm(true);
+    setCreateError(null);
+    setNewTodoGroupId('none');
+  }, []);
+
+  const cancelCreateForm = useCallback(() => {
+    setShowCreateForm(false);
+    setNewTodoTitle('');
+    setCreateError(null);
+    setNewTodoGroupId('none');
+  }, []);
+
+  const handleCreateTodo = useCallback(async () => {
+    if (!userId) return;
+    const title = newTodoTitle.trim();
+    if (!title) {
+      setCreateError('タイトルを入力してください。');
+      return;
+    }
+
+    setCreatingNewTodo(true);
+    setCreateError(null);
+    try {
+      const timestamp = new Date().toISOString();
+      const { data, error: insertError } = await supabaseTodo
+        .from('todo_items')
+        .insert({
+          user_id: userId,
+          list_id: listId,
+          title,
+          status: '未着手',
+          priority: null,
+          group_id: newTodoGroupId === 'none' ? null : newTodoGroupId,
+          tags: [],
+          markdown_text: null,
+          created_at: timestamp,
+          updated_at: timestamp,
+          done_date: null,
+        })
+        .select('*')
+        .single();
+
+      if (insertError || !data) {
+        setCreateError('TODOの作成に失敗しました。');
+        return;
+      }
+
+      const parsed = todoCollectionSchema.parse([data])[0] as TodoItem;
+      const appliedGroupId = newTodoGroupId === 'none' ? null : newTodoGroupId;
+
+      if (appliedGroupId) {
+        const { error: updateGroupError } = await supabaseTodo
+          .from('todo_items')
+          .update({ group_id: appliedGroupId, updated_at: new Date().toISOString() })
+          .eq('id', parsed.id)
+          .eq('user_id', userId)
+          .eq('list_id', listId);
+
+        if (updateGroupError) {
+          console.error('Failed to persist group selection', updateGroupError);
+        }
+      }
+
+      const nextTodo: TodoItem = {
+        ...parsed,
+        group_id: appliedGroupId,
+      };
+      setTodos((prev) => [nextTodo, ...prev]);
+      setNewTodoTitle('');
+      setShowCreateForm(false);
+      setNewTodoGroupId('none');
+    } catch (err) {
+      console.error('Failed to create todo', err);
+      setCreateError('TODOの作成に失敗しました。');
+    } finally {
+      setCreatingNewTodo(false);
+    }
+  }, [userId, listId, newTodoTitle, newTodoGroupId]);
+
   const sortedTodos = useMemo(() => {
     return todos.slice().sort((a, b) => {
       const aTime = a.created_at ? new Date(a.created_at).getTime() : 0;
@@ -330,6 +418,52 @@ export default function DetailShellClient({ listId }: DetailShellClientProps) {
     if (showCompleted) return sortedTodos;
     return sortedTodos.filter((todo) => todo.status !== '完了');
   }, [sortedTodos, showCompleted]);
+
+  const groupList = useMemo(() => {
+    return Object.values(groups).sort((a, b) => {
+      const orderDiff = (a.sort_order ?? 0) - (b.sort_order ?? 0);
+      if (orderDiff !== 0) return orderDiff;
+      return (a.created_at ?? '').localeCompare(b.created_at ?? '');
+    });
+  }, [groups]);
+
+  const openGroupModal = useCallback(() => {
+    setIsGroupModalOpen(true);
+  }, []);
+
+  const closeGroupModal = useCallback(() => {
+    setIsGroupModalOpen(false);
+  }, []);
+
+  const handleCreateGroup = useCallback(
+    async (name: string, color: string | null) => {
+      if (!userId) throw new Error('ユーザー情報が取得できませんでした');
+
+      const payload = {
+        user_id: userId,
+        list_id: listId,
+        name,
+        color,
+        sort_order: groupList.length,
+        created_at: new Date().toISOString()
+      };
+
+      const { data, error: insertError } = await supabaseTodo
+        .from('todo_groups')
+        .insert(payload)
+        .select('*')
+        .single();
+
+      if (insertError || !data) {
+        throw insertError ?? new Error('グループの作成に失敗しました。');
+      }
+
+      const parsedGroup = todoGroupCollectionSchema.parse([data])[0] as TodoGroupDTO;
+      setGroups((prev) => ({ ...prev, [parsedGroup.id]: parsedGroup }));
+      setNewTodoGroupId(parsedGroup.id);
+    },
+    [userId, listId, groupList.length]
+  );
 
   const statusSummary = useMemo(() => {
     const base: Record<TodoItem['status'], number> = { 未着手: 0, 着手中: 0, 完了: 0 };
@@ -370,6 +504,16 @@ export default function DetailShellClient({ listId }: DetailShellClientProps) {
     return () => window.clearTimeout(timer);
   }, [recentXpGain]);
 
+  useEffect(() => {
+    if (!showCreateForm) return;
+    const target = createFormRef.current;
+    if (!target) return;
+    const handle = window.requestAnimationFrame(() => {
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+    return () => window.cancelAnimationFrame(handle);
+  }, [showCreateForm]);
+
   if (authLoading || loading) {
     return (
       <section className='flex flex-col gap-4 p-4'>
@@ -407,7 +551,14 @@ export default function DetailShellClient({ listId }: DetailShellClientProps) {
 
   return (
     <section className='flex flex-col gap-5 p-4 pb-16'>
-      <div className='flex justify-end'>
+      <div className='flex flex-wrap items-center justify-between gap-3'>
+        <Link
+          href="/todo"
+          className='inline-flex items-center gap-2 rounded-full border border-night-border bg-night-highlight px-4 py-2 text-xs font-semibold text-frost-soft transition hover:border-sky-400/40 hover:text-sky-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-300'
+        >
+          <span aria-hidden>←</span>
+          <span>一覧に戻る</span>
+        </Link>
         <Link
           href={`/todo/${listId}/done`}
           className='inline-flex items-center gap-2 rounded-full border border-sky-400/60 bg-sky-500/10 px-4 py-2 text-xs font-semibold text-sky-100 transition hover:border-sky-300 hover:bg-sky-500/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-300'
@@ -416,6 +567,7 @@ export default function DetailShellClient({ listId }: DetailShellClientProps) {
           <span>完了ログを見る</span>
         </Link>
       </div>
+
       <div className='relative overflow-hidden rounded-3xl border border-night-border bg-night-glass-soft px-5 py-6 shadow-glass-xl'>
         <div
           aria-hidden
@@ -535,6 +687,111 @@ export default function DetailShellClient({ listId }: DetailShellClientProps) {
           ))}
         </div>
       )}
+
+      {showCreateForm ? (
+        <div
+          ref={createFormRef}
+          className='rounded-3xl border border-night-border bg-night-glass-soft px-5 py-6 text-sm text-frost-soft shadow-glass-xl'
+        >
+          <div className='space-y-4'>
+            <div className='flex items-center justify-between'>
+              <h2 className='text-base font-semibold text-frost-soft'>新しい Todo を追加</h2>
+              <button
+                type='button'
+                className='text-xs text-frost-subtle underline-offset-2 hover:underline'
+                onClick={cancelCreateForm}
+              >
+                閉じる
+              </button>
+            </div>
+            <div className='space-y-2'>
+              <label className='block text-xs text-frost-muted' htmlFor='mobile-new-todo-title'>
+                タイトル
+              </label>
+              <input
+                id='mobile-new-todo-title'
+                value={newTodoTitle}
+                onChange={(event) => {
+                  if (createError) setCreateError(null);
+                  setNewTodoTitle(event.target.value);
+                }}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' && !event.nativeEvent.isComposing) {
+                    event.preventDefault();
+                    void handleCreateTodo();
+                  }
+                }}
+                placeholder='例: 仕様書の確認'
+                className='w-full rounded-2xl border border-night-border bg-night-glass px-3 py-2 text-sm text-frost-soft placeholder:text-frost-subtle focus:border-sky-400 focus:outline-none focus:ring-1 focus:ring-sky-400'
+                disabled={creatingNewTodo}
+              />
+              {createError && <p className='text-xs text-rose-300'>{createError}</p>}
+            </div>
+            <div className='space-y-2'>
+              <div className='flex items-center justify-between text-xs text-frost-muted'>
+                <label className='block' htmlFor='mobile-new-todo-group'>
+                  グループ
+                </label>
+                <button
+                  type='button'
+                  onClick={openGroupModal}
+                  className='text-[11px] text-sky-200 underline-offset-2 hover:underline'
+                  disabled={creatingNewTodo}
+                >
+                  ＋ グループを作成
+                </button>
+              </div>
+              <select
+                id='mobile-new-todo-group'
+                value={newTodoGroupId}
+                onChange={(event) => setNewTodoGroupId(event.target.value as typeof newTodoGroupId)}
+                className='w-full rounded-2xl border border-night-border bg-night-glass px-3 py-2 text-sm text-frost-soft focus:border-sky-400 focus:outline-none focus:ring-1 focus:ring-sky-400'
+                disabled={creatingNewTodo}
+              >
+                <option value='none'>グループなし</option>
+                {groupList.map((group) => (
+                  <option key={group.id} value={group.id}>
+                    {group.emoji ? `${group.emoji} ` : ''}{group.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className='flex flex-wrap gap-3'>
+              <button
+                type='button'
+                onClick={() => void handleCreateTodo()}
+                className='inline-flex items-center gap-2 rounded-full bg-primary-gradient px-4 py-2 text-xs font-semibold text-white shadow-button-primary transition hover:shadow-button-primary-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-300 disabled:cursor-not-allowed disabled:opacity-60'
+                disabled={creatingNewTodo || newTodoTitle.trim().length === 0}
+              >
+                {creatingNewTodo ? '作成中…' : '作成する'}
+              </button>
+              <button
+                type='button'
+                onClick={cancelCreateForm}
+                className='inline-flex items-center gap-2 rounded-full border border-night-border bg-night-highlight px-4 py-2 text-xs font-semibold text-frost-soft transition hover:border-rose-300/60 hover:text-rose-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-300'
+                disabled={creatingNewTodo}
+              >
+                キャンセル
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <button
+          type='button'
+          onClick={openCreateForm}
+          className='sticky bottom-4 inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-sky-400/50 bg-primary-gradient px-4 py-3 text-sm font-semibold text-white shadow-button-primary transition hover:shadow-button-primary-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-300'
+        >
+          <span aria-hidden>＋</span>
+          <span>新しい Todo を作成</span>
+        </button>
+      )}
+
+      <CreateGroupModal
+        isOpen={isGroupModalOpen}
+        onClose={closeGroupModal}
+        onCreate={handleCreateGroup}
+      />
     </section>
   );
 }
