@@ -44,7 +44,7 @@ export default function EditRow({
       <div className={`${cellPaddingClass} flex items-center justify-center`}>
         <button
           type="button"
-          className={`todo-hit-expand flex h-6 w-6 items-center justify-center rounded-full border text-[12px] font-bold transition-all ${editForm.status === '完了' ? 'border-emerald-300 bg-gradient-to-br from-emerald-400/90 to-emerald-500/90 text-charcoal-deep shadow-[0_0_18px_rgba(16,185,129,0.35)]' : 'border-night-border-strong text-charcoal-deep/40 hover:border-emerald-300 hover:bg-emerald-400/20'}`}
+          className={`todo-hit-expand flex h-9 w-9 items-center justify-center rounded-full border text-[12px] font-bold transition-all ${editForm.status === '完了' ? 'border-emerald-300 bg-gradient-to-br from-emerald-400/90 to-emerald-500/90 text-charcoal-deep shadow-[0_0_18px_rgba(16,185,129,0.35)]' : 'border-night-border-strong text-charcoal-deep/40 hover:border-emerald-300 hover:bg-emerald-400/20'}`}
           onClick={() => onEditFormChange({ status: editForm.status === '完了' ? '未着手' : '完了' })}
         >
           ✓
@@ -54,7 +54,7 @@ export default function EditRow({
         <button
           type="button"
           title={isInProgress ? '着手中です。クリックで解除' : '未着手です。クリックで着手'}
-          className={`todo-hit-expand flex h-6 w-6 items-center justify-center rounded-xl border text-sm transition-colors ${isInProgress ? 'border-sky-400/60 bg-sky-500/20 text-sky-300' : 'border-night-border-strong bg-night-glass-strong text-frost-soft hover:border-sky-400/60 hover:text-sky-200'}`}
+          className={`todo-hit-expand flex h-9 w-9 items-center justify-center rounded-full border text-sm transition-colors ${isInProgress ? 'border-sky-400/60 bg-sky-500/20 text-sky-300' : 'border-night-border-strong bg-night-glass-strong text-frost-soft hover:border-sky-400/60 hover:text-sky-200'}`}
           onClick={() => onEditFormChange({ status: isInProgress ? '未着手' : '着手中' })}
         >
           {isInProgress ? '🚩' : '⚑'}
@@ -124,7 +124,7 @@ export default function EditRow({
         <button
           type="button"
           onClick={onCancel}
-          className="todo-hit-expand flex h-6 w-6 items-center justify-center rounded-xl border border-red-400/40 bg-red-500/20 text-sm text-rose-200 transition-colors hover:border-red-400/60 hover:bg-red-500/30"
+          className="todo-hit-expand flex h-9 w-9 items-center justify-center rounded-full border border-red-400/40 bg-red-500/20 text-sm text-rose-200 transition-colors hover:border-red-400/60 hover:bg-red-500/30"
         >
           ✕
         </button>
