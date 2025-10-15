@@ -18,6 +18,7 @@ import {
 } from '@/features/todo/detail/types';
 import XpProgressCard, { type RecentXpGain } from './XpProgressCard';
 import CreateGroupModal from './CreateGroupModal';
+import ManageGroupsModal from './ManageGroupsModal';
 
 type DetailShellClientProps = {
   listId: string;
@@ -91,6 +92,8 @@ export default function DetailShellClient({ listId }: DetailShellClientProps) {
   const [createError, setCreateError] = useState<string | null>(null);
   const createFormRef = useRef<HTMLDivElement | null>(null);
   const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
+  const [isManageGroupsOpen, setIsManageGroupsOpen] = useState(false);
+  const [recentlyCreatedGroupId, setRecentlyCreatedGroupId] = useState<string | null>(null);
 
   const loadData = useCallback(
     async (uid: string) => {
@@ -444,7 +447,7 @@ export default function DetailShellClient({ listId }: DetailShellClientProps) {
         list_id: listId,
         name,
         color,
-        sort_order: groupList.length,
+        sort_order: Object.values(groups).length,
         created_at: new Date().toISOString()
       };
 
@@ -461,8 +464,52 @@ export default function DetailShellClient({ listId }: DetailShellClientProps) {
       const parsedGroup = todoGroupCollectionSchema.parse([data])[0] as TodoGroupDTO;
       setGroups((prev) => ({ ...prev, [parsedGroup.id]: parsedGroup }));
       setNewTodoGroupId(parsedGroup.id);
+      setRecentlyCreatedGroupId(parsedGroup.id);
     },
-    [userId, listId, groupList.length]
+    [userId, listId, groups]
+  );
+
+  const openManageGroupsModal = useCallback(() => {
+    setIsManageGroupsOpen(true);
+  }, []);
+
+  const closeManageGroupsModal = useCallback(() => {
+    setIsManageGroupsOpen(false);
+  }, []);
+
+  const handleDeleteGroup = useCallback(
+    async (groupId: string) => {
+      if (!userId) throw new Error('ユーザー情報が取得できませんでした');
+
+      await supabaseTodo
+        .from('todo_items')
+        .update({ group_id: null, updated_at: new Date().toISOString() })
+        .eq('group_id', groupId)
+        .eq('user_id', userId)
+        .eq('list_id', listId);
+
+      const { error: deleteError } = await supabaseTodo
+        .from('todo_groups')
+        .delete()
+        .eq('id', groupId)
+        .eq('user_id', userId)
+        .eq('list_id', listId);
+
+      if (deleteError) {
+        throw deleteError;
+      }
+
+      setGroups((prev) => {
+        const next = { ...prev };
+        delete next[groupId];
+        return next;
+      });
+
+      setTodos((prev) => prev.map((todo) => (todo.group_id === groupId ? { ...todo, group_id: null } : todo)));
+
+      setNewTodoGroupId((prev) => (prev === groupId ? 'none' : prev));
+    },
+    [userId, listId]
   );
 
   const statusSummary = useMemo(() => {
@@ -693,7 +740,7 @@ export default function DetailShellClient({ listId }: DetailShellClientProps) {
           ref={createFormRef}
           className='rounded-3xl border border-night-border bg-night-glass-soft px-5 py-6 text-sm text-frost-soft shadow-glass-xl'
         >
-          <div className='space-y-4'>
+          <div className='space-y-6'>
             <div className='flex items-center justify-between'>
               <h2 className='text-base font-semibold text-frost-soft'>新しい Todo を追加</h2>
               <button
@@ -704,7 +751,7 @@ export default function DetailShellClient({ listId }: DetailShellClientProps) {
                 閉じる
               </button>
             </div>
-            <div className='space-y-2'>
+            <div className='space-y-4'>
               <label className='block text-xs text-frost-muted' htmlFor='mobile-new-todo-title'>
                 タイトル
               </label>
@@ -727,36 +774,63 @@ export default function DetailShellClient({ listId }: DetailShellClientProps) {
               />
               {createError && <p className='text-xs text-rose-300'>{createError}</p>}
             </div>
-            <div className='space-y-2'>
+            <div className='space-y-4'>
               <div className='flex items-center justify-between text-xs text-frost-muted'>
                 <label className='block' htmlFor='mobile-new-todo-group'>
                   グループ
                 </label>
+                <div className='flex items-center gap-3'>
+                  <button
+                    type='button'
+                    onClick={openManageGroupsModal}
+                    className={`inline-flex items-center gap-1 rounded-full border px-3 py-1 text-[11px] font-semibold transition ${
+                      groupList.length === 0
+                        ? 'border-night-border bg-night-highlight text-frost-subtle'
+                        : 'border-night-border bg-night-highlight text-frost-soft hover:border-sky-400/40 hover:text-sky-100'
+                    }`}
+                    disabled={creatingNewTodo || groupList.length === 0}
+                  >
+                    <span aria-hidden>⚙️</span>
+                    <span>グループを管理</span>
+                  </button>
+                </div>
+              </div>
+              <div className='flex flex-wrap gap-3'>
                 <button
                   type='button'
-                  onClick={openGroupModal}
-                  className='text-[11px] text-sky-200 underline-offset-2 hover:underline'
+                  onClick={() => setNewTodoGroupId('none')}
+                  className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold transition ${
+                    newTodoGroupId === 'none'
+                      ? 'border-sky-400 text-sky-100 shadow-[0_0_18px_rgba(56,189,248,0.35)] ring-2 ring-sky-300/60 bg-night-highlight'
+                      : 'border-night-border bg-night-highlight text-frost-soft hover:border-sky-400/40 hover:text-sky-100'
+                  }`}
                   disabled={creatingNewTodo}
                 >
-                  ＋ グループを作成
+                  グループなし
                 </button>
+                {groupList.map((group) => {
+                  const isActive = newTodoGroupId === group.id
+                  return (
+                    <button
+                      key={group.id}
+                      type='button'
+                      onClick={() => setNewTodoGroupId(group.id)}
+                      disabled={creatingNewTodo}
+                      className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold transition ${
+                        isActive
+                          ? 'border-sky-400 text-night-900 shadow-[0_10px_30px_rgba(56,189,248,0.35)] ring-2 ring-sky-300/60 scale-[1.03]'
+                          : 'border-night-border text-frost-soft hover:border-sky-400/40 hover:text-sky-100'
+                      }`}
+                      style={{ backgroundColor: group.color ?? 'rgba(15,23,42,0.6)' }}
+                    >
+                      {group.emoji && <span aria-hidden>{group.emoji}</span>}
+                      <span>{group.name}</span>
+                    </button>
+                  )
+                })}
               </div>
-              <select
-                id='mobile-new-todo-group'
-                value={newTodoGroupId}
-                onChange={(event) => setNewTodoGroupId(event.target.value as typeof newTodoGroupId)}
-                className='w-full rounded-2xl border border-night-border bg-night-glass px-3 py-2 text-sm text-frost-soft focus:border-sky-400 focus:outline-none focus:ring-1 focus:ring-sky-400'
-                disabled={creatingNewTodo}
-              >
-                <option value='none'>グループなし</option>
-                {groupList.map((group) => (
-                  <option key={group.id} value={group.id}>
-                    {group.emoji ? `${group.emoji} ` : ''}{group.name}
-                  </option>
-                ))}
-              </select>
             </div>
-            <div className='flex flex-wrap gap-3'>
+            <div className='flex mt-10 flex-wrap gap-3'>
               <button
                 type='button'
                 onClick={() => void handleCreateTodo()}
@@ -791,6 +865,16 @@ export default function DetailShellClient({ listId }: DetailShellClientProps) {
         isOpen={isGroupModalOpen}
         onClose={closeGroupModal}
         onCreate={handleCreateGroup}
+      />
+      <ManageGroupsModal
+        isOpen={isManageGroupsOpen}
+        groups={groupList}
+        onDelete={handleDeleteGroup}
+        onCreate={() => {
+          closeManageGroupsModal();
+          openGroupModal();
+        }}
+        onClose={closeManageGroupsModal}
       />
     </section>
   );

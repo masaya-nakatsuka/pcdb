@@ -8,9 +8,20 @@ type CreateGroupModalProps = {
   onCreate: (name: string, color: string | null) => Promise<void>
 }
 
+const COLOR_OPTIONS = [
+  { value: '#ef4444', label: '赤' },
+  { value: '#f97316', label: 'オレンジ' },
+  { value: '#f59e0b', label: '黄色' },
+  { value: '#10b981', label: '緑' },
+  { value: '#3b82f6', label: '青' },
+  { value: '#8b5cf6', label: '紫' },
+  { value: '#ec4899', label: 'ピンク' },
+  { value: '#6b7280', label: 'グレー' }
+]
+
 export default function CreateGroupModal({ isOpen, onClose, onCreate }: CreateGroupModalProps) {
   const [name, setName] = useState('')
-  const [color, setColor] = useState('')
+  const [color, setColor] = useState<string | null>(COLOR_OPTIONS[0]?.value ?? null)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -21,18 +32,12 @@ export default function CreateGroupModal({ isOpen, onClose, onCreate }: CreateGr
       return
     }
 
-    const trimmedColor = color.trim()
-    if (trimmedColor && !/^#[0-9a-fA-F]{6}$/.test(trimmedColor)) {
-      setError('カラーコードは # から始まる 6 桁の 16 進数で入力してください。')
-      return
-    }
-
     setSubmitting(true)
     setError(null)
     try {
-      await onCreate(trimmedName, trimmedColor || null)
+      await onCreate(trimmedName, color)
       setName('')
-      setColor('')
+      setColor(COLOR_OPTIONS[0]?.value ?? null)
       onClose()
     } catch (err) {
       console.error('Failed to create group', err)
@@ -76,18 +81,25 @@ export default function CreateGroupModal({ isOpen, onClose, onCreate }: CreateGr
             />
           </div>
           <div className="space-y-2">
-            <label htmlFor="mobile-group-color" className="block text-xs text-frost-muted">
-              カラーコード（任意）
-            </label>
-            <input
-              id="mobile-group-color"
-              value={color}
-              onChange={(event) => setColor(event.target.value)}
-              placeholder="#60A5FA"
-              className="w-full rounded-2xl border border-night-border bg-night-glass px-3 py-2 text-sm text-frost-soft placeholder:text-frost-subtle focus:border-sky-400 focus:outline-none focus:ring-1 focus:ring-sky-400"
-              disabled={submitting}
-            />
-            <p className="text-xs text-frost-subtle">カラーコードは # から始まる 6 桁の 16 進数で入力してください。</p>
+            <span className="block text-xs text-frost-muted">色を選択</span>
+            <div className="grid grid-cols-4 gap-2">
+              {COLOR_OPTIONS.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => setColor(option.value)}
+                  disabled={submitting}
+                  className={`flex h-10 items-center justify-center rounded-lg border-2 transition-all ${
+                    color === option.value
+                      ? 'border-sky-400 scale-105'
+                      : 'border-night-border hover:border-night-border-strong'
+                  }`}
+                  style={{ backgroundColor: option.value }}
+                >
+                  {color === option.value && <span className="text-white text-lg">✓</span>}
+                </button>
+              ))}
+            </div>
           </div>
           {error && <p className="text-xs text-rose-300">{error}</p>}
         </div>
