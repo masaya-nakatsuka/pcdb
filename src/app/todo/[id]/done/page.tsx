@@ -1,6 +1,7 @@
 import { cookies, headers } from 'next/headers'
 
 import DesktopTodoDonePage from '../../../(desktop)/todo/[id]/done/DesktopTodoDonePage'
+import MobileTodoDonePage from '../../../(mobile)/todo/[id]/done/MobileTodoDonePage'
 import {
   DEVICE_VARIANT_COOKIE,
   DEVICE_VARIANT_HEADER,
@@ -17,8 +18,7 @@ export default async function TodoDoneEntryPage(props: DetailPageProps) {
   const deviceVariant = headerVariant ?? cookieVariant
 
   if (deviceVariant === 'mobile') {
-    // TODO: モバイル版のDoneタイムラインが用意できたら切り替える
-    return <DesktopTodoDonePage {...props} />
+    return <MobileTodoDonePage {...props} />
   }
 
   return <DesktopTodoDonePage {...props} />

@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkBreaks from 'remark-breaks';
@@ -81,6 +82,7 @@ export default function DetailShellClient({ listId }: DetailShellClientProps) {
   const [error, setError] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [showCompleted, setShowCompleted] = useState(false);
 
   const loadData = useCallback(
     async (uid: string) => {
@@ -324,6 +326,11 @@ export default function DetailShellClient({ listId }: DetailShellClientProps) {
     });
   }, [todos]);
 
+  const visibleTodos = useMemo(() => {
+    if (showCompleted) return sortedTodos;
+    return sortedTodos.filter((todo) => todo.status !== '完了');
+  }, [sortedTodos, showCompleted]);
+
   const statusSummary = useMemo(() => {
     const base: Record<TodoItem['status'], number> = { 未着手: 0, 着手中: 0, 完了: 0 };
 
@@ -400,6 +407,15 @@ export default function DetailShellClient({ listId }: DetailShellClientProps) {
 
   return (
     <section className='flex flex-col gap-5 p-4 pb-16'>
+      <div className='flex justify-end'>
+        <Link
+          href={`/todo/${listId}/done`}
+          className='inline-flex items-center gap-2 rounded-full border border-sky-400/60 bg-sky-500/10 px-4 py-2 text-xs font-semibold text-sky-100 transition hover:border-sky-300 hover:bg-sky-500/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-300'
+        >
+          <span aria-hidden>🗓️</span>
+          <span>完了ログを見る</span>
+        </Link>
+      </div>
       <div className='relative overflow-hidden rounded-3xl border border-night-border bg-night-glass-soft px-5 py-6 shadow-glass-xl'>
         <div
           aria-hidden
@@ -480,7 +496,21 @@ export default function DetailShellClient({ listId }: DetailShellClientProps) {
         </div>
       )}
 
-      {sortedTodos.length === 0 ? (
+      <div className='flex justify-end'>
+        <button
+          type='button'
+          onClick={() => setShowCompleted((prev) => !prev)}
+          className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold transition ${
+            showCompleted
+              ? 'border-sky-400/60 bg-sky-500/15 text-sky-100 hover:border-sky-300 hover:bg-sky-500/25'
+              : 'border-night-border bg-night-highlight text-frost-soft hover:border-sky-400/40 hover:text-sky-100'
+          } focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-300`}
+        >
+          {showCompleted ? '完了タスクを非表示' : '完了タスクを表示'}
+        </button>
+      </div>
+
+      {visibleTodos.length === 0 ? (
         <div className='rounded-3xl border border-night-border bg-night-glass-soft px-6 py-12 text-center text-sm text-frost-subtle'>
           <p className='text-base font-semibold text-frost-soft'>表示できる Todo はありません。</p>
           <p className='mt-2 text-xs text-frost-subtle'>
@@ -489,7 +519,7 @@ export default function DetailShellClient({ listId }: DetailShellClientProps) {
         </div>
       ) : (
         <div className='space-y-4'>
-          {sortedTodos.map((todo) => (
+          {visibleTodos.map((todo) => (
             <MobileTodoRow
               key={todo.id}
               todo={todo}
