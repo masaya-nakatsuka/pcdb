@@ -84,7 +84,7 @@ export default function DesktopTodoLanding() {
         <div className="absolute bottom-0 left-1/2 h-96 w-[36rem] -translate-x-1/2 rounded-full bg-sky-400/10 blur-3xl" />
       </div>
 
-      <main className="relative mx-auto flex w-full max-w-6xl flex-col gap-28 px-6 pt-24 sm:pt-28 lg:px-8">
+      <main className="relative mx-auto flex w-full max-w-6xl flex-col gap-18 px-6 pt-24 sm:pt-28 lg:px-8">
         <section aria-labelledby="hero" className="relative flex flex-col gap-16">
           <div className="mx-auto max-w-4xl text-center">
             <span className="inline-flex items-center gap-2 rounded-full border border-night-border bg-night-glass-soft px-4 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-frost-subtle backdrop-blur">
@@ -95,11 +95,11 @@ export default function DesktopTodoLanding() {
               id="hero"
               className="mt-6 text-4xl font-semibold tracking-tight text-white sm:text-5xl lg:text-6xl"
             >
-              「今日やったこと」が<br className="hidden sm:block" />
-              成長のグラフになるタスク管理
+              最小限で高機能<br className="hidden sm:block" />
+              自身のスペックを底上げするタスク管理
             </h1>
             <p className="mt-8 text-lg leading-relaxed text-frost-muted sm:text-xl">
-              Specsy Todo は、完了ログを自動で可視化し、レベルシステムで継続を後押しするデスクトップ向けタスクマネージャーです。
+              Specsy Todo は完了ログを自動で可視化し、レベルシステムで継続を後押しするデスクトップ向けタスクマネージャーです。
               直感的なUIと軽快な操作感で、プロジェクトも日々のTODOもまとめて整理できます。
             </p>
             <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
@@ -118,7 +118,7 @@ export default function DesktopTodoLanding() {
             </div>
           </div>
 
-          <div className="relative mt-12 flex justify-center">
+          <div className="relative flex justify-center">
             <div className="relative w-full max-w-5xl overflow-hidden rounded-[34px] border border-night-border bg-night-glass shadow-glass-xl backdrop-blur">
               <Image
                 src="/lp/all.webp"
@@ -177,6 +177,100 @@ export default function DesktopTodoLanding() {
                   着手中のタスク 4 件 / 完了 12 件
                 </div>
               </div>
+            </div>
+          </div>
+        </section>
+
+        {/* todoの詳細編集で進捗やメモや詳細なTODOを残せることをアピール */}
+        <section>
+          <div className="relative flex justify-center">
+            <div className="relative w-full max-w-5xl overflow-hidden rounded-[34px] border border-night-border bg-night-glass shadow-glass-xl backdrop-blur">
+              <Image
+                src="/lp/edit.webp"
+                alt="Specsy Todo のデスクトップ画面プレビュー"
+                width={1600}
+                height={900}
+                priority
+                className="h-auto w-full object-cover"
+                sizes="(min-width: 1280px) 960px, (min-width: 768px) 80vw, 100vw"
+                draggable={false}
+              />
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-slate-900/10 via-transparent to-sky-900/20" />
+            </div>
+          </div>
+          <div className="mx-auto mt-12 grid w-full max-w-5xl gap-8 sm:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+            <div className="flex flex-col gap-4">
+              <h3 className="text-2xl font-semibold text-white">タスクに文脈を残す詳細ドロワー</h3>
+              <p className="text-base leading-relaxed text-frost-soft">
+                一つのTODOに対してチェックリストやメモをまとめて記録。進捗を切り替えるたびに、最新の状態と背景が揃っていきます。
+              </p>
+              <p className="text-base leading-relaxed text-frost-muted">
+                タイムラインに反映される内容もこの画面から編集でき、レビューしたい情報を漏れなく残せます。
+              </p>
+            </div>
+            <div className="flex flex-col gap-3 rounded-2xl border border-night-border-muted bg-charcoal-deep/70 p-6">
+              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-frost-subtle">detail tools</p>
+              <ul className="flex flex-col gap-3 text-xs text-frost-muted">
+                <li className="flex items-start gap-3">
+                  <span className="mt-1 inline-flex h-2 w-2 rounded-full bg-sky-400" />
+                  サブタスクで実作業を細分化し、残タスク量を可視化。
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="mt-1 inline-flex h-2 w-2 rounded-full bg-sky-400" />
+                  メモ欄にアイデアやリンクを保存し、次回すぐ再開。
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="mt-1 inline-flex h-2 w-2 rounded-full bg-sky-400" />
+                  完了ログや期限も同じ画面で編集し、記録の精度をキープ。
+                </li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        {/* 完了したTODOが自動的にタイムラインへ記述されることをアピール */}
+        <section>
+          <div className="relative flex justify-center">
+            <div className="relative w-full max-w-5xl overflow-hidden rounded-[34px] border border-night-border bg-night-glass shadow-glass-xl backdrop-blur">
+              <Image
+                src="/lp/timeline.webp"
+                alt="Specsy Todo のデスクトップ画面プレビュー"
+                width={1600}
+                height={900}
+                priority
+                className="h-auto w-full object-cover"
+                sizes="(min-width: 1280px) 960px, (min-width: 768px) 80vw, 100vw"
+                draggable={false}
+              />
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-slate-900/10 via-transparent to-sky-900/20" />
+            </div>
+          </div>
+          <div className="mx-auto mt-12 grid w-full max-w-5xl gap-8 sm:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+            <div className="flex flex-col gap-4">
+              <h3 className="text-2xl font-semibold text-white">完了の流れが光る自動タイムライン</h3>
+              <p className="text-base leading-relaxed text-frost-soft">
+                アプリ内の完了ログは、日時やステータスをもとに自動でタイムライン化。日々のピークが視覚的に浮かび上がります。
+              </p>
+              <p className="text-base leading-relaxed text-frost-muted">
+                リストやグループ単位で色分けされ、達成の偏りや集中時間を手軽に振り返れます。
+              </p>
+            </div>
+            <div className="flex flex-col gap-3 rounded-2xl border border-night-border-muted bg-charcoal-deep/70 p-6">
+              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-frost-subtle">timeline insights</p>
+              <ul className="flex flex-col gap-3 text-xs text-frost-muted">
+                <li className="flex items-start gap-3">
+                  <span className="mt-1 inline-flex h-2 w-2 rounded-full bg-sky-400" />
+                  完了と同時に記録され、ビューを切り替える手間なし。
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="mt-1 inline-flex h-2 w-2 rounded-full bg-sky-400" />
+                  日時・リスト・XPを組み合わせて進捗の波をキャッチ。
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="mt-1 inline-flex h-2 w-2 rounded-full bg-sky-400" />
+                  週次の振り返りもスクロールするだけで完了。
+                </li>
+              </ul>
             </div>
           </div>
         </section>
