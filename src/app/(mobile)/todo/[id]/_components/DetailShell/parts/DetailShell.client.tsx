@@ -1223,6 +1223,12 @@ function MobileTodoRow({
           color: group.color,
         }
       : undefined;
+  const hasDetail = Boolean(todo.markdown_text?.trim());
+  const detailToggleAppearance = expanded
+    ? 'border-sky-400/80 bg-sky-500/25 text-sky-100 shadow-button-secondary'
+    : hasDetail
+      ? 'border-sky-400/60 bg-sky-500/15 text-sky-100 shadow-[0_0_18px_rgba(56,189,248,0.35)] hover:border-sky-300 hover:text-sky-100 hover:shadow-button-secondary'
+      : 'border-night-border bg-night-glass text-frost-subtle hover:border-sky-400/70 hover:text-sky-100 hover:shadow-button-secondary';
 
   return (
     <article className={`group relative overflow-hidden rounded-3xl border border-night-border bg-night-glass-soft transition-all duration-300 ${isCompleted ? 'opacity-80' : 'hover:border-sky-400/80 hover:shadow-card-hover'}`}>
@@ -1300,11 +1306,9 @@ function MobileTodoRow({
             type='button'
             aria-expanded={expanded}
             aria-label={expanded ? '詳細を閉じる' : '詳細を開く'}
-            className={`flex h-9 w-9 items-center justify-center rounded-full border transition-all duration-200 ${
-              expanded
-                ? 'border-sky-400/80 bg-sky-500/25 text-sky-100 shadow-button-secondary'
-                : 'border-night-border bg-night-glass text-frost-subtle hover:border-sky-400/70 hover:text-sky-100 hover:shadow-button-secondary'
-            } ${isDeleting ? 'pointer-events-none opacity-60' : 'active:scale-95'}`}
+            className={`flex h-9 w-9 items-center justify-center rounded-full border transition-all duration-200 ${detailToggleAppearance} ${
+              isDeleting ? 'pointer-events-none opacity-60' : 'active:scale-95'
+            }`}
             onClick={() => onToggleExpanded(todo.id)}
             disabled={isDeleting}
           >

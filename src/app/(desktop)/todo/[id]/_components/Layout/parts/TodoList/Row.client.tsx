@@ -85,6 +85,12 @@ export default function Row({
         color: group.color,
       }
     : undefined
+  const hasDetail = Boolean(todo.markdown_text?.trim())
+  const detailToggleAppearance = expanded
+    ? 'border-sky-400/80 bg-sky-500/25 text-sky-100 shadow-[0_0_18px_rgba(56,189,248,0.35)] hover:border-sky-300 hover:text-sky-100'
+    : hasDetail
+      ? 'border-sky-400/60 bg-sky-500/15 text-sky-200 shadow-[0_0_14px_rgba(56,189,248,0.25)] hover:border-sky-300 hover:text-sky-100'
+      : 'border-night-border bg-night-glass text-frost-soft hover:border-night-border-strong hover:text-white'
 
   return (
     <div className={`border-b border-night-border-muted transition-opacity ${isDeleting ? 'opacity-[0.35]' : ''}`}>
@@ -193,7 +199,7 @@ export default function Row({
         <div className={`${cellPaddingClass} flex items-center justify-center`}>
           <button
             type="button"
-            className="todo-hit-expand flex h-9 w-9 items-center justify-center rounded-full border border-night-border bg-night-glass text-base text-frost-soft transition-colors hover:border-night-border-strong hover:text-white"
+            className={`todo-hit-expand flex h-9 w-9 items-center justify-center rounded-full border text-base transition-colors ${detailToggleAppearance}`}
             onClick={(event) => {
               event.stopPropagation()
               onToggleExpanded(todo.id)
