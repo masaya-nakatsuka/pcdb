@@ -94,6 +94,13 @@ export default function DetailShellClient({ listId }: DetailShellClientProps) {
   const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
   const [isManageGroupsOpen, setIsManageGroupsOpen] = useState(false);
   const [recentlyCreatedGroupId, setRecentlyCreatedGroupId] = useState<string | null>(null);
+  const [editingTodoForModal, setEditingTodoForModal] = useState<TodoItem | null>(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [editGroupId, setEditGroupId] = useState<string | 'none'>('none');
+  const [editTags, setEditTags] = useState('');
+  const [editPriority, setEditPriority] = useState<NonNullable<TodoItem['priority']> | 'none'>('none');
+  const [editError, setEditError] = useState<string | null>(null);
+  const [savingEdit, setSavingEdit] = useState(false);
 
   const loadData = useCallback(
     async (uid: string) => {
@@ -430,6 +437,16 @@ export default function DetailShellClient({ listId }: DetailShellClientProps) {
     });
   }, [groups]);
 
+  const priorityOptions = useMemo(
+    () => [
+      { value: 'none' as const, label: '未設定' },
+      { value: 'low' as const, label: '低' },
+      { value: 'medium' as const, label: '中' },
+      { value: 'high' as const, label: '高' },
+    ],
+    []
+  );
+
   const openGroupModal = useCallback(() => {
     setIsGroupModalOpen(true);
   }, []);
@@ -511,6 +528,88 @@ export default function DetailShellClient({ listId }: DetailShellClientProps) {
     },
     [userId, listId]
   );
+
+  const openEditModal = useCallback((todo: TodoItem) => {
+    setEditingTodoForModal(todo);
+    setEditTitle(todo.title);
+    setEditGroupId(todo.group_id ?? 'none');
+    setEditTags(todo.tags.join(', '));
+    setEditPriority(todo.priority ?? 'none');
+    setEditError(null);
+  }, []);
+
+  const closeEditModal = useCallback(() => {
+    if (savingEdit) return;
+    setEditingTodoForModal(null);
+    setEditTitle('');
+    setEditGroupId('none');
+    setEditTags('');
+    setEditPriority('none');
+    setEditError(null);
+  }, [savingEdit]);
+
+  const handleSaveEdit = useCallback(async () => {
+    if (!userId || !editingTodoForModal) return;
+
+    const trimmedTitle = editTitle.trim();
+    if (!trimmedTitle) {
+      setEditError('タイトルを入力してください。');
+      return;
+    }
+
+    const nextGroupId = editGroupId === 'none' ? null : editGroupId;
+    const nextTags = editTags
+      .split(',')
+      .map((tag) => tag.trim())
+      .filter(Boolean);
+    const nextPriority = editPriority === 'none' ? null : editPriority;
+
+    setSavingEdit(true);
+    setEditError(null);
+    try {
+      const { error: updateError } = await supabaseTodo
+        .from('todo_items')
+        .update({
+          title: trimmedTitle,
+          group_id: nextGroupId,
+          tags: nextTags,
+          priority: nextPriority,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', editingTodoForModal.id)
+        .eq('user_id', userId)
+        .eq('list_id', listId);
+
+      if (updateError) {
+        throw updateError;
+      }
+
+      setTodos((prev) =>
+        prev.map((todo) =>
+          todo.id === editingTodoForModal.id
+            ? {
+                ...todo,
+                title: trimmedTitle,
+                group_id: nextGroupId,
+                tags: nextTags,
+                priority: nextPriority,
+              }
+            : todo
+        )
+      );
+
+      setEditingTodoForModal(null);
+      setEditTitle('');
+      setEditGroupId('none');
+      setEditTags('');
+      setEditPriority('none');
+    } catch (err) {
+      console.error('Failed to update todo', err);
+      setEditError('TODOの更新に失敗しました。');
+    } finally {
+      setSavingEdit(false);
+    }
+  }, [userId, listId, editTitle, editGroupId, editTags, editPriority, editingTodoForModal]);
 
   const statusSummary = useMemo(() => {
     const base: Record<TodoItem['status'], number> = { 未着手: 0, 着手中: 0, 完了: 0 };
@@ -730,6 +829,7 @@ export default function DetailShellClient({ listId }: DetailShellClientProps) {
               onToggleCompletion={toggleCompletion}
               onToggleInProgress={toggleInProgress}
               onDelete={deleteTodo}
+              onEdit={openEditModal}
             />
           ))}
         </div>
@@ -876,7 +976,205 @@ export default function DetailShellClient({ listId }: DetailShellClientProps) {
         }}
         onClose={closeManageGroupsModal}
       />
+      <TodoEditModal
+        isOpen={Boolean(editingTodoForModal)}
+        title={editTitle}
+        onTitleChange={(value) => {
+          if (editError) setEditError(null);
+          setEditTitle(value);
+        }}
+        groupId={editGroupId}
+        onGroupChange={(value) => {
+          if (editError) setEditError(null);
+          setEditGroupId(value);
+        }}
+        groups={groupList}
+        tags={editTags}
+        onTagsChange={(value) => {
+          if (editError) setEditError(null);
+          setEditTags(value);
+        }}
+        priority={editPriority}
+        priorityOptions={priorityOptions}
+        onPriorityChange={(value) => {
+          if (editError) setEditError(null);
+          setEditPriority(value);
+        }}
+        onClose={closeEditModal}
+        onSave={() => void handleSaveEdit()}
+        saving={savingEdit}
+        error={editError}
+      />
     </section>
+  );
+}
+
+type TodoEditModalProps = {
+  isOpen: boolean;
+  title: string;
+  onTitleChange: (value: string) => void;
+  groupId: string | 'none';
+  onGroupChange: (value: string | 'none') => void;
+  groups: TodoGroupDTO[];
+  tags: string;
+  onTagsChange: (value: string) => void;
+  priority: NonNullable<TodoItem['priority']> | 'none';
+  priorityOptions: { value: NonNullable<TodoItem['priority']> | 'none'; label: string }[];
+  onPriorityChange: (value: NonNullable<TodoItem['priority']> | 'none') => void;
+  onClose: () => void;
+  onSave: () => void;
+  saving: boolean;
+  error: string | null;
+};
+
+function TodoEditModal({
+  isOpen,
+  title,
+  onTitleChange,
+  groupId,
+  onGroupChange,
+  groups,
+  tags,
+  onTagsChange,
+  priority,
+  priorityOptions,
+  onPriorityChange,
+  onClose,
+  onSave,
+  saving,
+  error,
+}: TodoEditModalProps) {
+  if (!isOpen) return null;
+
+  return (
+    <div className='fixed inset-0 z-50 flex items-end justify-center bg-black/40 px-4 pb-8 pt-12 backdrop-blur-sm'>
+      <div className='w-full max-w-sm rounded-3xl border border-night-border bg-night-glass-soft p-6 text-sm text-frost-soft shadow-glass-2xl'>
+        <div className='mb-4 flex items-center justify-between'>
+          <h2 className='text-base font-semibold text-frost-soft'>Todo を編集</h2>
+          <button
+            type='button'
+            onClick={onClose}
+            disabled={saving}
+            className='text-xs text-frost-subtle underline-offset-2 hover:underline disabled:opacity-50'
+          >
+            閉じる
+          </button>
+        </div>
+
+        <div className='space-y-4'>
+          <div className='space-y-2'>
+            <label className='block text-xs text-frost-muted' htmlFor='mobile-edit-todo-title'>
+              タイトル
+            </label>
+            <input
+              id='mobile-edit-todo-title'
+              value={title}
+              onChange={(event) => onTitleChange(event.target.value)}
+              className='w-full rounded-2xl border border-night-border bg-night-glass px-3 py-2 text-sm text-frost-soft placeholder:text-frost-subtle focus:border-sky-400 focus:outline-none focus:ring-1 focus:ring-sky-400'
+              disabled={saving}
+            />
+          </div>
+
+          <div className='space-y-2'>
+            <span className='block text-xs text-frost-muted'>グループ</span>
+            <div className='flex flex-wrap gap-3'>
+              <button
+                type='button'
+                onClick={() => onGroupChange('none')}
+                className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold transition ${
+                  groupId === 'none'
+                    ? 'border-sky-400 text-sky-100 shadow-[0_0_18px_rgba(56,189,248,0.35)] ring-2 ring-sky-300/60 bg-night-highlight'
+                    : 'border-night-border bg-night-highlight text-frost-soft hover:border-sky-400/40 hover:text-sky-100'
+                }`}
+                disabled={saving}
+              >
+                グループなし
+              </button>
+              {groups.map((group) => {
+                const isActive = groupId === group.id;
+                return (
+                  <button
+                    key={group.id}
+                    type='button'
+                    onClick={() => onGroupChange(group.id)}
+                    disabled={saving}
+                    className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold transition ${
+                      isActive
+                        ? 'border-sky-400 text-night-900 shadow-[0_10px_30px_rgba(56,189,248,0.35)] ring-2 ring-sky-300/60 scale-[1.03]'
+                        : 'border-night-border text-frost-soft hover:border-sky-400/40 hover:text-sky-100'
+                    }`}
+                    style={{ backgroundColor: group.color ?? 'rgba(15,23,42,0.6)' }}
+                  >
+                    {group.emoji && <span aria-hidden>{group.emoji}</span>}
+                    <span>{group.name}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className='space-y-2'>
+            <label className='block text-xs text-frost-muted' htmlFor='mobile-edit-todo-tags'>
+              タグ (カンマ区切り)
+            </label>
+            <input
+              id='mobile-edit-todo-tags'
+              value={tags}
+              onChange={(event) => onTagsChange(event.target.value)}
+              placeholder='例: design, frontend'
+              className='w-full rounded-2xl border border-night-border bg-night-glass px-3 py-2 text-sm text-frost-soft placeholder:text-frost-subtle focus:border-sky-400 focus:outline-none focus:ring-1 focus:ring-sky-400'
+              disabled={saving}
+            />
+          </div>
+
+          <div className='space-y-2'>
+            <span className='block text-xs text-frost-muted'>優先度</span>
+            <div className='flex flex-wrap gap-2'>
+              {priorityOptions.map((option) => (
+                <button
+                  key={option.value}
+                  type='button'
+                  onClick={() => onPriorityChange(option.value)}
+                  disabled={saving}
+                  className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold transition ${
+                    priority === option.value
+                      ? 'border-amber-400 bg-amber-500/30 text-night-900'
+                      : 'border-night-border bg-night-highlight text-frost-soft hover:border-amber-300/60 hover:text-amber-100'
+                  }`}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {error && (
+            <div className='rounded-2xl border border-rose-500/60 bg-rose-500/10 px-3 py-2 text-xs text-rose-100'>
+              {error}
+            </div>
+          )}
+        </div>
+
+        <div className='mt-6 flex flex-wrap gap-3'>
+          <button
+            type='button'
+            onClick={onSave}
+            className='inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-primary-gradient px-4 py-2 text-sm font-semibold text-white shadow-button-primary transition hover:shadow-button-primary-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-300 disabled:cursor-not-allowed disabled:opacity-60'
+            disabled={saving}
+          >
+            {saving ? '保存中…' : '保存する'}
+          </button>
+          <button
+            type='button'
+            onClick={onClose}
+            className='inline-flex flex-1 items-center justify-center gap-2 rounded-full border border-night-border bg-night-highlight px-4 py-2 text-sm font-semibold text-frost-soft transition hover:border-rose-300/60 hover:text-rose-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-300'
+            disabled={saving}
+          >
+            キャンセル
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -890,6 +1188,7 @@ type MobileTodoRowProps = {
   onToggleCompletion: (todo: TodoItem) => void;
   onToggleInProgress: (todo: TodoItem) => void;
   onDelete: (todoId: string) => void;
+  onEdit: (todo: TodoItem) => void;
 };
 
 function MobileTodoRow({
@@ -902,6 +1201,7 @@ function MobileTodoRow({
   onToggleCompletion,
   onToggleInProgress,
   onDelete,
+  onEdit,
 }: MobileTodoRowProps) {
   const isCompleted = todo.status === '完了';
   const isInProgress = todo.status === '着手中';
@@ -1038,7 +1338,18 @@ function MobileTodoRow({
             )}
           </div>
 
-          <div className='flex justify-end pt-1'>
+          <div className='flex justify-end gap-3 pt-1'>
+            <button
+              type='button'
+              className={`inline-flex items-center gap-2 rounded-full border border-night-border bg-night-highlight px-4 py-2 text-xs font-semibold text-frost-soft transition hover:border-sky-400/40 hover:text-sky-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-300 ${
+                isDeleting || isBusy ? 'pointer-events-none opacity-60' : ''
+              }`}
+              onClick={() => onEdit(todo)}
+              disabled={isDeleting || isBusy}
+            >
+              <span aria-hidden>✏️</span>
+              <span>編集</span>
+            </button>
             <button
               type='button'
               className={`inline-flex items-center gap-2 rounded-full bg-destructive-gradient px-4 py-2 text-xs font-semibold text-white shadow-button-destructive transition hover:shadow-button-destructive-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-300 ${

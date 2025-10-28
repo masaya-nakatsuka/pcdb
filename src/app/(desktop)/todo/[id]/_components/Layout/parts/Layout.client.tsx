@@ -39,6 +39,8 @@ const PRIORITY_RANK: Record<NonNullable<TodoItem['priority']> | 'none', number> 
   none: 3,
 }
 
+type TimeoutHandle = ReturnType<typeof setTimeout>
+
 export default function LayoutClient({ listId }: LayoutProps) {
   const [userId, setUserId] = useState<string | null>(null)
   const [todos, setTodos] = useState<TodoItem[]>([])
@@ -68,9 +70,9 @@ export default function LayoutClient({ listId }: LayoutProps) {
 
   const [editForm, setEditForm] = useState<EditFormState>(editFormSchema.parse({}))
   const previousStatusRef = useRef<Map<string, TodoStatus>>(new Map())
-  const highlightTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-  const disappearingTimeoutsRef = useRef<Map<string, NodeJS.Timeout>>(new Map())
-  const reappearingTimeoutRef = useRef<Map<string, NodeJS.Timeout>>(new Map())
+  const highlightTimeoutRef = useRef<TimeoutHandle | null>(null)
+  const disappearingTimeoutsRef = useRef<Map<string, TimeoutHandle>>(new Map())
+  const reappearingTimeoutRef = useRef<Map<string, TimeoutHandle>>(new Map())
   const disappearingMetaRef = useRef<
     Map<
       string,
