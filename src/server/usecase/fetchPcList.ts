@@ -11,17 +11,12 @@ export async function fetchPcList(usageCategory: UsageCategory = 'cafe'): Promis
   const supabasePcs = await fetchAllPcs()
   
   const pcsWithCalculations = supabasePcs.map((pc) => {
-    // pcの型がnull許容しまくりだから面倒になってる
-    if (!cpuPowerMap[pc.cpu ?? '']) {
-      throw new Error(`CPU ${pc.cpu} のスペックデータが見つかりません`)
-    }
-
-    const cpuSpec = cpuPowerMap[pc.cpu ?? '']
+    const cpuSpec = cpuPowerMap[pc.cpu ?? ''] ?? null
     
     let estimatedBatteryLifeHours: number | null = null
 
     // 駆動時間(推定)の計算
-    if (cpuSpec.tdpW && pc.display_size && pc.battery_wh_normalized) {
+    if (cpuSpec?.tdpW && pc.display_size && pc.battery_wh_normalized) {
       const cpuTdpW = cpuSpec.tdpW
       const powerConsumption = calculateSystemPowerConsumption(
         cpuTdpW,
@@ -42,10 +37,10 @@ export async function fetchPcList(usageCategory: UsageCategory = 'cafe'): Promis
 
   // 相対ランキング用のデータ変換
   const pcSpecsForRanking = pcsWithCalculations
-    .filter(pc => pc.cpuSpec.passmarkScore && pc.ram && pc.rom && pc.display_size)
+    .filter(pc => pc.cpuSpec?.passmarkScore && pc.ram && pc.rom && pc.display_size)
     .map(pc => ({
       id: pc.id,
-      cpuPassmark: pc.cpuSpec.passmarkScore || 0,
+      cpuPassmark: pc.cpuSpec?.passmarkScore || 0,
       ramGB: pc.ram || 0,
       romGB: pc.rom || 0,
       batteryLifeHours: pc.estimatedBatteryLifeHours || 0,
