@@ -104,8 +104,8 @@ export const blogArticles: ArticleMetadata[] = [
   }
   ,{
     id: 17,
-    title: 'ゲーム用ノートPCの選び方｜GPU別ランキングと価格帯',
-    description: 'ゲーム用ノートPCの選び方をGPU別に解説。価格帯ごとの狙い目も紹介。',
+    title: 'ゲーム向けPCの選び方｜GPU別ランキングと価格帯',
+    description: 'ゲーム向けPCの選び方をGPU別に解説。価格帯ごとの狙い目も紹介。',
     date: '2025-08-07'
   }
   ,{

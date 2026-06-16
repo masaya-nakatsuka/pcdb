@@ -29,7 +29,7 @@ export default function Article17Page() {
   return (
     <BlogLayout>
       <BlogArticle 
-        title={'ゲーム用ノートPCの選び方｜GPU別ランキングと価格帯'}
+        title={'ゲーム向けPCの選び方｜GPU別ランキングと価格帯'}
         date={'2025-08-07'}
       >
         <BlogContent>
@@ -159,5 +159,4 @@ export default function Article17Page() {
     </BlogLayout>
   )
 }
-
 
