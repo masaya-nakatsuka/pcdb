@@ -86,6 +86,38 @@ export default function HomePage() {
         </Link>
 
         <Link
+          href="/pc-list/cost-performance"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '16px 32px',
+            fontSize: '18px',
+            fontWeight: '600',
+            color: 'white',
+            background: 'linear-gradient(135deg, #0ea5e9 0%, #22c55e 100%)',
+            borderRadius: '16px',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.1)',
+            textDecoration: 'none',
+            transition: 'all 0.3s ease',
+            position: 'relative',
+            overflow: 'hidden'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'scale(1.05)'
+            e.currentTarget.style.background = 'linear-gradient(135deg, #0284c7 0%, #16a34a 100%)'
+            e.currentTarget.style.boxShadow = '0 32px 64px -12px rgba(14, 165, 233, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.1)'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'scale(1)'
+            e.currentTarget.style.background = 'linear-gradient(135deg, #0ea5e9 0%, #22c55e 100%)'
+            e.currentTarget.style.boxShadow = '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.1)'
+          }}
+        >
+          コスパPCを見る
+        </Link>
+
+        <Link
           href="/todo/lp"
           style={{
             display: 'inline-flex',

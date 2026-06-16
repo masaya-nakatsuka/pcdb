@@ -28,7 +28,7 @@ export interface ServerPcWithCpuSpec extends ServerPc {
   pcScore: number | null
 }
 
-export type ServerUsageCategory = 'mobile' | 'cafe' | 'home' | 'gaming' | 'video_editing'
+export type ServerUsageCategory = 'mobile' | 'cafe' | 'home' | 'cost_performance' | 'gaming' | 'video_editing'
 
 export interface ServerScoreWeights {
   cpuScoreWeight: number
@@ -38,4 +38,5 @@ export interface ServerScoreWeights {
   batteryScoreWeight: number
   screenScoreWeight: number
   deviceWeightScoreWeight: number
+  priceScoreWeight: number
 }

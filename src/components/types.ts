@@ -26,7 +26,7 @@ export interface ClientPcWithCpuSpec extends ClientPc {
   pcScore: number | null
 }
 
-export type ClientUsageCategory = 'mobile' | 'cafe' | 'home' | 'gaming' | 'video_editing'
+export type ClientUsageCategory = 'mobile' | 'cafe' | 'home' | 'cost_performance' | 'gaming' | 'video_editing'
 
 export type ClientSortField = 'pcScore' | 'cpu' | 'gpu_score' | 'ram' | 'rom' | 'display_size' | 'estimatedBatteryLifeHours' | 'weight' | 'price'
 export type ClientSortOrder = 'asc' | 'desc'
@@ -44,12 +44,14 @@ export interface PcTableProps {
   pcs: ClientPcWithCpuSpec[]
   defaultCpu?: string
   defaultMaxDisplaySize?: number
+  initialUsage?: ClientUsageCategory
 }
 
 export interface PcListProps {
   pcs: ClientPcWithCpuSpec[]
   defaultCpu?: string
   defaultMaxDisplaySize?: number
+  initialUsage?: ClientUsageCategory
 }
 
 export interface ImageComponentProps {

@@ -37,7 +37,13 @@ export async function fetchPcList(usageCategory: UsageCategory = 'cafe'): Promis
 
   // 相対ランキング用のデータ変換
   const pcSpecsForRanking = pcsWithCalculations
-    .filter(pc => pc.cpuSpec?.passmarkScore && pc.ram && pc.rom && pc.display_size)
+    .filter(pc =>
+      pc.cpuSpec?.passmarkScore &&
+      pc.ram &&
+      pc.rom &&
+      (usageCategory === 'cost_performance' || pc.display_size) &&
+      (usageCategory !== 'cost_performance' || pc.price || pc.real_price)
+    )
     .map(pc => ({
       id: pc.id,
       cpuPassmark: pc.cpuSpec?.passmarkScore || 0,
@@ -47,6 +53,7 @@ export async function fetchPcList(usageCategory: UsageCategory = 'cafe'): Promis
       batteryLifeHours: pc.estimatedBatteryLifeHours || 0,
       screenSizeInch: pc.display_size || 0,
       deviceWeight: pc.weight || 0,
+      price: pc.price || pc.real_price || 0,
     }))
 
   // 相対ランキングを計算

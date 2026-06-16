@@ -6,8 +6,8 @@ import { fetchPcList } from '../../app/pc-list/fetchPcs'
 import { sortPcs } from '../utils/pcSort'
 import PcCard from './PcCard'
 
-export default function PcList({ pcs: initialPcs, defaultCpu, defaultMaxDisplaySize }: PcListProps) {
-  const [selectedUsage, setSelectedUsage] = useState<ClientUsageCategory>('cafe')
+export default function PcList({ pcs: initialPcs, defaultCpu, defaultMaxDisplaySize, initialUsage = 'cafe' }: PcListProps) {
+  const [selectedUsage, setSelectedUsage] = useState<ClientUsageCategory>(initialUsage)
   const [pcs, setPcs] = useState<ClientPcWithCpuSpec[]>(initialPcs)
   const [allPcs, setAllPcs] = useState<ClientPcWithCpuSpec[]>(initialPcs)
   const [loading, setLoading] = useState(false)
@@ -78,8 +78,9 @@ export default function PcList({ pcs: initialPcs, defaultCpu, defaultMaxDisplayS
     setSortOptions(baseSortOptions)
     setSelectedCpu(initialCpuFilter)
     setSelectedDisplaySize(initialDisplayFilter)
+    setSelectedUsage(initialUsage)
     applyCpuFilterAndSort(initialPcs, initialCpuFilter, initialDisplayFilter, baseSortOptions, false)
-  }, [initialPcs, defaultCpu, defaultMaxDisplaySize, applyCpuFilterAndSort])
+  }, [initialPcs, defaultCpu, defaultMaxDisplaySize, initialUsage, applyCpuFilterAndSort])
 
   // ページ読み込み時にCPUリストを取得
   useEffect(() => {
@@ -301,6 +302,53 @@ export default function PcList({ pcs: initialPcs, defaultCpu, defaultMaxDisplayS
               }
           }}>
             🏠 家でじっくり作業
+          </button>
+
+          <button
+            onClick={() => handleUsageChange('cost_performance')}
+            disabled={loading}
+            style={{
+              padding: '12px 20px',
+              borderRadius: '16px',
+              border: 'none',
+              background: selectedUsage === 'cost_performance'
+                ? 'linear-gradient(135deg, #0ea5e9 0%, #22c55e 100%)'
+                : 'linear-gradient(135deg, #0ea5e980 0%, #22c55e80 100%)',
+              color: 'white',
+              fontSize: '14px',
+              fontWeight: '600',
+              cursor: loading ? 'not-allowed' : 'pointer',
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              boxShadow: selectedUsage === 'cost_performance'
+                ? '0 4px 15px rgba(14, 165, 233, 0.3)'
+                : '0 2px 8px rgba(14, 165, 233, 0.2)',
+              position: 'relative',
+              overflow: 'hidden',
+              opacity: loading ? 0.7 : 1
+            }}
+            onMouseDown={(e) => {
+              if (!loading) {
+                e.currentTarget.style.transform = 'scale(0.98)'
+                e.currentTarget.style.boxShadow = '0 2px 8px rgba(14, 165, 233, 0.4)'
+              }
+            }}
+            onMouseUp={(e) => {
+              if (!loading) {
+                e.currentTarget.style.transform = 'scale(1)'
+                e.currentTarget.style.boxShadow = selectedUsage === 'cost_performance'
+                  ? '0 4px 15px rgba(14, 165, 233, 0.3)'
+                  : '0 2px 8px rgba(14, 165, 233, 0.2)'
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!loading) {
+                e.currentTarget.style.transform = 'scale(1)'
+                e.currentTarget.style.boxShadow = selectedUsage === 'cost_performance'
+                  ? '0 4px 15px rgba(14, 165, 233, 0.3)'
+                  : '0 2px 8px rgba(14, 165, 233, 0.2)'
+              }
+            }}>
+            💰 コスパ
           </button>
 
           <button

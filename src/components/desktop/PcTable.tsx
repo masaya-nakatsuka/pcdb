@@ -6,12 +6,12 @@ import { sortPcs } from '../utils/pcSort'
 import { fetchPcList } from '../../app/pc-list/fetchPcs'
 import ImageComponent from './ImageComponent'
 
-export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplaySize }: PcTableProps) {
+export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplaySize, initialUsage = 'cafe' }: PcTableProps) {
   const [pcs, setPcs] = useState(initialPcs)
   const [allPcs, setAllPcs] = useState(initialPcs)
   const [sortOptions, setSortOptions] = useState<ClientSortOptions>({ field: 'pcScore', order: 'desc' })
   const [cpuOrderList, setCpuOrderList] = useState<string[]>([])
-  const [selectedUsage, setSelectedUsage] = useState<ClientUsageCategory>('cafe')
+  const [selectedUsage, setSelectedUsage] = useState<ClientUsageCategory>(initialUsage)
   const [selectedCpu, setSelectedCpu] = useState<string>(defaultCpu ?? 'all')
   const [selectedDisplaySize, setSelectedDisplaySize] = useState<string>(
     defaultMaxDisplaySize ? `max:${defaultMaxDisplaySize}` : 'all'
@@ -81,8 +81,9 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
     setSortOptions(baseSortOptions)
     setSelectedCpu(initialCpuFilter)
     setSelectedDisplaySize(initialDisplayFilter)
+    setSelectedUsage(initialUsage)
     applyCpuFilterAndSort(initialPcs, initialCpuFilter, initialDisplayFilter, baseSortOptions, false)
-  }, [initialPcs, defaultCpu, defaultMaxDisplaySize, applyCpuFilterAndSort])
+  }, [initialPcs, defaultCpu, defaultMaxDisplaySize, initialUsage, applyCpuFilterAndSort])
 
   // ページ読み込み時にCPUリストを取得
   useEffect(() => {
@@ -254,6 +255,26 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
               opacity: loading ? 0.7 : 1
           }}>
             🏠 家でじっくり作業
+          </button>
+
+          <button
+            onClick={() => handleUsageChange('cost_performance')}
+            disabled={loading}
+            style={{
+              padding: '12px 24px',
+              borderRadius: '8px',
+              border: 'none',
+              background: selectedUsage === 'cost_performance'
+                ? 'linear-gradient(135deg, #0ea5e9 0%, #22c55e 100%)'
+                : 'linear-gradient(135deg, #0ea5e980 0%, #22c55e80 100%)',
+              color: 'white',
+              fontSize: '14px',
+              fontWeight: '600',
+              cursor: loading ? 'not-allowed' : 'pointer',
+              transition: 'all 0.3s ease',
+              opacity: loading ? 0.7 : 1
+            }}>
+            💰 コスパ
           </button>
 
           <button
