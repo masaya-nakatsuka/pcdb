@@ -696,11 +696,6 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
                       <td style={{border: '1px solid #ddd', padding: '8px', fontSize: '12px'}}>{pc.cpu || '-'}</td>
                       <td style={{border: '1px solid #ddd', padding: '8px', fontSize: '12px'}}>
                         {pc.gpu || '-'}
-                        {pc.gpu_score != null && (
-                          <div style={{ color: '#666', fontSize: '11px', marginTop: '2px' }}>
-                            GPU {pc.gpu_score}/10
-                          </div>
-                        )}
                       </td>
                       <td style={{border: '1px solid #ddd', padding: '8px', fontSize: '12px'}}>
                         {pc.ram != null ? `${pc.ram}GB` : '-'}

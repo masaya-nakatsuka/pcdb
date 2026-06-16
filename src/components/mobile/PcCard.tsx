@@ -55,7 +55,6 @@ export default function PcCard({ pc }: PcCardProps) {
             {pc.gpu && (
               <div>
                 🔴 GPU：{pc.gpu}
-                {pc.gpu_score != null ? `（${pc.gpu_score}/10）` : ''}
               </div>
             )}
             {pc.ram && <div>🔴 メモリ：{pc.ram}GB</div>}
