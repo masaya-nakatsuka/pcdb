@@ -21,6 +21,9 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
   const scrollContainerRef = useRef<HTMLDivElement | null>(null)
   const [showLeftScrollCue, setShowLeftScrollCue] = useState(false)
   const [showRightScrollCue, setShowRightScrollCue] = useState(false)
+  const isPerformanceUsage = selectedUsage === 'gaming' || selectedUsage === 'video_editing'
+  const performanceAccent = selectedUsage === 'video_editing' ? '#f59e0b' : '#ef4444'
+  const performanceAccentSub = selectedUsage === 'video_editing' ? '#14b8a6' : '#8b5cf6'
 
   const availableCpuOptions = useMemo(() => {
     const cpuSet = new Set(allPcs.map((pc) => pc.cpu).filter((cpu): cpu is string => Boolean(cpu)))
@@ -186,10 +189,29 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
   }, [pcs])
 
   return (
-    <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '20px' }}>
+    <div
+      className={isPerformanceUsage ? 'performance-shell' : undefined}
+      style={{
+        maxWidth: '1400px',
+        margin: '0 auto',
+        padding: '20px',
+        borderRadius: isPerformanceUsage ? '12px' : undefined,
+        background: isPerformanceUsage
+          ? `radial-gradient(circle at 12% 0%, ${performanceAccent}30 0%, transparent 35%), radial-gradient(circle at 88% 6%, ${performanceAccentSub}2e 0%, transparent 32%), linear-gradient(180deg, #020617 0%, #0f172a 46%, #020617 100%)`
+          : undefined,
+        color: isPerformanceUsage ? '#e5e7eb' : undefined,
+        boxShadow: isPerformanceUsage ? '0 28px 70px rgba(2, 6, 23, 0.45)' : undefined
+      }}
+    >
       {/* 用途選択ボタン */}
       <div style={{ marginBottom: '24px' }}>
-        <h2 style={{ fontSize: '18px', color: '#333', marginBottom: '16px', textAlign: 'center' }}>用途を選択</h2>
+        <h2 style={{
+          fontSize: '18px',
+          color: isPerformanceUsage ? '#f8fafc' : '#333',
+          marginBottom: '16px',
+          textAlign: 'center',
+          textShadow: isPerformanceUsage ? `0 0 28px ${performanceAccent}66` : undefined
+        }}>用途を選択</h2>
         <div style={{ 
           display: 'flex', 
           gap: '16px',
@@ -315,7 +337,7 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
             gap: '6px'
           }}
         >
-          <label htmlFor="cpuFilter" style={{ fontSize: '14px', color: '#333' }}>
+          <label htmlFor="cpuFilter" style={{ fontSize: '14px', color: isPerformanceUsage ? '#cbd5e1' : '#333' }}>
             CPUで絞り込み
           </label>
           <select
@@ -326,10 +348,11 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
               width: '100%',
               padding: '8px 10px',
               borderRadius: '8px',
-              border: '1px solid #ddd',
+              border: isPerformanceUsage ? '1px solid rgba(148, 163, 184, 0.28)' : '1px solid #ddd',
               fontSize: '13px',
-              backgroundColor: '#fff',
-              color: '#333'
+              backgroundColor: isPerformanceUsage ? 'rgba(15, 23, 42, 0.88)' : '#fff',
+              color: isPerformanceUsage ? '#e5e7eb' : '#333',
+              boxShadow: isPerformanceUsage ? 'inset 0 1px 0 rgba(255, 255, 255, 0.05)' : undefined
             }}
           >
             <option value="all">すべて</option>
@@ -350,7 +373,7 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
             gap: '6px'
           }}
         >
-          <label htmlFor="displaySizeFilter" style={{ fontSize: '14px', color: '#333' }}>
+          <label htmlFor="displaySizeFilter" style={{ fontSize: '14px', color: isPerformanceUsage ? '#cbd5e1' : '#333' }}>
             画面サイズで絞り込み
           </label>
         <select
@@ -361,10 +384,11 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
             width: '100%',
             padding: '8px 10px',
             borderRadius: '8px',
-            border: '1px solid #ddd',
+            border: isPerformanceUsage ? '1px solid rgba(148, 163, 184, 0.28)' : '1px solid #ddd',
             fontSize: '13px',
-            backgroundColor: '#fff',
-            color: '#333'
+            backgroundColor: isPerformanceUsage ? 'rgba(15, 23, 42, 0.88)' : '#fff',
+            color: isPerformanceUsage ? '#e5e7eb' : '#333',
+            boxShadow: isPerformanceUsage ? 'inset 0 1px 0 rgba(255, 255, 255, 0.05)' : undefined
           }}
         >
           <option value="all">すべて</option>
@@ -384,7 +408,12 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
 
       {/* ソート機能 */}
       <div style={{ marginBottom: '24px' }}>
-        <h3 style={{ fontSize: '16px', color: '#333', marginBottom: '16px', textAlign: 'center' }}>並び替え</h3>
+        <h3 style={{
+          fontSize: '16px',
+          color: isPerformanceUsage ? '#cbd5e1' : '#333',
+          marginBottom: '16px',
+          textAlign: 'center'
+        }}>並び替え</h3>
         <div style={{
           display: 'flex',
           flexWrap: 'wrap',
@@ -412,9 +441,15 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
                 style={{
                   padding: '8px 16px',
                   borderRadius: '6px',
-                  border: '1px solid #ddd',
-                  backgroundColor: isActive ? '#f0f0f0' : 'white',
-                  color: '#333',
+                  border: isPerformanceUsage
+                    ? `1px solid ${isActive ? performanceAccent : 'rgba(148, 163, 184, 0.24)'}`
+                    : '1px solid #ddd',
+                  background: isPerformanceUsage
+                    ? isActive
+                      ? `linear-gradient(135deg, ${performanceAccent} 0%, ${performanceAccentSub} 100%)`
+                      : 'rgba(15, 23, 42, 0.78)'
+                    : isActive ? '#f0f0f0' : 'white',
+                  color: isPerformanceUsage ? '#f8fafc' : '#333',
                   fontSize: '14px',
                   fontWeight: isActive ? '600' : '500',
                   cursor: 'pointer',
@@ -441,7 +476,7 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
           alignItems: 'center',
           padding: '40px',
           fontSize: '16px',
-          color: '#666'
+          color: isPerformanceUsage ? '#cbd5e1' : '#666'
         }}>
           読み込み中...
         </div>
@@ -451,10 +486,12 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
         <div
           style={{
             position: 'relative',
-            border: '1px solid #dee2e6',
+            border: isPerformanceUsage ? '1px solid rgba(148, 163, 184, 0.22)' : '1px solid #dee2e6',
             borderRadius: '8px',
-            backgroundColor: 'white',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+            backgroundColor: isPerformanceUsage ? 'rgba(2, 6, 23, 0.84)' : 'white',
+            boxShadow: isPerformanceUsage
+              ? `0 24px 60px rgba(0, 0, 0, 0.42), 0 0 0 1px ${performanceAccent}22`
+              : '0 2px 8px rgba(0,0,0,0.1)',
             overflow: 'hidden'
           }}
         >
@@ -471,6 +508,7 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
             }}
           >
             <table
+              className={isPerformanceUsage ? 'pc-performance-table' : undefined}
               style={{
                 borderCollapse: 'collapse',
                 width: '100%',
@@ -772,7 +810,9 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
                 left: 0,
                 width: '56px',
                 pointerEvents: 'none',
-                background: 'linear-gradient(90deg, rgba(255,255,255,1) 0%, rgba(255,255,255,0) 70%)'
+                background: isPerformanceUsage
+                  ? 'linear-gradient(90deg, rgba(2,6,23,1) 0%, rgba(2,6,23,0) 70%)'
+                  : 'linear-gradient(90deg, rgba(255,255,255,1) 0%, rgba(255,255,255,0) 70%)'
               }}
             />
           )}
@@ -785,7 +825,9 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
                 right: 0,
                 width: '56px',
                 pointerEvents: 'none',
-                background: 'linear-gradient(270deg, rgba(255,255,255,1) 0%, rgba(255,255,255,0) 70%)'
+                background: isPerformanceUsage
+                  ? 'linear-gradient(270deg, rgba(2,6,23,1) 0%, rgba(2,6,23,0) 70%)'
+                  : 'linear-gradient(270deg, rgba(255,255,255,1) 0%, rgba(255,255,255,0) 70%)'
               }}
             />
           )}
@@ -808,6 +850,67 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
         .pc-scroll-container::-webkit-scrollbar-track {
           background: rgba(0, 0, 0, 0.08);
           border-radius: 6px;
+        }
+
+        .performance-shell {
+          position: relative;
+          overflow: hidden;
+          isolation: isolate;
+        }
+
+        .performance-shell::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          pointer-events: none;
+          background:
+            linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+            linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+          background-size: 42px 42px;
+          mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.7), transparent 76%);
+          z-index: 0;
+        }
+
+        .performance-shell > :global(*) {
+          position: relative;
+          z-index: 1;
+        }
+
+        .performance-shell :global(.pc-performance-table thead tr) {
+          background: linear-gradient(135deg, rgba(15, 23, 42, 0.96) 0%, rgba(30, 41, 59, 0.96) 100%) !important;
+        }
+
+        .performance-shell :global(.pc-performance-table th) {
+          border-color: rgba(148, 163, 184, 0.22) !important;
+          color: #e5e7eb !important;
+          background-color: rgba(15, 23, 42, 0.92) !important;
+        }
+
+        .performance-shell :global(.pc-performance-table td) {
+          border-color: rgba(148, 163, 184, 0.18) !important;
+          background-color: rgba(15, 23, 42, 0.72) !important;
+          color: #e5e7eb !important;
+        }
+
+        .performance-shell :global(.pc-performance-table tr:nth-child(even) td) {
+          background-color: rgba(2, 6, 23, 0.72) !important;
+        }
+
+        .performance-shell :global(.pc-performance-table a) {
+          color: #f8fafc !important;
+        }
+
+        .performance-shell :global(.pc-performance-table td div) {
+          color: #cbd5e1 !important;
+        }
+
+        .performance-shell :global(.pc-performance-table td span) {
+          color: #fbbf24 !important;
+        }
+
+        .performance-shell :global(.pc-performance-table img + div),
+        .performance-shell :global(.pc-performance-table td > div) {
+          border-color: rgba(148, 163, 184, 0.22);
         }
       `}</style>
     </div>

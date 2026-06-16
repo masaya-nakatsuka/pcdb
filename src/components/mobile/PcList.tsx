@@ -18,6 +18,9 @@ export default function PcList({ pcs: initialPcs, defaultCpu, defaultMaxDisplayS
     defaultMaxDisplaySize ? `max:${defaultMaxDisplaySize}` : 'all'
   )
   const [isSortApplied, setIsSortApplied] = useState(false)
+  const isPerformanceUsage = selectedUsage === 'gaming' || selectedUsage === 'video_editing'
+  const performanceAccent = selectedUsage === 'video_editing' ? '#f59e0b' : '#ef4444'
+  const performanceAccentSub = selectedUsage === 'video_editing' ? '#14b8a6' : '#8b5cf6'
 
   const availableCpuOptions = useMemo(() => {
     const cpuSet = new Set(allPcs.map((pc) => pc.cpu).filter((cpu): cpu is string => Boolean(cpu)))
@@ -151,12 +154,33 @@ export default function PcList({ pcs: initialPcs, defaultCpu, defaultMaxDisplayS
   }, [cpuOrderList, isSortApplied, sortOptions, allPcs, selectedCpu, selectedDisplaySize, applyCpuFilterAndSort])
 
   return (
-    <>
-      <h1 style={{ paddingLeft: '16px', fontSize: '24px', color: '#333', margin: '16px 0' }}>Amazon販売 PC 一覧スコア比較</h1>
+    <div
+      className={isPerformanceUsage ? 'performance-mobile-shell' : undefined}
+      style={{
+        minHeight: isPerformanceUsage ? '100vh' : undefined,
+        paddingTop: isPerformanceUsage ? '1px' : undefined,
+        background: isPerformanceUsage
+          ? `radial-gradient(circle at 15% 0%, ${performanceAccent}33 0%, transparent 34%), radial-gradient(circle at 85% 8%, ${performanceAccentSub}2e 0%, transparent 30%), linear-gradient(180deg, #020617 0%, #0f172a 42%, #020617 100%)`
+          : undefined,
+        color: isPerformanceUsage ? '#e5e7eb' : undefined
+      }}
+    >
+      <h1 style={{
+        paddingLeft: '16px',
+        fontSize: '24px',
+        color: isPerformanceUsage ? '#f8fafc' : '#333',
+        margin: '16px 0',
+        textShadow: isPerformanceUsage ? `0 0 28px ${performanceAccent}66` : undefined
+      }}>Amazon販売 PC 一覧スコア比較</h1>
       
       {/* 用途選択ボタン */}
       <div style={{ padding: '0 16px 16px 16px' }}>
-        <h2 style={{ fontSize: '16px', color: '#333', marginBottom: '12px', textAlign: 'center' }}>用途を選択</h2>
+        <h2 style={{
+          fontSize: '16px',
+          color: isPerformanceUsage ? '#cbd5e1' : '#333',
+          marginBottom: '12px',
+          textAlign: 'center'
+        }}>用途を選択</h2>
         <div style={{ 
           display: 'flex', 
           flexDirection: 'column', 
@@ -418,7 +442,7 @@ export default function PcList({ pcs: initialPcs, defaultCpu, defaultMaxDisplayS
               gap: '6px'
             }}
           >
-            <label htmlFor="cpuFilter" style={{ fontSize: '14px', color: '#333' }}>
+            <label htmlFor="cpuFilter" style={{ fontSize: '14px', color: isPerformanceUsage ? '#cbd5e1' : '#333' }}>
               CPUで絞り込み
             </label>
             <select
@@ -429,10 +453,11 @@ export default function PcList({ pcs: initialPcs, defaultCpu, defaultMaxDisplayS
                 width: '100%',
                 padding: '8px 10px',
                 borderRadius: '10px',
-                border: '1px solid #ddd',
+                border: isPerformanceUsage ? '1px solid rgba(148, 163, 184, 0.28)' : '1px solid #ddd',
                 fontSize: '13px',
-                backgroundColor: '#fff',
-                color: '#333'
+                backgroundColor: isPerformanceUsage ? 'rgba(15, 23, 42, 0.88)' : '#fff',
+                color: isPerformanceUsage ? '#e5e7eb' : '#333',
+                boxShadow: isPerformanceUsage ? 'inset 0 1px 0 rgba(255, 255, 255, 0.05)' : undefined
               }}
             >
               <option value="all">すべて</option>
@@ -453,7 +478,7 @@ export default function PcList({ pcs: initialPcs, defaultCpu, defaultMaxDisplayS
               gap: '6px'
             }}
           >
-            <label htmlFor="displaySizeFilter" style={{ fontSize: '14px', color: '#333' }}>
+            <label htmlFor="displaySizeFilter" style={{ fontSize: '14px', color: isPerformanceUsage ? '#cbd5e1' : '#333' }}>
               画面サイズで絞り込み
             </label>
             <select
@@ -464,10 +489,11 @@ export default function PcList({ pcs: initialPcs, defaultCpu, defaultMaxDisplayS
                 width: '100%',
                 padding: '8px 10px',
                 borderRadius: '10px',
-                border: '1px solid #ddd',
+                border: isPerformanceUsage ? '1px solid rgba(148, 163, 184, 0.28)' : '1px solid #ddd',
                 fontSize: '13px',
-                backgroundColor: '#fff',
-                color: '#333'
+                backgroundColor: isPerformanceUsage ? 'rgba(15, 23, 42, 0.88)' : '#fff',
+                color: isPerformanceUsage ? '#e5e7eb' : '#333',
+                boxShadow: isPerformanceUsage ? 'inset 0 1px 0 rgba(255, 255, 255, 0.05)' : undefined
               }}
             >
               <option value="all">すべて</option>
@@ -488,7 +514,12 @@ export default function PcList({ pcs: initialPcs, defaultCpu, defaultMaxDisplayS
 
       {/* ソート機能 */}
       <div style={{ padding: '0 16px 16px 16px' }}>
-        <h3 style={{ fontSize: '16px', color: '#333', marginBottom: '12px', textAlign: 'center' }}>並び替え</h3>
+        <h3 style={{
+          fontSize: '16px',
+          color: isPerformanceUsage ? '#cbd5e1' : '#333',
+          marginBottom: '12px',
+          textAlign: 'center'
+        }}>並び替え</h3>
         <div style={{
           display: 'flex',
           flexWrap: 'wrap',
@@ -516,9 +547,15 @@ export default function PcList({ pcs: initialPcs, defaultCpu, defaultMaxDisplayS
                 style={{
                   padding: '8px 12px',
                   borderRadius: '12px',
-                  border: '1px solid #ddd',
-                  backgroundColor: isActive ? '#f0f0f0' : 'white',
-                  color: '#333',
+                  border: isPerformanceUsage
+                    ? `1px solid ${isActive ? performanceAccent : 'rgba(148, 163, 184, 0.24)'}`
+                    : '1px solid #ddd',
+                  background: isPerformanceUsage
+                    ? isActive
+                      ? `linear-gradient(135deg, ${performanceAccent} 0%, ${performanceAccentSub} 100%)`
+                      : 'rgba(15, 23, 42, 0.78)'
+                    : isActive ? '#f0f0f0' : 'white',
+                  color: isPerformanceUsage ? '#f8fafc' : '#333',
                   fontSize: '12px',
                   fontWeight: isActive ? '600' : '500',
                   cursor: 'pointer',
@@ -546,15 +583,42 @@ export default function PcList({ pcs: initialPcs, defaultCpu, defaultMaxDisplayS
             alignItems: 'center',
             padding: '40px',
             fontSize: '16px',
-            color: '#666'
+            color: isPerformanceUsage ? '#cbd5e1' : '#666'
           }}>
             読み込み中...
           </div>
         )}
         {!loading && pcs && pcs.map((pc) => (
-          <PcCard key={pc.id} pc={pc} />
+          <PcCard key={pc.id} pc={pc} tone={isPerformanceUsage ? 'performance' : 'default'} />
         ))}
       </div>
-    </>
+      {isPerformanceUsage && (
+        <style jsx>{`
+          .performance-mobile-shell {
+            position: relative;
+            overflow: hidden;
+            isolation: isolate;
+          }
+
+          .performance-mobile-shell::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background:
+              linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+              linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+            background-size: 34px 34px;
+            mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.6), transparent 72%);
+            z-index: 0;
+          }
+
+          .performance-mobile-shell > :global(*) {
+            position: relative;
+            z-index: 1;
+          }
+        `}</style>
+      )}
+    </div>
   )
 }

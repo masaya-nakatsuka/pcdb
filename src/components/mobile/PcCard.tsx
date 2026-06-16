@@ -3,14 +3,22 @@
 import { PcCardProps } from '../types'
 import ImageComponent from './ImageComponent'
 
-export default function PcCard({ pc }: PcCardProps) {
+export default function PcCard({ pc, tone = 'default' }: PcCardProps) {
+  const isPerformanceTone = tone === 'performance'
+
   return (
-    <div style={{
-      border: '1px solid #ddd',
+    <div className="pc-mobile-card" style={{
+      border: isPerformanceTone ? '1px solid rgba(148, 163, 184, 0.24)' : '1px solid #ddd',
       borderRadius: '8px',
       padding: '16px',
       marginBottom: '16px',
-      backgroundColor: '#fff'
+      background: isPerformanceTone
+        ? 'linear-gradient(145deg, rgba(15, 23, 42, 0.96) 0%, rgba(2, 6, 23, 0.98) 100%)'
+        : '#fff',
+      color: isPerformanceTone ? '#e5e7eb' : '#111827',
+      boxShadow: isPerformanceTone
+        ? '0 18px 40px rgba(0, 0, 0, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.06)'
+        : undefined
     }}>
       {/* カードヘッダー */}
       <div style={{ textAlign: 'center' }}>
@@ -35,13 +43,14 @@ export default function PcCard({ pc }: PcCardProps) {
             <div style={{
               width: '120px',
               height: '80px',
-              backgroundColor: '#f0f0f0',
+              backgroundColor: isPerformanceTone ? 'rgba(15, 23, 42, 0.92)' : '#f0f0f0',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               borderRadius: '4px',
               fontSize: '12px',
-              color: '#666'
+              color: isPerformanceTone ? '#94a3b8' : '#666',
+              border: isPerformanceTone ? '1px solid rgba(148, 163, 184, 0.22)' : undefined
             }}>
               No Image
             </div>
@@ -68,11 +77,11 @@ export default function PcCard({ pc }: PcCardProps) {
           {/* 価格 */}
           <div style={{ marginTop: '12px', fontSize: '16px', fontWeight: 'bold' }}>
             {pc.price && (
-              <span style={{ color: '#d32f2f' }}>¥{pc.price.toLocaleString()}</span>
+              <span style={{ color: isPerformanceTone ? '#fbbf24' : '#d32f2f' }}>¥{pc.price.toLocaleString()}</span>
             )}
             {pc.real_price && pc.real_price !== pc.price && (
               <span style={{ 
-                color: '#666', 
+                color: isPerformanceTone ? '#94a3b8' : '#666',
                 fontSize: '14px', 
                 textDecoration: 'line-through',
                 marginLeft: '8px'
@@ -89,7 +98,7 @@ export default function PcCard({ pc }: PcCardProps) {
           {pc.fetched_at && (
             <div style={{ 
               fontSize: '10px', 
-              color: '#666', 
+              color: isPerformanceTone ? '#94a3b8' : '#666',
               marginTop: '2px' 
             }}>
               データ取得: {pc.fetched_at}
@@ -124,7 +133,9 @@ export default function PcCard({ pc }: PcCardProps) {
               display: 'inline-block',
               margin: '6px 0',
               padding: '12px 36px',
-              backgroundColor: '#ee5a24',
+              background: isPerformanceTone
+                ? 'linear-gradient(135deg, #ef4444 0%, #f59e0b 100%)'
+                : '#ee5a24',
               color: 'white',
               textDecoration: 'none',
               borderRadius: '100px',
