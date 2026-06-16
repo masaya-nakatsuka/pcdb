@@ -38,7 +38,6 @@ export interface ClientSortOptions {
 
 export interface PcCardProps {
   pc: ClientPcWithCpuSpec
-  tone?: 'default' | 'performance'
 }
 
 export interface PcTableProps {
