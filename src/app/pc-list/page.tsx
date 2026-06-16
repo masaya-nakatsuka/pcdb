@@ -127,7 +127,7 @@ export default function PcListPage() {
             color: '#1f2937'
           }}
         >
-          <ClientPcList pcs={pcs} />
+          <ClientPcList pcs={pcs} initialUsage="cafe" urlBasedUsage />
         </div>
       )}
 

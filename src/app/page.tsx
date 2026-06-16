@@ -54,7 +54,7 @@ export default function HomePage() {
         justifyContent: 'center'
       }}>
         <Link 
-          href="/pc-list"
+          href="/pc-list/cafe"
           style={{
             display: 'inline-flex',
             alignItems: 'center',

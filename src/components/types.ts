@@ -45,6 +45,7 @@ export interface PcTableProps {
   defaultCpu?: string
   defaultMaxDisplaySize?: number
   initialUsage?: ClientUsageCategory
+  urlBasedUsage?: boolean
 }
 
 export interface PcListProps {
@@ -52,6 +53,7 @@ export interface PcListProps {
   defaultCpu?: string
   defaultMaxDisplaySize?: number
   initialUsage?: ClientUsageCategory
+  urlBasedUsage?: boolean
 }
 
 export interface ImageComponentProps {

@@ -1,17 +1,17 @@
 import UsagePcListPageClient from '../UsagePcListPageClient'
 import { getPcListUsagePage } from '../usageConfig'
 
-const page = getPcListUsagePage('cost_performance')
+const page = getPcListUsagePage('home')
 
 export const metadata = {
   title: page.title,
   description: page.description,
 }
 
-export default function CostPerformancePcListPage() {
+export default function HomePcListPage() {
   return (
     <UsagePcListPageClient
-      usage="cost_performance"
+      usage="home"
       heading={page.heading}
       description={page.description}
     />

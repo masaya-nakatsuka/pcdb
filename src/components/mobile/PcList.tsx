@@ -1,12 +1,15 @@
 'use client'
 
 import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
 import { PcListProps, ClientPcWithCpuSpec, ClientUsageCategory, ClientSortField, ClientSortOrder, ClientSortOptions } from '../types'
 import { fetchPcList } from '../../app/pc-list/fetchPcs'
+import { getPcListUsagePath } from '../../app/pc-list/usageConfig'
 import { sortPcs } from '../utils/pcSort'
 import PcCard from './PcCard'
 
-export default function PcList({ pcs: initialPcs, defaultCpu, defaultMaxDisplaySize, initialUsage = 'cafe' }: PcListProps) {
+export default function PcList({ pcs: initialPcs, defaultCpu, defaultMaxDisplaySize, initialUsage = 'cafe', urlBasedUsage = false }: PcListProps) {
+  const router = useRouter()
   const [selectedUsage, setSelectedUsage] = useState<ClientUsageCategory>(initialUsage)
   const [pcs, setPcs] = useState<ClientPcWithCpuSpec[]>(initialPcs)
   const [allPcs, setAllPcs] = useState<ClientPcWithCpuSpec[]>(initialPcs)
@@ -102,6 +105,14 @@ export default function PcList({ pcs: initialPcs, defaultCpu, defaultMaxDisplayS
   }, [])
 
   const handleUsageChange = async (usage: ClientUsageCategory) => {
+    if (urlBasedUsage) {
+      if (usage !== selectedUsage) {
+        setSelectedUsage(usage)
+        router.push(getPcListUsagePath(usage))
+      }
+      return
+    }
+
     setLoading(true)
     try {
       const newPcs = await fetchPcList(usage)

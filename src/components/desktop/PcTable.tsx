@@ -1,12 +1,15 @@
 'use client'
 
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 import { PcTableProps, ClientPcWithCpuSpec, ClientSortOptions, ClientSortField, ClientSortOrder, ClientUsageCategory } from '../types'
 import { sortPcs } from '../utils/pcSort'
 import { fetchPcList } from '../../app/pc-list/fetchPcs'
+import { getPcListUsagePath } from '../../app/pc-list/usageConfig'
 import ImageComponent from './ImageComponent'
 
-export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplaySize, initialUsage = 'cafe' }: PcTableProps) {
+export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplaySize, initialUsage = 'cafe', urlBasedUsage = false }: PcTableProps) {
+  const router = useRouter()
   const [pcs, setPcs] = useState(initialPcs)
   const [allPcs, setAllPcs] = useState(initialPcs)
   const [sortOptions, setSortOptions] = useState<ClientSortOptions>({ field: 'pcScore', order: 'desc' })
@@ -103,6 +106,14 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
   }, [])
 
   const handleUsageChange = async (usage: ClientUsageCategory) => {
+    if (urlBasedUsage) {
+      if (usage !== selectedUsage) {
+        setSelectedUsage(usage)
+        router.push(getPcListUsagePath(usage))
+      }
+      return
+    }
+
     setLoading(true)
     try {
       const newPcs = await fetchPcList(usage)

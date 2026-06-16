@@ -2,9 +2,15 @@
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import { fetchPcList } from '../fetchPcs'
-import { ClientPcWithCpuSpec } from '../../../components/types'
-import ClientPcList from '../ClientPcList'
+import { fetchPcList } from './fetchPcs'
+import { ClientPcWithCpuSpec, ClientUsageCategory } from '../../components/types'
+import ClientPcList from './ClientPcList'
+
+interface UsagePcListPageClientProps {
+  usage: ClientUsageCategory
+  heading: string
+  description: string
+}
 
 function BackLink() {
   return (
@@ -30,14 +36,16 @@ function BackLink() {
   )
 }
 
-export default function CostPerformancePcListClient() {
+export default function UsagePcListPageClient({ usage, heading, description }: UsagePcListPageClientProps) {
   const [pcs, setPcs] = useState<ClientPcWithCpuSpec[]>([])
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     setIsLoading(true)
-    fetchPcList('cost_performance')
+    setError(null)
+
+    fetchPcList(usage)
       .then((data) => {
         if (Array.isArray(data)) {
           setPcs(data)
@@ -51,7 +59,7 @@ export default function CostPerformancePcListClient() {
       .finally(() => {
         setIsLoading(false)
       })
-  }, [])
+  }, [usage])
 
   return (
     <div
@@ -94,7 +102,7 @@ export default function CostPerformancePcListClient() {
             color: '#0f172a',
             lineHeight: 1.3
           }}>
-            コスパPCランキング
+            {heading}
           </h1>
           <p style={{
             margin: 0,
@@ -102,7 +110,7 @@ export default function CostPerformancePcListClient() {
             fontSize: '14px',
             lineHeight: 1.8
           }}>
-            画面サイズを評価に入れず、価格・CPU・GPU・メモリ・ストレージのバランスで並べています。
+            {description}
           </p>
         </section>
 
@@ -149,7 +157,7 @@ export default function CostPerformancePcListClient() {
               color: '#1f2937'
             }}
           >
-            <ClientPcList pcs={pcs} initialUsage="cost_performance" />
+            <ClientPcList pcs={pcs} initialUsage={usage} urlBasedUsage />
           </div>
         )}
       </main>

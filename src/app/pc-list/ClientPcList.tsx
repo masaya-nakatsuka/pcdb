@@ -10,14 +10,15 @@ interface ClientPcListProps {
   defaultCpu?: string
   defaultMaxDisplaySize?: number
   initialUsage?: ClientUsageCategory
+  urlBasedUsage?: boolean
 }
 
-export default function ClientPcList({ pcs, defaultCpu, defaultMaxDisplaySize, initialUsage = 'cafe' }: ClientPcListProps) {
+export default function ClientPcList({ pcs, defaultCpu, defaultMaxDisplaySize, initialUsage = 'cafe', urlBasedUsage = false }: ClientPcListProps) {
   const { isMobile, isTablet } = useDeviceDetection()
 
   if (isMobile || isTablet) {
-    return <PcList pcs={pcs} defaultCpu={defaultCpu} defaultMaxDisplaySize={defaultMaxDisplaySize} initialUsage={initialUsage} />
+    return <PcList pcs={pcs} defaultCpu={defaultCpu} defaultMaxDisplaySize={defaultMaxDisplaySize} initialUsage={initialUsage} urlBasedUsage={urlBasedUsage} />
   }
 
-  return <PcTable pcs={pcs} defaultCpu={defaultCpu} defaultMaxDisplaySize={defaultMaxDisplaySize} initialUsage={initialUsage} />
+  return <PcTable pcs={pcs} defaultCpu={defaultCpu} defaultMaxDisplaySize={defaultMaxDisplaySize} initialUsage={initialUsage} urlBasedUsage={urlBasedUsage} />
 }
