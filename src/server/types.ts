@@ -7,6 +7,10 @@ export interface ServerPc {
   price: number | null
   real_price: number | null
   cpu: string | null
+  gpu: string | null
+  gpu_class: string | null
+  gpu_score: number | null
+  has_dgpu: boolean | null
   ram: number | null
   rom: number | null
   battery: string | null
@@ -24,11 +28,14 @@ export interface ServerPcWithCpuSpec extends ServerPc {
   pcScore: number | null
 }
 
-export type ServerUsageCategory = 'mobile' | 'cafe' | 'home'
+export type ServerUsageCategory = 'mobile' | 'cafe' | 'home' | 'gaming' | 'video_editing'
 
 export interface ServerScoreWeights {
   cpuScoreWeight: number
+  gpuScoreWeight: number
   ramScoreWeight: number
   romScoreWeight: number
   batteryScoreWeight: number
+  screenScoreWeight: number
+  deviceWeightScoreWeight: number
 }

@@ -252,8 +252,48 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
               cursor: loading ? 'not-allowed' : 'pointer',
               transition: 'all 0.3s ease',
               opacity: loading ? 0.7 : 1
-            }}>
+          }}>
             🏠 家でじっくり作業
+          </button>
+
+          <button
+            onClick={() => handleUsageChange('gaming')}
+            disabled={loading}
+            style={{
+              padding: '12px 24px',
+              borderRadius: '8px',
+              border: 'none',
+              background: selectedUsage === 'gaming'
+                ? 'linear-gradient(135deg, #111827 0%, #ef4444 100%)'
+                : 'linear-gradient(135deg, #11182780 0%, #ef444480 100%)',
+              color: 'white',
+              fontSize: '14px',
+              fontWeight: '600',
+              cursor: loading ? 'not-allowed' : 'pointer',
+              transition: 'all 0.3s ease',
+              opacity: loading ? 0.7 : 1
+            }}>
+            🎮 ゲーム
+          </button>
+
+          <button
+            onClick={() => handleUsageChange('video_editing')}
+            disabled={loading}
+            style={{
+              padding: '12px 24px',
+              borderRadius: '8px',
+              border: 'none',
+              background: selectedUsage === 'video_editing'
+                ? 'linear-gradient(135deg, #0f766e 0%, #f59e0b 100%)'
+                : 'linear-gradient(135deg, #0f766e80 0%, #f59e0b80 100%)',
+              color: 'white',
+              fontSize: '14px',
+              fontWeight: '600',
+              cursor: loading ? 'not-allowed' : 'pointer',
+              transition: 'all 0.3s ease',
+              opacity: loading ? 0.7 : 1
+            }}>
+            🎬 動画編集
           </button>
       </div>
     </div>
@@ -354,6 +394,7 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
           {[
             { field: 'pcScore' as ClientSortField, label: 'スコア' },
             { field: 'cpu' as ClientSortField, label: 'CPU' },
+            { field: 'gpu_score' as ClientSortField, label: 'GPU' },
             { field: 'ram' as ClientSortField, label: 'メモリ' },
             { field: 'rom' as ClientSortField, label: 'ストレージ' },
             { field: 'display_size' as ClientSortField, label: '画面サイズ' },
@@ -433,7 +474,7 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
               style={{
                 borderCollapse: 'collapse',
                 width: '100%',
-                minWidth: '1000px'
+                minWidth: '1120px'
               }}
             >
               <thead>
@@ -476,6 +517,18 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
                     minWidth: '150px'
                   }} onClick={() => handleSortChange('cpu')}>
                     CPU{getSortIcon('cpu')}
+                  </th>
+                  <th style={{
+                    border: '1px solid #dee2e6',
+                    padding: '12px 8px',
+                    cursor: 'pointer',
+                    backgroundColor: sortOptions.field === 'gpu_score' ? '#e9ecef' : 'transparent',
+                    fontWeight: '600',
+                    color: '#495057',
+                    transition: 'background-color 0.2s ease',
+                    minWidth: '130px'
+                  }} onClick={() => handleSortChange('gpu_score')}>
+                    GPU{getSortIcon('gpu_score')}
                   </th>
                   <th style={{
                     border: '1px solid #dee2e6',
@@ -640,11 +693,27 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
                           />
                         )}
                       </td>
-                      <td style={{border: '1px solid #ddd', padding: '8px', fontSize: '12px'}}>{pc.cpu}</td>
-                      <td style={{border: '1px solid #ddd', padding: '8px', fontSize: '12px'}}>{pc.ram}GB</td>
-                      <td style={{border: '1px solid #ddd', padding: '8px', fontSize: '12px'}}>{pc.rom}GB</td>
-                      <td style={{border: '1px solid #ddd', padding: '8px', fontSize: '12px'}}>{pc.display_size}インチ</td>
-                      <td style={{border: '1px solid #ddd', padding: '8px', fontSize: '12px'}}>{pc.weight}g</td>
+                      <td style={{border: '1px solid #ddd', padding: '8px', fontSize: '12px'}}>{pc.cpu || '-'}</td>
+                      <td style={{border: '1px solid #ddd', padding: '8px', fontSize: '12px'}}>
+                        {pc.gpu || '-'}
+                        {pc.gpu_score != null && (
+                          <div style={{ color: '#666', fontSize: '11px', marginTop: '2px' }}>
+                            GPU {pc.gpu_score}/10
+                          </div>
+                        )}
+                      </td>
+                      <td style={{border: '1px solid #ddd', padding: '8px', fontSize: '12px'}}>
+                        {pc.ram != null ? `${pc.ram}GB` : '-'}
+                      </td>
+                      <td style={{border: '1px solid #ddd', padding: '8px', fontSize: '12px'}}>
+                        {pc.rom != null ? `${pc.rom}GB` : '-'}
+                      </td>
+                      <td style={{border: '1px solid #ddd', padding: '8px', fontSize: '12px'}}>
+                        {pc.display_size != null ? `${pc.display_size}インチ` : '-'}
+                      </td>
+                      <td style={{border: '1px solid #ddd', padding: '8px', fontSize: '12px'}}>
+                        {pc.weight != null ? `${pc.weight}g` : '-'}
+                      </td>
                       <td style={{border: '1px solid #ddd', padding: '8px', fontSize: '12px'}}>
                         {pc.estimatedBatteryLifeHours ? `${pc.estimatedBatteryLifeHours}時間` : '-'}
                       </td>

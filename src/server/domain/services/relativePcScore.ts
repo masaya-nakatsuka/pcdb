@@ -1,7 +1,8 @@
-import { ServerUsageCategory as UsageCategory, ServerScoreWeights as ScoreWeights } from '../../types'
+import { ServerUsageCategory as UsageCategory } from '../../types'
 
 interface PcSpec {
   cpuPassmark: number
+  gpuScore: number
   ramGB: number
   romGB: number
   batteryLifeHours: number
@@ -11,6 +12,7 @@ interface PcSpec {
 
 interface RelativeScoreWeights {
   cpuScoreWeight: number
+  gpuScoreWeight: number
   ramScoreWeight: number
   romScoreWeight: number
   batteryScoreWeight: number
@@ -34,6 +36,7 @@ export function calculateRelativePcScore(
 ): number {
   // 各項目の最小値・最大値を取得
   const cpuValues: number[] = allPcSpecs.map(pc => pc.cpuPassmark).filter(v => v > 0)
+  const gpuValues: number[] = allPcSpecs.map(pc => pc.gpuScore).filter(v => v > 0)
   const ramValues: number[] = allPcSpecs.map(pc => pc.ramGB).filter(v => v > 0)
   const romValues: number[] = allPcSpecs.map(pc => pc.romGB).filter(v => v > 0)
   const batteryValues: number[] = allPcSpecs.map(pc => pc.batteryLifeHours).filter(v => v > 0)
@@ -42,6 +45,7 @@ export function calculateRelativePcScore(
 
   const minMax = {
     cpu: { min: Math.min(...cpuValues), max: Math.max(...cpuValues) },
+    gpu: { min: Math.min(...gpuValues), max: Math.max(...gpuValues) },
     ram: { min: Math.min(...ramValues), max: Math.max(...ramValues) },
     rom: { min: Math.min(...romValues), max: Math.max(...romValues) },
     battery: { min: Math.min(...batteryValues), max: Math.max(...batteryValues) },
@@ -70,6 +74,11 @@ export function calculateRelativePcScore(
    * CPUスコア
    */
   const cpuScore = normalizeScore(targetPcSpec.cpuPassmark, minMax.cpu.min, minMax.cpu.max, 'higher_is_better') * scoreWeights.cpuScoreWeight
+
+  /**
+   * GPUスコア
+   */
+  const gpuScore = normalizeScore(targetPcSpec.gpuScore, minMax.gpu.min, minMax.gpu.max, 'higher_is_better') * scoreWeights.gpuScoreWeight
   
   /**
    * RAMスコア
@@ -112,17 +121,22 @@ export function calculateRelativePcScore(
       // 大きいほど高スコア
       screenScore = normalizeScore(targetPcSpec.screenSizeInch, minMax.screen.min, minMax.screen.max, 'higher_is_better') * scoreWeights.screenScoreWeight
       break
+    case 'gaming':
+    case 'video_editing':
+      // ゲーム/動画編集は作業領域を重視
+      screenScore = normalizeScore(targetPcSpec.screenSizeInch, minMax.screen.min, minMax.screen.max, 'higher_is_better') * scoreWeights.screenScoreWeight
+      break
   }
 
   /**
    * 総合スコア
    */
-  const totalScore = cpuScore + ramScore + romScore + batteryScore + screenScore + deviceWeightScore
+  const totalScore = cpuScore + gpuScore + ramScore + romScore + batteryScore + screenScore + deviceWeightScore
     
   /**
    * 最大可能スコア
    */
-  const maxPossibleScore = (scoreWeights.cpuScoreWeight + scoreWeights.ramScoreWeight + scoreWeights.romScoreWeight + scoreWeights.batteryScoreWeight + scoreWeights.screenScoreWeight + scoreWeights.deviceWeightScoreWeight) * 10
+  const maxPossibleScore = (scoreWeights.cpuScoreWeight + scoreWeights.gpuScoreWeight + scoreWeights.ramScoreWeight + scoreWeights.romScoreWeight + scoreWeights.batteryScoreWeight + scoreWeights.screenScoreWeight + scoreWeights.deviceWeightScoreWeight) * 10
 
   /**
    * 0~100の範囲にスケール
@@ -137,16 +151,18 @@ export function getRelativeUsageScoreWeights(category: UsageCategory): RelativeS
   switch (category) {
     case 'mobile':
       return {
-        cpuScoreWeight: 10,
-        ramScoreWeight: 10,
+        cpuScoreWeight: 9,
+        gpuScoreWeight: 1,
+        ramScoreWeight: 8,
         romScoreWeight: 5,
         batteryScoreWeight: 14,
-        screenScoreWeight: 10,
-        deviceWeightScoreWeight: 12
+        screenScoreWeight: 9,
+        deviceWeightScoreWeight: 13
       }
     case 'cafe':
       return {
         cpuScoreWeight: 10,
+        gpuScoreWeight: 1,
         ramScoreWeight: 10,
         romScoreWeight: 8,
         batteryScoreWeight: 12,
@@ -156,11 +172,32 @@ export function getRelativeUsageScoreWeights(category: UsageCategory): RelativeS
     case 'home':
       return {
         cpuScoreWeight: 15,
+        gpuScoreWeight: 3,
         ramScoreWeight: 15,
         romScoreWeight: 10,
         batteryScoreWeight: 2,
         screenScoreWeight: 10,
         deviceWeightScoreWeight: 5
+      }
+    case 'gaming':
+      return {
+        cpuScoreWeight: 14,
+        gpuScoreWeight: 20,
+        ramScoreWeight: 12,
+        romScoreWeight: 8,
+        batteryScoreWeight: 1,
+        screenScoreWeight: 8,
+        deviceWeightScoreWeight: 2
+      }
+    case 'video_editing':
+      return {
+        cpuScoreWeight: 16,
+        gpuScoreWeight: 14,
+        ramScoreWeight: 14,
+        romScoreWeight: 10,
+        batteryScoreWeight: 1,
+        screenScoreWeight: 8,
+        deviceWeightScoreWeight: 2
       }
     default:
       throw new Error(`Invalid category: ${category}`)

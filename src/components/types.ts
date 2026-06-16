@@ -7,6 +7,10 @@ export interface ClientPc {
   price: number | null
   real_price: number | null
   cpu: string | null
+  gpu: string | null
+  gpu_class: string | null
+  gpu_score: number | null
+  has_dgpu: boolean | null
   ram: number | null
   rom: number | null
   weight: number | null
@@ -22,9 +26,9 @@ export interface ClientPcWithCpuSpec extends ClientPc {
   pcScore: number | null
 }
 
-export type ClientUsageCategory = 'mobile' | 'cafe' | 'home'
+export type ClientUsageCategory = 'mobile' | 'cafe' | 'home' | 'gaming' | 'video_editing'
 
-export type ClientSortField = 'pcScore' | 'cpu' | 'ram' | 'rom' | 'display_size' | 'estimatedBatteryLifeHours' | 'weight' | 'price'
+export type ClientSortField = 'pcScore' | 'cpu' | 'gpu_score' | 'ram' | 'rom' | 'display_size' | 'estimatedBatteryLifeHours' | 'weight' | 'price'
 export type ClientSortOrder = 'asc' | 'desc'
 
 export interface ClientSortOptions {

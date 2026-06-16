@@ -299,8 +299,102 @@ export default function PcList({ pcs: initialPcs, defaultCpu, defaultMaxDisplayS
                   ? '0 4px 15px rgba(78, 205, 196, 0.3)'
                   : '0 2px 8px rgba(78, 205, 196, 0.2)'
               }
-            }}>
+          }}>
             🏠 家でじっくり作業
+          </button>
+
+          <button
+            onClick={() => handleUsageChange('gaming')}
+            disabled={loading}
+            style={{
+              padding: '12px 20px',
+              borderRadius: '16px',
+              border: 'none',
+              background: selectedUsage === 'gaming'
+                ? 'linear-gradient(135deg, #111827 0%, #ef4444 100%)'
+                : 'linear-gradient(135deg, #11182780 0%, #ef444480 100%)',
+              color: 'white',
+              fontSize: '14px',
+              fontWeight: '600',
+              cursor: loading ? 'not-allowed' : 'pointer',
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              boxShadow: selectedUsage === 'gaming'
+                ? '0 4px 15px rgba(239, 68, 68, 0.3)'
+                : '0 2px 8px rgba(239, 68, 68, 0.2)',
+              position: 'relative',
+              overflow: 'hidden',
+              opacity: loading ? 0.7 : 1
+            }}
+            onMouseDown={(e) => {
+              if (!loading) {
+                e.currentTarget.style.transform = 'scale(0.98)'
+                e.currentTarget.style.boxShadow = '0 2px 8px rgba(239, 68, 68, 0.4)'
+              }
+            }}
+            onMouseUp={(e) => {
+              if (!loading) {
+                e.currentTarget.style.transform = 'scale(1)'
+                e.currentTarget.style.boxShadow = selectedUsage === 'gaming'
+                  ? '0 4px 15px rgba(239, 68, 68, 0.3)'
+                  : '0 2px 8px rgba(239, 68, 68, 0.2)'
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!loading) {
+                e.currentTarget.style.transform = 'scale(1)'
+                e.currentTarget.style.boxShadow = selectedUsage === 'gaming'
+                  ? '0 4px 15px rgba(239, 68, 68, 0.3)'
+                  : '0 2px 8px rgba(239, 68, 68, 0.2)'
+              }
+            }}>
+            🎮 ゲーム
+          </button>
+
+          <button
+            onClick={() => handleUsageChange('video_editing')}
+            disabled={loading}
+            style={{
+              padding: '12px 20px',
+              borderRadius: '16px',
+              border: 'none',
+              background: selectedUsage === 'video_editing'
+                ? 'linear-gradient(135deg, #0f766e 0%, #f59e0b 100%)'
+                : 'linear-gradient(135deg, #0f766e80 0%, #f59e0b80 100%)',
+              color: 'white',
+              fontSize: '14px',
+              fontWeight: '600',
+              cursor: loading ? 'not-allowed' : 'pointer',
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              boxShadow: selectedUsage === 'video_editing'
+                ? '0 4px 15px rgba(15, 118, 110, 0.3)'
+                : '0 2px 8px rgba(15, 118, 110, 0.2)',
+              position: 'relative',
+              overflow: 'hidden',
+              opacity: loading ? 0.7 : 1
+            }}
+            onMouseDown={(e) => {
+              if (!loading) {
+                e.currentTarget.style.transform = 'scale(0.98)'
+                e.currentTarget.style.boxShadow = '0 2px 8px rgba(15, 118, 110, 0.4)'
+              }
+            }}
+            onMouseUp={(e) => {
+              if (!loading) {
+                e.currentTarget.style.transform = 'scale(1)'
+                e.currentTarget.style.boxShadow = selectedUsage === 'video_editing'
+                  ? '0 4px 15px rgba(15, 118, 110, 0.3)'
+                  : '0 2px 8px rgba(15, 118, 110, 0.2)'
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!loading) {
+                e.currentTarget.style.transform = 'scale(1)'
+                e.currentTarget.style.boxShadow = selectedUsage === 'video_editing'
+                  ? '0 4px 15px rgba(15, 118, 110, 0.3)'
+                  : '0 2px 8px rgba(15, 118, 110, 0.2)'
+              }
+            }}>
+            🎬 動画編集
           </button>
       </div>
     </div>
@@ -404,6 +498,7 @@ export default function PcList({ pcs: initialPcs, defaultCpu, defaultMaxDisplayS
           {[
             { field: 'pcScore' as ClientSortField, label: 'スコア' },
             { field: 'cpu' as ClientSortField, label: 'CPU' },
+            { field: 'gpu_score' as ClientSortField, label: 'GPU' },
             { field: 'ram' as ClientSortField, label: 'メモリ' },
             { field: 'rom' as ClientSortField, label: 'ストレージ' },
             { field: 'display_size' as ClientSortField, label: '画面サイズ' },

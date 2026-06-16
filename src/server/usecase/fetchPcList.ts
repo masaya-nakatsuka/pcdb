@@ -41,6 +41,7 @@ export async function fetchPcList(usageCategory: UsageCategory = 'cafe'): Promis
     .map(pc => ({
       id: pc.id,
       cpuPassmark: pc.cpuSpec?.passmarkScore || 0,
+      gpuScore: pc.gpu_score ?? 2,
       ramGB: pc.ram || 0,
       romGB: pc.rom || 0,
       batteryLifeHours: pc.estimatedBatteryLifeHours || 0,

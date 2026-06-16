@@ -52,6 +52,12 @@ export default function PcCard({ pc }: PcCardProps) {
         <div>
           <div style={{ fontSize: '14px', lineHeight: '1.5' }}>
             {pc.cpu && <div>🔴 CPU：{pc.cpu}</div>}
+            {pc.gpu && (
+              <div>
+                🔴 GPU：{pc.gpu}
+                {pc.gpu_score != null ? `（${pc.gpu_score}/10）` : ''}
+              </div>
+            )}
             {pc.ram && <div>🔴 メモリ：{pc.ram}GB</div>}
             {pc.rom && <div style={{ marginBottom: '8px' }}>🔴 ストレージ：{pc.rom}GB</div>}
             {pc.display_size && <div>画面サイズ：{pc.display_size} インチ</div>}

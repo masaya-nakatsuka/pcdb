@@ -46,6 +46,10 @@ export function sortPcs(
         aValue = a.ram
         bValue = b.ram
         break
+      case 'gpu_score':
+        aValue = a.gpu_score
+        bValue = b.gpu_score
+        break
       case 'rom':
         aValue = a.rom
         bValue = b.rom
