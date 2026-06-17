@@ -113,6 +113,12 @@ export const blogArticles: ArticleMetadata[] = [
     date: '2026-06-17',
   },
   {
+    id: 48,
+    title: '1.3kg以下のAmazon軽量ノートPC 2026｜持ち運びをPC-DB比較',
+    description: '1.3kg以下のAmazon軽量ノートPCを、重量、CPU型番、メモリ、SSD、価格、推定駆動時間からPC-DBで比較する記事。',
+    date: '2026-06-17',
+  },
+  {
     id: 30,
     title: 'Amazon N100ミニノートPC一覧 2026｜PC-DBでモバイル性を比較',
     description: 'N100搭載かつ13.5インチ以下のミニノートをPC-DBから抽出し、価格、メモリ、SSD、推定駆動時間で比較。',
