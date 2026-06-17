@@ -47,6 +47,12 @@ export const blogArticles: ArticleMetadata[] = [
     date: '2026-06-17',
   },
   {
+    id: 44,
+    title: 'Core搭載Amazon PC 2026｜Core i3/i5/Core UltraをPC-DB比較',
+    description: 'Core搭載のAmazon PCを、Core i3/i5/Core Ultraの世代差、メモリ、SSD、GPU、価格からPC-DBで比較する記事。',
+    date: '2026-06-17',
+  },
+  {
     id: 41,
     title: 'メモリ16GB以上のAmazon PC 2026｜8GBで後悔しないPC-DB比較',
     description: 'メモリ16GB以上のAmazon PCを、CPU型番、SSD容量、GPU、価格、推定駆動時間からPC-DBで比較する記事。',
