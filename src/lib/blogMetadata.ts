@@ -71,6 +71,12 @@ export const blogArticles: ArticleMetadata[] = [
     date: '2026-06-17',
   },
   {
+    id: 46,
+    title: '14インチ前後のAmazonノートPC 2026｜持ち運びと作業性をPC-DB比較',
+    description: '14インチ前後のAmazonノートPCを、CPU型番、メモリ、SSD、重量、価格、推定駆動時間からPC-DBで比較する記事。',
+    date: '2026-06-17',
+  },
+  {
     id: 34,
     title: 'ゲーム向けPCランキング 2026｜GPU・CPU・価格をPC-DBで比較',
     description: 'Amazon内のPCをゲーム適性で比較。GPUだけでなくCPU型番、メモリ、SSD、価格をSpecsyのPC-DBで横断評価。',
