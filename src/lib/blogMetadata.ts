@@ -41,6 +41,12 @@ export const blogArticles: ArticleMetadata[] = [
     date: '2026-06-17',
   },
   {
+    id: 47,
+    title: 'N100/N150搭載Amazon PC 2026｜低価格PCをPC-DB比較',
+    description: 'N100/N150搭載のAmazon PCを、価格、メモリ、SSD、画面サイズ、重量、推定駆動時間からPC-DBで比較する記事。',
+    date: '2026-06-17',
+  },
+  {
     id: 43,
     title: 'Ryzen搭載Amazon PC 2026｜Ryzen 5/7をPC-DBで比較',
     description: 'Ryzen搭載のAmazon PCを、Ryzen 5/7の世代差、メモリ、SSD、GPU、価格、推定駆動時間からPC-DBで比較する記事。',
