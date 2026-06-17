@@ -42,8 +42,8 @@ export const blogArticles: ArticleMetadata[] = [
   },
   {
     id: 47,
-    title: 'N100/N150搭載Amazon PC 2026｜低価格PCをPC-DB比較',
-    description: 'N100/N150搭載のAmazon PCを、価格、メモリ、SSD、画面サイズ、重量、推定駆動時間からPC-DBで比較する記事。',
+    title: 'N95/N100/N150搭載Amazon PC 2026｜低価格PCをPC-DB比較',
+    description: 'N95/N100/N150搭載のAmazon PCを、価格、メモリ、SSD、画面サイズ、重量、推定駆動時間からPC-DBで比較する記事。',
     date: '2026-06-17',
   },
   {
