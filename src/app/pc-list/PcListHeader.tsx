@@ -55,9 +55,6 @@ export default function PcListHeader() {
             <Link href="/blog" className="pc-list-header__secondary-link">
               ブログ
             </Link>
-            <a href="#pc-list-results" className="pc-list-header__cta">
-              条件で探す
-            </a>
           </div>
         </div>
       </div>
@@ -211,8 +208,7 @@ export default function PcListHeader() {
           flex: 0 0 auto;
         }
 
-        .pc-list-header__secondary-link,
-        .pc-list-header__cta {
+        .pc-list-header__secondary-link {
           display: inline-flex;
           align-items: center;
           justify-content: center;
@@ -232,17 +228,6 @@ export default function PcListHeader() {
         .pc-list-header__secondary-link:hover {
           color: #0f172a;
           background: #f1f5f9;
-        }
-
-        .pc-list-header__cta {
-          padding: 0 14px;
-          color: #ffffff;
-          background: #2563eb;
-          box-shadow: 0 10px 18px rgba(37, 99, 235, 0.22);
-        }
-
-        .pc-list-header__cta:hover {
-          background: #1d4ed8;
         }
 
         @media (max-width: 980px) {
@@ -285,10 +270,6 @@ export default function PcListHeader() {
 
           .pc-list-header__secondary-link {
             padding: 0 8px;
-          }
-
-          .pc-list-header__cta {
-            flex: 1;
           }
 
           .pc-list-header__nav-link {
