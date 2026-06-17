@@ -44,52 +44,54 @@ export default function PcListPage() {
         }}
       >
         <PcListHeader />
-      {isLoading ? (
-        <div style={{ 
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          minHeight: '400px',
-          flexDirection: 'column',
-          gap: '16px',
-          color: '#475569'
-        }}>
-          <div style={{
-            width: '40px',
-            height: '40px',
-            border: '4px solid #f3f3f3',
-            borderTop: '4px solid #3b82f6',
-            borderRadius: '50%',
-            animation: 'spin 1s linear infinite'
-          }}></div>
-          <div style={{
-            color: '#475569',
-            fontSize: '16px',
-            fontWeight: '500'
-          }}>
-            PCデータを読み込み中...
-          </div>
-          <style jsx>{`
-            @keyframes spin {
-              0% { transform: rotate(0deg); }
-              100% { transform: rotate(360deg); }
-            }
-          `}</style>
-        </div>
-      ) : error ? (
-        <div style={{ padding: '20px', color: '#dc2626', textAlign: 'center' }}>
-          エラー: {error}
-        </div>
-      ) : (
-        <div
-          style={{
-            backgroundColor: '#ffffff',
-            color: '#1f2937'
-          }}
-        >
-          <ClientPcList pcs={pcs} initialUsage="cafe" urlBasedUsage />
-        </div>
-      )}
+        <main id="pc-list-results">
+          {isLoading ? (
+            <div style={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              minHeight: '400px',
+              flexDirection: 'column',
+              gap: '16px',
+              color: '#475569'
+            }}>
+              <div style={{
+                width: '40px',
+                height: '40px',
+                border: '4px solid #f3f3f3',
+                borderTop: '4px solid #3b82f6',
+                borderRadius: '50%',
+                animation: 'spin 1s linear infinite'
+              }}></div>
+              <div style={{
+                color: '#475569',
+                fontSize: '16px',
+                fontWeight: '500'
+              }}>
+                PCデータを読み込み中...
+              </div>
+              <style jsx>{`
+                @keyframes spin {
+                  0% { transform: rotate(0deg); }
+                  100% { transform: rotate(360deg); }
+                }
+              `}</style>
+            </div>
+          ) : error ? (
+            <div style={{ padding: '20px', color: '#dc2626', textAlign: 'center' }}>
+              エラー: {error}
+            </div>
+          ) : (
+            <div
+              style={{
+                backgroundColor: '#ffffff',
+                color: '#1f2937'
+              }}
+            >
+              <ClientPcList pcs={pcs} initialUsage="cafe" urlBasedUsage />
+            </div>
+          )}
+        </main>
 
       {/* このアプリについて（PC一覧用セクション） */}
       <div style={{

@@ -47,7 +47,7 @@ export default function UsagePcListPageClient({ usage, heading, description }: U
     >
       <PcListHeader />
 
-      <main>
+      <main id="pc-list-results">
         <section
           style={{
             maxWidth: '960px',

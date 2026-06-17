@@ -4,9 +4,12 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
 const navItems = [
-  { href: '/pc-list/cafe', label: 'PCランキング' },
-  { href: '/pc-list/cost-performance', label: 'コスパPC' },
-  { href: '/blog', label: 'ブログ' },
+  { href: '/pc-list/mobile', label: 'モバイル' },
+  { href: '/pc-list/cafe', label: 'カフェ' },
+  { href: '/pc-list/home', label: '自宅' },
+  { href: '/pc-list/cost-performance', label: 'コスパ' },
+  { href: '/pc-list/gaming', label: 'ゲーム' },
+  { href: '/pc-list/video-editing', label: '動画編集' },
 ]
 
 export default function PcListHeader() {
@@ -14,7 +17,7 @@ export default function PcListHeader() {
 
   const isActiveNav = (href: string) => {
     if (href === '/pc-list/cafe') {
-      return pathname === '/pc-list' || (pathname.startsWith('/pc-list') && pathname !== '/pc-list/cost-performance')
+      return pathname === '/pc-list' || pathname === '/pc-list/cafe'
     }
 
     return pathname === href
@@ -24,71 +27,149 @@ export default function PcListHeader() {
     <header className="pc-list-header">
       <div className="pc-list-header__inner">
         <Link href="/" className="pc-list-header__brand" aria-label="Specsy Hub ホーム">
-          <span className="pc-list-header__logo">Specsy</span>
-          <span className="pc-list-header__tagline">PC比較・ランキング</span>
+          <span className="pc-list-header__mark" aria-hidden="true">
+            <span className="pc-list-header__mark-bar pc-list-header__mark-bar--high" />
+            <span className="pc-list-header__mark-bar pc-list-header__mark-bar--mid" />
+            <span className="pc-list-header__mark-bar pc-list-header__mark-bar--low" />
+          </span>
+          <span className="pc-list-header__brand-copy">
+            <span className="pc-list-header__logo">Specsy Hub</span>
+            <span className="pc-list-header__tagline">Amazon PCを用途別に比較</span>
+          </span>
         </Link>
 
-        <nav className="pc-list-header__nav" aria-label="主要ナビゲーション">
-          {navItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`pc-list-header__nav-link${isActiveNav(item.href) ? ' pc-list-header__nav-link--active' : ''}`}
-            >
-              {item.label}
+        <div className="pc-list-header__navigation">
+          <nav className="pc-list-header__nav" aria-label="用途別PCランキング">
+            {navItems.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`pc-list-header__nav-link${isActiveNav(item.href) ? ' pc-list-header__nav-link--active' : ''}`}
+              >
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+
+          <div className="pc-list-header__actions">
+            <Link href="/blog" className="pc-list-header__secondary-link">
+              ブログ
             </Link>
-          ))}
-          <Link href="/" className="pc-list-header__home-link">
-            ホーム
-          </Link>
-        </nav>
+            <a href="#pc-list-results" className="pc-list-header__cta">
+              条件で探す
+            </a>
+          </div>
+        </div>
       </div>
 
-      <style jsx>{`
+      <style jsx global>{`
         .pc-list-header {
-          background: #ffffff;
+          background:
+            linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.98) 100%);
           border-bottom: 1px solid #e2e8f0;
           color: #0f172a;
+          box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
+        }
+
+        .pc-list-header * {
+          box-sizing: border-box;
         }
 
         .pc-list-header__inner {
           max-width: 1280px;
-          min-height: 64px;
+          min-height: 72px;
           margin: 0 auto;
-          padding: 0 16px;
+          padding: 0 20px;
           display: flex;
           align-items: center;
           justify-content: space-between;
-          gap: 24px;
+          gap: 28px;
         }
 
         .pc-list-header__brand {
           display: inline-flex;
-          align-items: baseline;
-          gap: 10px;
+          align-items: center;
+          gap: 12px;
           min-width: 0;
           color: #0f172a;
           text-decoration: none;
           white-space: nowrap;
         }
 
+        .pc-list-header__mark {
+          width: 40px;
+          height: 40px;
+          display: inline-flex;
+          align-items: flex-end;
+          justify-content: center;
+          gap: 3px;
+          padding: 9px 8px;
+          border-radius: 10px;
+          background:
+            linear-gradient(135deg, #2563eb 0%, #14b8a6 100%);
+          box-shadow: 0 12px 22px rgba(37, 99, 235, 0.22);
+          flex: 0 0 auto;
+        }
+
+        .pc-list-header__mark-bar {
+          width: 5px;
+          border-radius: 999px;
+          background: rgba(255, 255, 255, 0.95);
+        }
+
+        .pc-list-header__mark-bar--high {
+          height: 20px;
+        }
+
+        .pc-list-header__mark-bar--mid {
+          height: 14px;
+          opacity: 0.88;
+        }
+
+        .pc-list-header__mark-bar--low {
+          height: 9px;
+          opacity: 0.76;
+        }
+
+        .pc-list-header__brand-copy {
+          display: flex;
+          flex-direction: column;
+          gap: 3px;
+          min-width: 0;
+        }
+
         .pc-list-header__logo {
-          font-size: 20px;
+          font-size: 19px;
           font-weight: 900;
           line-height: 1;
         }
 
         .pc-list-header__tagline {
-          color: #64748b;
+          color: #475569;
           font-size: 12px;
           font-weight: 700;
+          line-height: 1.2;
+        }
+
+        .pc-list-header__navigation {
+          display: flex;
+          align-items: center;
+          justify-content: flex-end;
+          gap: 14px;
+          min-width: 0;
+          flex: 1;
         }
 
         .pc-list-header__nav {
           display: flex;
           align-items: center;
           justify-content: flex-end;
-          gap: 4px;
+          gap: 2px;
+          min-width: 0;
+          padding: 4px;
+          border: 1px solid #e2e8f0;
+          border-radius: 10px;
+          background: rgba(255, 255, 255, 0.72);
           overflow-x: auto;
           scrollbar-width: none;
         }
@@ -97,67 +178,126 @@ export default function PcListHeader() {
           display: none;
         }
 
-        .pc-list-header__nav-link,
-        .pc-list-header__home-link {
+        .pc-list-header__nav-link {
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          min-height: 36px;
-          padding: 0 12px;
-          color: #334155;
-          border-radius: 8px;
-          font-size: 14px;
-          font-weight: 700;
+          min-height: 34px;
+          padding: 0 11px;
+          color: #475569;
+          border-radius: 7px;
+          font-size: 13px;
+          font-weight: 800;
           text-decoration: none;
           white-space: nowrap;
-          transition: background-color 0.16s ease, color 0.16s ease;
+          transition: background-color 0.16s ease, color 0.16s ease, box-shadow 0.16s ease;
         }
 
-        .pc-list-header__nav-link:hover,
-        .pc-list-header__home-link:hover {
+        .pc-list-header__nav-link:hover {
           background: #f1f5f9;
           color: #0f172a;
         }
 
         .pc-list-header__nav-link--active {
           color: #2563eb;
-          background: #eff6ff;
+          background: #ffffff;
+          box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12);
         }
 
-        .pc-list-header__home-link {
+        .pc-list-header__actions {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          flex: 0 0 auto;
+        }
+
+        .pc-list-header__secondary-link,
+        .pc-list-header__cta {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          min-height: 38px;
+          border-radius: 8px;
+          font-size: 13px;
+          font-weight: 800;
+          text-decoration: none;
+          white-space: nowrap;
+        }
+
+        .pc-list-header__secondary-link {
+          padding: 0 10px;
           color: #64748b;
         }
 
-        @media (max-width: 640px) {
+        .pc-list-header__secondary-link:hover {
+          color: #0f172a;
+          background: #f1f5f9;
+        }
+
+        .pc-list-header__cta {
+          padding: 0 14px;
+          color: #ffffff;
+          background: #2563eb;
+          box-shadow: 0 10px 18px rgba(37, 99, 235, 0.22);
+        }
+
+        .pc-list-header__cta:hover {
+          background: #1d4ed8;
+        }
+
+        @media (max-width: 980px) {
           .pc-list-header__inner {
             min-height: auto;
-            padding: 12px 16px 10px;
-            align-items: flex-start;
+            padding: 10px 16px;
             flex-direction: column;
+            align-items: stretch;
             gap: 10px;
           }
 
-          .pc-list-header__brand {
+          .pc-list-header__navigation {
+            width: 100%;
+            justify-content: space-between;
+            gap: 12px;
+          }
+
+          .pc-list-header__nav {
+            justify-content: flex-start;
+            flex: 1;
+          }
+        }
+
+        @media (max-width: 640px) {
+          .pc-list-header__navigation {
             flex-direction: column;
-            align-items: flex-start;
-            gap: 4px;
+            align-items: stretch;
+            gap: 8px;
+          }
+
+          .pc-list-header__nav,
+          .pc-list-header__actions {
+            width: 100%;
+            justify-content: flex-start;
+          }
+
+          .pc-list-header__actions {
+            display: none;
+          }
+
+          .pc-list-header__secondary-link {
+            padding: 0 8px;
+          }
+
+          .pc-list-header__cta {
+            flex: 1;
+          }
+
+          .pc-list-header__nav-link {
+            padding: 0 9px;
+            font-size: 13px;
           }
 
           .pc-list-header__tagline {
             font-size: 11px;
-          }
-
-          .pc-list-header__nav {
-            width: 100%;
-            justify-content: flex-start;
-            padding-bottom: 2px;
-          }
-
-          .pc-list-header__nav-link,
-          .pc-list-header__home-link {
-            min-height: 34px;
-            padding: 0 10px;
-            font-size: 13px;
           }
         }
       `}</style>
