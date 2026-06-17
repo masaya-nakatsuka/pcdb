@@ -748,11 +748,7 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
           <TopRankedPcPodium pcs={pcs} />
           <section
             style={{
-              padding: '18px',
-              border: '1px solid #d9e2ec',
-              borderRadius: '8px',
-              backgroundColor: '#ffffff',
-              boxShadow: '0 2px 10px rgba(15, 23, 42, 0.08)',
+              marginTop: '18px',
             }}
           >
             <div
