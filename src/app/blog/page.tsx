@@ -30,12 +30,22 @@ export default function BlogPage() {
         <h1 style={{
           fontSize: '32px',
           fontWeight: 'bold',
-          marginBottom: '32px',
+          marginBottom: '12px',
           textAlign: 'center',
           color: '#333'
         }}>
-          ブログ記事一覧
+          PC-DBブログ
         </h1>
+        <p style={{
+          margin: '0 auto 32px',
+          maxWidth: '640px',
+          color: '#64748b',
+          fontSize: '15px',
+          lineHeight: 1.7,
+          textAlign: 'center',
+        }}>
+          Amazon内のPCを価格、CPU型番、GPU、メモリ、SSD、推定駆動時間で比較する記事です。
+        </p>
 
         <div style={{
           display: 'grid',

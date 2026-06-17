@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import ClientPcList from '@/app/pc-list/ClientPcList'
+import { listedBlogArticles } from '@/lib/blogMetadata'
 import { BlogArticle, BlogContent, BlogList, BlogParagraph, BlogSection, BlogTable, BlogTableBody, BlogTableCell, BlogTableHeader, BlogTableRow } from './BlogArticle'
 import BlogLayout from './BlogLayout'
 import type { ClientPcWithCpuSpec, ClientUsageCategory } from '../types'
@@ -62,6 +63,11 @@ function getTopScore(pcs: ClientPcWithCpuSpec[]) {
   return scores.length > 0 ? Math.max(...scores) : null
 }
 
+function getCurrentArticleId(articlePath: string) {
+  const match = articlePath.match(/article(\d+)$/)
+  return match ? Number(match[1]) : null
+}
+
 export default function PcDbArticle({
   articlePath,
   title,
@@ -85,6 +91,10 @@ export default function PcDbArticle({
   const lowestPrice = getLowestPrice(pcs)
   const topScore = getTopScore(pcs)
   const canonicalUrl = `https://specsy-hub.com${articlePath}`
+  const currentArticleId = getCurrentArticleId(articlePath)
+  const relatedArticles = listedBlogArticles
+    .filter((article) => article.id !== currentArticleId)
+    .slice(0, 4)
   const articleJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Article',
@@ -215,6 +225,37 @@ export default function PcDbArticle({
 
           <BlogSection title={dataAngleTitle}>
             <BlogParagraph>{dataAngle}</BlogParagraph>
+          </BlogSection>
+
+          <BlogSection title="PC-DB関連記事">
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+              gap: '12px',
+              marginBottom: '16px',
+            }}>
+              {relatedArticles.map((article) => (
+                <Link
+                  key={article.id}
+                  href={`/blog/article${article.id}`}
+                  style={{
+                    display: 'block',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: '8px',
+                    padding: '14px',
+                    textDecoration: 'none',
+                    backgroundColor: '#ffffff',
+                  }}
+                >
+                  <div style={{ fontSize: '12px', color: '#64748b', fontWeight: 800, marginBottom: '6px' }}>
+                    article{article.id}
+                  </div>
+                  <div style={{ color: '#1d4ed8', fontSize: '14px', lineHeight: 1.5, fontWeight: 800 }}>
+                    {article.title}
+                  </div>
+                </Link>
+              ))}
+            </div>
           </BlogSection>
 
           <BlogSection title="最新ランキングで確認">
