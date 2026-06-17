@@ -456,35 +456,10 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
           boxShadow: '0 1px 3px rgba(15, 23, 42, 0.06)',
         }}
       >
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: '12px',
-          marginBottom: '18px',
-          flexWrap: 'wrap',
-        }}>
+        <div style={{ marginBottom: '18px' }}>
           <h2 style={{ fontSize: '18px', color: '#0f172a', margin: 0, fontWeight: 800 }}>
             ランキング条件
           </h2>
-          <div style={{
-            display: 'flex',
-            gap: '8px',
-            flexWrap: 'wrap',
-            color: '#475569',
-            fontSize: '12px',
-            fontWeight: 700,
-          }}>
-            <span style={{ padding: '5px 9px', borderRadius: '999px', backgroundColor: '#fff', border: '1px solid #e2e8f0' }}>
-              用途
-            </span>
-            <span style={{ padding: '5px 9px', borderRadius: '999px', backgroundColor: '#fff', border: '1px solid #e2e8f0' }}>
-              絞り込み
-            </span>
-            <span style={{ padding: '5px 9px', borderRadius: '999px', backgroundColor: '#fff', border: '1px solid #e2e8f0' }}>
-              並び替え
-            </span>
-          </div>
         </div>
 
       {/* 用途選択ボタン */}
