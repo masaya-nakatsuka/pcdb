@@ -9,6 +9,252 @@ import { fetchPcList } from '../../app/pc-list/fetchPcs'
 import { getPcListUsagePath } from '../../app/pc-list/usageConfig'
 import ImageComponent from './ImageComponent'
 
+const podiumRankStyles = {
+  1: {
+    label: '1位',
+    ribbon: '#f59e0b',
+    border: '#f8c46b',
+    background: 'linear-gradient(180deg, #fffaf0 0%, #ffffff 46%)',
+    minHeight: '448px',
+    imageHeight: '210px',
+  },
+  2: {
+    label: '2位',
+    ribbon: '#64748b',
+    border: '#cbd5e1',
+    background: 'linear-gradient(180deg, #f8fafc 0%, #ffffff 48%)',
+    minHeight: '406px',
+    imageHeight: '170px',
+  },
+  3: {
+    label: '3位',
+    ribbon: '#b45309',
+    border: '#d6b58a',
+    background: 'linear-gradient(180deg, #fff7ed 0%, #ffffff 48%)',
+    minHeight: '386px',
+    imageHeight: '160px',
+  },
+} as const
+
+function TopRankedPcPodium({ pcs }: { pcs: ClientPcWithCpuSpec[] }) {
+  if (pcs.length === 0) {
+    return null
+  }
+
+  const rankedItems = pcs.slice(0, 3).map((pc, index) => ({
+    pc,
+    rank: (index + 1) as 1 | 2 | 3,
+  }))
+  const displayItems = rankedItems.length === 3
+    ? [rankedItems[1], rankedItems[0], rankedItems[2]]
+    : rankedItems
+
+  return (
+    <section style={{ marginBottom: '24px' }}>
+      <h3 style={{
+        margin: '0 0 14px',
+        color: '#111827',
+        fontSize: '18px',
+        fontWeight: 700,
+        textAlign: 'center',
+      }}>
+        上位3モデル
+      </h3>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: rankedItems.length === 1
+            ? 'minmax(280px, 420px)'
+            : rankedItems.length === 2
+              ? 'repeat(2, minmax(280px, 1fr))'
+              : 'minmax(260px, 0.92fr) minmax(320px, 1.1fr) minmax(260px, 0.92fr)',
+          alignItems: 'end',
+          justifyContent: 'center',
+          gap: '16px',
+        }}
+      >
+        {displayItems.map(({ pc, rank }) => {
+          const productLink = pc.af_url || pc.url
+          const rankStyle = podiumRankStyles[rank]
+
+          return (
+            <article
+              key={pc.id}
+              style={{
+                position: 'relative',
+                minHeight: rankStyle.minHeight,
+                border: `1px solid ${rankStyle.border}`,
+                borderRadius: '8px',
+                background: rankStyle.background,
+                boxShadow: rank === 1
+                  ? '0 14px 30px rgba(15, 23, 42, 0.16)'
+                  : '0 8px 18px rgba(15, 23, 42, 0.10)',
+                overflow: 'hidden',
+              }}
+            >
+              <div
+                style={{
+                  position: 'absolute',
+                  top: '12px',
+                  left: '12px',
+                  zIndex: 1,
+                  padding: rank === 1 ? '7px 12px' : '6px 10px',
+                  borderRadius: '999px',
+                  backgroundColor: rankStyle.ribbon,
+                  color: 'white',
+                  fontSize: rank === 1 ? '15px' : '13px',
+                  fontWeight: 800,
+                  lineHeight: 1,
+                  boxShadow: '0 4px 10px rgba(15, 23, 42, 0.18)',
+                }}
+              >
+                {rankStyle.label}
+              </div>
+              <div
+                style={{
+                  height: rankStyle.imageHeight,
+                  padding: rank === 1 ? '28px 22px 10px' : '28px 18px 8px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: 'rgba(255, 255, 255, 0.72)',
+                }}
+              >
+                {pc.img_url ? (
+                  productLink ? (
+                    <a
+                      href={productLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ display: 'block', width: '100%', height: '100%' }}
+                    >
+                      <ImageComponent
+                        src={pc.img_url}
+                        alt={pc.name || 'PC Image'}
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'contain',
+                        }}
+                      />
+                    </a>
+                  ) : (
+                    <ImageComponent
+                      src={pc.img_url}
+                      alt={pc.name || 'PC Image'}
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'contain',
+                      }}
+                    />
+                  )
+                ) : (
+                  <div style={{
+                    width: '100%',
+                    height: '100%',
+                    borderRadius: '6px',
+                    backgroundColor: '#f1f5f9',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#94a3b8',
+                    fontSize: '13px',
+                    fontWeight: 600,
+                  }}>
+                    No Image
+                  </div>
+                )}
+              </div>
+              <div style={{ padding: '14px 16px 16px' }}>
+                <div style={{
+                  marginBottom: '8px',
+                  color: '#0f172a',
+                  fontSize: rank === 1 ? '16px' : '14px',
+                  fontWeight: 800,
+                  lineHeight: 1.35,
+                  minHeight: rank === 1 ? '44px' : '38px',
+                  display: '-webkit-box',
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: 'vertical',
+                  overflow: 'hidden',
+                }}>
+                  {pc.brand} / {pc.name || 'Unnamed PC'}
+                </div>
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+                  gap: '8px',
+                  marginBottom: '12px',
+                }}>
+                  <div style={{
+                    padding: '8px',
+                    borderRadius: '6px',
+                    backgroundColor: '#f8fafc',
+                    border: '1px solid #e2e8f0',
+                  }}>
+                    <div style={{ color: '#64748b', fontSize: '11px', fontWeight: 600 }}>スコア</div>
+                    <div style={{ color: '#0f172a', fontSize: '15px', fontWeight: 800 }}>
+                      {pc.pcScore != null ? `${pc.pcScore}点` : '-'}
+                    </div>
+                  </div>
+                  <div style={{
+                    padding: '8px',
+                    borderRadius: '6px',
+                    backgroundColor: '#f8fafc',
+                    border: '1px solid #e2e8f0',
+                  }}>
+                    <div style={{ color: '#64748b', fontSize: '11px', fontWeight: 600 }}>価格</div>
+                    <div style={{ color: '#dc2626', fontSize: '15px', fontWeight: 800 }}>
+                      {pc.price != null ? `¥${pc.price.toLocaleString()}` : '-'}
+                    </div>
+                  </div>
+                </div>
+                <div style={{
+                  display: 'grid',
+                  gap: '5px',
+                  marginBottom: '14px',
+                  color: '#334155',
+                  fontSize: '12px',
+                  lineHeight: 1.45,
+                }}>
+                  <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    CPU: {pc.cpu || '-'}
+                  </div>
+                  <div>
+                    メモリ: {pc.ram != null ? `${pc.ram}GB` : '-'} / ストレージ: {pc.rom != null ? `${pc.rom}GB` : '-'}
+                  </div>
+                </div>
+                {productLink && (
+                  <a
+                    href={productLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: 'block',
+                      width: '100%',
+                      padding: '9px 12px',
+                      borderRadius: '6px',
+                      backgroundColor: '#ee5a24',
+                      color: 'white',
+                      textAlign: 'center',
+                      textDecoration: 'none',
+                      fontSize: '13px',
+                      fontWeight: 800,
+                    }}
+                  >
+                    詳細を見る
+                  </a>
+                )}
+              </div>
+            </article>
+          )
+        })}
+      </div>
+    </section>
+  )
+}
+
 export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplaySize, initialUsage = 'cafe', urlBasedUsage = false }: PcTableProps) {
   const router = useRouter()
   const [pcs, setPcs] = useState(initialPcs)
@@ -481,49 +727,51 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
       )}
 
       {!loading && (
-        <div
-          style={{
-            position: 'relative',
-            border: '1px solid #dee2e6',
-            borderRadius: '8px',
-            backgroundColor: 'white',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-            overflow: 'hidden'
-          }}
-        >
+        <>
+          <TopRankedPcPodium pcs={pcs} />
           <div
-            ref={scrollContainerRef}
-            className="pc-scroll-container"
             style={{
-              overflowX: 'scroll',
-              overflowY: 'hidden',
-              scrollbarWidth: 'auto',
-              msOverflowStyle: 'auto',
-              WebkitOverflowScrolling: 'touch',
-              scrollbarGutter: 'auto'
+              position: 'relative',
+              border: '1px solid #dee2e6',
+              borderRadius: '8px',
+              backgroundColor: 'white',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+              overflow: 'hidden'
             }}
           >
-            <table
+            <div
+              ref={scrollContainerRef}
+              className="pc-scroll-container"
               style={{
-                borderCollapse: 'collapse',
-                width: '100%',
-                minWidth: '1320px'
+                overflowX: 'scroll',
+                overflowY: 'hidden',
+                scrollbarWidth: 'auto',
+                msOverflowStyle: 'auto',
+                WebkitOverflowScrolling: 'touch',
+                scrollbarGutter: 'auto'
               }}
             >
-              <thead>
-                <tr style={{ backgroundColor: '#f8f9fa' }}>
-                  <th style={{
-                    border: '1px solid #dee2e6',
-                    padding: '12px 8px',
-                    cursor: 'pointer',
-                    backgroundColor: sortOptions.field === 'pcScore' ? '#e9ecef' : 'transparent',
-                    fontWeight: '600',
-                    color: '#495057',
-                    transition: 'background-color 0.2s ease',
-                    minWidth: '100px'
-                  }} onClick={() => handleSortChange('pcScore')}>
-                    スペック評価{getSortIcon('pcScore')}
-                  </th>
+              <table
+                style={{
+                  borderCollapse: 'collapse',
+                  width: '100%',
+                  minWidth: '1320px'
+                }}
+              >
+                <thead>
+                  <tr style={{ backgroundColor: '#f8f9fa' }}>
+                    <th style={{
+                      border: '1px solid #dee2e6',
+                      padding: '12px 8px',
+                      cursor: 'pointer',
+                      backgroundColor: sortOptions.field === 'pcScore' ? '#e9ecef' : 'transparent',
+                      fontWeight: '600',
+                      color: '#495057',
+                      transition: 'background-color 0.2s ease',
+                      minWidth: '100px'
+                    }} onClick={() => handleSortChange('pcScore')}>
+                      スペック評価{getSortIcon('pcScore')}
+                    </th>
                   <th style={{
                     border: '1px solid #dee2e6',
                     padding: '12px 8px',
@@ -864,6 +1112,7 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
             />
           )}
         </div>
+        </>
       )}
       <style jsx>{`
         .pc-scroll-container {
