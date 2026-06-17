@@ -107,6 +107,12 @@ export const blogArticles: ArticleMetadata[] = [
     date: '2026-06-17',
   },
   {
+    id: 49,
+    title: '11インチ以下のAmazonミニノートPC 2026｜超小型をPC-DB比較',
+    description: '11インチ以下のAmazonミニノートPCを、画面サイズ、重量、CPU型番、メモリ、SSD、価格、推定駆動時間からPC-DBで比較する記事。',
+    date: '2026-06-17',
+  },
+  {
     id: 28,
     title: '軽量モバイルノートおすすめ 2026｜PC-DBで持ち運びやすさを比較',
     description: '軽量モバイルノートを重量、CPU型番、メモリ、SSD、推定駆動時間、価格からPC-DBで比較。',
