@@ -23,6 +23,12 @@ export const blogArticles: ArticleMetadata[] = [
     date: '2026-06-17',
   },
   {
+    id: 40,
+    title: '5万円以下で選ぶAmazon PC 2026｜激安PCをPC-DBで比較',
+    description: '5万円以下のAmazon PCを、価格だけでなくCPU型番、メモリ、SSD、GPU、推定駆動時間からPC-DBで比較する記事。',
+    date: '2026-06-17',
+  },
+  {
     id: 39,
     title: '15万円以下で選ぶAmazon PC 2026｜CPU・GPUまでPC-DB比較',
     description: '15万円以下のAmazon PCを、CPU型番、GPU、メモリ、SSD、推定駆動時間、用途別スコアからPC-DBで比較する記事。',
