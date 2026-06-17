@@ -1,39 +1,15 @@
 'use client'
 
-import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { fetchPcList } from './fetchPcs'
 import { ClientPcWithCpuSpec, ClientUsageCategory } from '../../components/types'
 import ClientPcList from './ClientPcList'
+import PcListHeader from './PcListHeader'
 
 interface UsagePcListPageClientProps {
   usage: ClientUsageCategory
   heading: string
   description: string
-}
-
-function BackLink() {
-  return (
-    <Link
-      href="/"
-      style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        color: '#2563eb',
-        fontWeight: '600',
-        textDecoration: 'none',
-        transition: 'color 0.2s'
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.color = '#1d4ed8'
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.color = '#2563eb'
-      }}
-    >
-      ← ホームに戻る
-    </Link>
-  )
 }
 
 export default function UsagePcListPageClient({ usage, heading, description }: UsagePcListPageClientProps) {
@@ -69,23 +45,7 @@ export default function UsagePcListPageClient({ usage, heading, description }: U
         color: '#1f2937',
       }}
     >
-      <div
-        style={{
-          backgroundColor: '#ffffff',
-          borderBottom: '1px solid #e2e8f0',
-          boxShadow: '0 8px 24px rgba(148, 163, 184, 0.15)',
-        }}
-      >
-        <div
-          style={{
-            maxWidth: '1280px',
-            margin: '0 auto',
-            padding: '16px',
-          }}
-        >
-          <BackLink />
-        </div>
-      </div>
+      <PcListHeader />
 
       <main>
         <section
