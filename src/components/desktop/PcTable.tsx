@@ -507,7 +507,7 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
               style={{
                 borderCollapse: 'collapse',
                 width: '100%',
-                minWidth: '1220px'
+                minWidth: '1320px'
               }}
             >
               <thead>
@@ -619,7 +619,7 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
                     fontWeight: '600',
                     color: '#495057',
                     transition: 'background-color 0.2s ease',
-                    minWidth: '145px'
+                    minWidth: '220px'
                   }} onClick={() => handleSortChange('estimatedBatteryLifeHours')}>
                     駆動時間目安{getSortIcon('estimatedBatteryLifeHours')}
                   </th>
@@ -745,22 +745,47 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
                       </td>
                       <td style={{border: '1px solid #ddd', padding: '8px', fontSize: '12px'}}>
                         {batteryLifeRows.length > 0 ? (
-                          <div style={{ display: 'grid', gap: '3px' }}>
-                            {batteryLifeRows.map(({ key, label, value }) => (
+                          <div
+                            style={{
+                              display: 'grid',
+                              gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
+                              border: '1px solid #e2e8f0',
+                              borderRadius: '4px',
+                              overflow: 'hidden',
+                              textAlign: 'center',
+                              minWidth: '200px',
+                            }}
+                          >
+                            {batteryLifeRows.map(({ key, label }, index) => (
                               <div
                                 key={key}
                                 style={{
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'space-between',
-                                  gap: '8px',
+                                  padding: '3px 4px',
+                                  backgroundColor: '#f8fafc',
+                                  color: '#64748b',
+                                  fontSize: '10px',
+                                  fontWeight: 600,
+                                  borderRight: index < batteryLifeRows.length - 1 ? '1px solid #e2e8f0' : 'none',
                                   whiteSpace: 'nowrap',
                                 }}
                               >
-                                <span style={{ color: '#64748b' }}>{label}</span>
-                                <span style={{ fontWeight: 700, color: '#0f172a' }}>
-                                  {value}
-                                </span>
+                                {label}
+                              </div>
+                            ))}
+                            {batteryLifeRows.map(({ key, value }, index) => (
+                              <div
+                                key={`${key}-value`}
+                                style={{
+                                  padding: '4px',
+                                  borderTop: '1px solid #e2e8f0',
+                                  borderRight: index < batteryLifeRows.length - 1 ? '1px solid #e2e8f0' : 'none',
+                                  color: '#0f172a',
+                                  fontSize: '12px',
+                                  fontWeight: 700,
+                                  whiteSpace: 'nowrap',
+                                }}
+                              >
+                                {value}
                               </div>
                             ))}
                           </div>
