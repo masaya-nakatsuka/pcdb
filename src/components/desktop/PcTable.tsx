@@ -446,13 +446,54 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
 
   return (
     <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '20px' }}>
+      <section
+        style={{
+          marginBottom: '28px',
+          padding: '18px',
+          border: '1px solid #dbe4ef',
+          borderRadius: '8px',
+          backgroundColor: '#f8fafc',
+          boxShadow: '0 1px 3px rgba(15, 23, 42, 0.06)',
+        }}
+      >
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '12px',
+          marginBottom: '18px',
+          flexWrap: 'wrap',
+        }}>
+          <h2 style={{ fontSize: '18px', color: '#0f172a', margin: 0, fontWeight: 800 }}>
+            ランキング条件
+          </h2>
+          <div style={{
+            display: 'flex',
+            gap: '8px',
+            flexWrap: 'wrap',
+            color: '#475569',
+            fontSize: '12px',
+            fontWeight: 700,
+          }}>
+            <span style={{ padding: '5px 9px', borderRadius: '999px', backgroundColor: '#fff', border: '1px solid #e2e8f0' }}>
+              用途
+            </span>
+            <span style={{ padding: '5px 9px', borderRadius: '999px', backgroundColor: '#fff', border: '1px solid #e2e8f0' }}>
+              絞り込み
+            </span>
+            <span style={{ padding: '5px 9px', borderRadius: '999px', backgroundColor: '#fff', border: '1px solid #e2e8f0' }}>
+              並び替え
+            </span>
+          </div>
+        </div>
+
       {/* 用途選択ボタン */}
-      <div style={{ marginBottom: '24px' }}>
-        <h2 style={{ fontSize: '18px', color: '#333', marginBottom: '16px', textAlign: 'center' }}>用途を選択</h2>
+      <div style={{ marginBottom: '20px' }}>
+        <h3 style={{ fontSize: '14px', color: '#334155', marginBottom: '12px', textAlign: 'left' }}>用途を選択</h3>
         <div style={{ 
           display: 'flex', 
-          gap: '16px',
-          justifyContent: 'center',
+          gap: '12px',
+          justifyContent: 'flex-start',
           flexWrap: 'wrap'
         }}>
           <button 
@@ -579,11 +620,11 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
 
       {/* フィルター */}
       <div style={{
-        marginBottom: '20px',
+        marginBottom: '18px',
         display: 'flex',
         gap: '16px',
         flexWrap: 'wrap',
-        justifyContent: 'center'
+        justifyContent: 'flex-start'
       }}>
         <div
           style={{
@@ -662,13 +703,13 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
       </div>
 
       {/* ソート機能 */}
-      <div style={{ marginBottom: '24px' }}>
-        <h3 style={{ fontSize: '16px', color: '#333', marginBottom: '16px', textAlign: 'center' }}>並び替え</h3>
+      <div>
+        <h3 style={{ fontSize: '14px', color: '#334155', marginBottom: '12px', textAlign: 'left' }}>並び替え</h3>
         <div style={{
           display: 'flex',
           flexWrap: 'wrap',
           gap: '12px',
-          justifyContent: 'center'
+          justifyContent: 'flex-start'
         }}>
           {[
             { field: 'pcScore' as ClientSortField, label: 'スコア' },
@@ -712,6 +753,7 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
           })}
         </div>
       </div>
+      </section>
 
       {loading && (
         <div style={{
@@ -729,49 +771,82 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
       {!loading && (
         <>
           <TopRankedPcPodium pcs={pcs} />
-          <div
+          <section
             style={{
-              position: 'relative',
-              border: '1px solid #dee2e6',
+              padding: '18px',
+              border: '1px solid #d9e2ec',
               borderRadius: '8px',
-              backgroundColor: 'white',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-              overflow: 'hidden'
+              backgroundColor: '#ffffff',
+              boxShadow: '0 2px 10px rgba(15, 23, 42, 0.08)',
             }}
           >
             <div
-              ref={scrollContainerRef}
-              className="pc-scroll-container"
               style={{
-                overflowX: 'scroll',
-                overflowY: 'hidden',
-                scrollbarWidth: 'auto',
-                msOverflowStyle: 'auto',
-                WebkitOverflowScrolling: 'touch',
-                scrollbarGutter: 'auto'
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: '12px',
+                marginBottom: '14px',
+                flexWrap: 'wrap',
               }}
             >
-              <table
+              <h3 style={{ margin: 0, color: '#0f172a', fontSize: '18px', fontWeight: 800 }}>
+                全モデル比較
+              </h3>
+              <span style={{
+                padding: '5px 10px',
+                borderRadius: '999px',
+                backgroundColor: '#f8fafc',
+                border: '1px solid #e2e8f0',
+                color: '#475569',
+                fontSize: '12px',
+                fontWeight: 700,
+              }}>
+                {pcs.length}件
+              </span>
+            </div>
+            <div
+              style={{
+                position: 'relative',
+                border: '1px solid #dee2e6',
+                borderRadius: '8px',
+                backgroundColor: 'white',
+                overflow: 'hidden'
+              }}
+            >
+              <div
+                ref={scrollContainerRef}
+                className="pc-scroll-container"
                 style={{
-                  borderCollapse: 'collapse',
-                  width: '100%',
-                  minWidth: '1320px'
+                  overflowX: 'scroll',
+                  overflowY: 'hidden',
+                  scrollbarWidth: 'auto',
+                  msOverflowStyle: 'auto',
+                  WebkitOverflowScrolling: 'touch',
+                  scrollbarGutter: 'auto'
                 }}
               >
-                <thead>
-                  <tr style={{ backgroundColor: '#f8f9fa' }}>
-                    <th style={{
-                      border: '1px solid #dee2e6',
-                      padding: '12px 8px',
-                      cursor: 'pointer',
-                      backgroundColor: sortOptions.field === 'pcScore' ? '#e9ecef' : 'transparent',
-                      fontWeight: '600',
-                      color: '#495057',
-                      transition: 'background-color 0.2s ease',
-                      minWidth: '100px'
-                    }} onClick={() => handleSortChange('pcScore')}>
-                      スペック評価{getSortIcon('pcScore')}
-                    </th>
+                <table
+                  style={{
+                    borderCollapse: 'collapse',
+                    width: '100%',
+                    minWidth: '1320px'
+                  }}
+                >
+                  <thead>
+                    <tr style={{ backgroundColor: '#f8f9fa' }}>
+                      <th style={{
+                        border: '1px solid #dee2e6',
+                        padding: '12px 8px',
+                        cursor: 'pointer',
+                        backgroundColor: sortOptions.field === 'pcScore' ? '#e9ecef' : 'transparent',
+                        fontWeight: '600',
+                        color: '#495057',
+                        transition: 'background-color 0.2s ease',
+                        minWidth: '100px'
+                      }} onClick={() => handleSortChange('pcScore')}>
+                        スペック評価{getSortIcon('pcScore')}
+                      </th>
                   <th style={{
                     border: '1px solid #dee2e6',
                     padding: '12px 8px',
@@ -1116,6 +1191,7 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
             />
           )}
         </div>
+        </section>
         </>
       )}
       <style jsx>{`
