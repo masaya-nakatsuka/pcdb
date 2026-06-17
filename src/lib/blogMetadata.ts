@@ -23,6 +23,12 @@ export const blogArticles: ArticleMetadata[] = [
     date: '2026-06-17',
   },
   {
+    id: 39,
+    title: '15万円以下で選ぶAmazon PC 2026｜CPU・GPUまでPC-DB比較',
+    description: '15万円以下のAmazon PCを、CPU型番、GPU、メモリ、SSD、推定駆動時間、用途別スコアからPC-DBで比較する記事。',
+    date: '2026-06-17',
+  },
+  {
     id: 36,
     title: 'CPU型番で選ぶAmazon PC 2026｜Core i5/Ryzen 5の世代差をPC-DB比較',
     description: 'Core i5やRyzen 5の名前だけで判断せず、詳細CPU型番・価格・メモリ・SSDをSpecsyのPC-DBで比較する記事。',
