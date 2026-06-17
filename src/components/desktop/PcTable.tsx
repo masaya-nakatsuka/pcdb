@@ -952,7 +952,11 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
                               href={productLink}
                               target="_blank"
                               rel="noopener noreferrer"
-                              style={{ color: '#333', textDecoration: 'none' }}
+                              style={{
+                                color: '#2563eb',
+                                textDecoration: 'underline',
+                                textUnderlineOffset: '2px',
+                              }}
                             >
                               {pc.brand} / {pc.name || 'Unnamed PC'}
                             </a>
