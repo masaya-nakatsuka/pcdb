@@ -1,7 +1,7 @@
 'use server'
 
 import { fetchAllPcs } from '../infra/pcRepository'
-import { cpuPowerMap } from '../infra/data/cpuSpecMap'
+import { resolveCpuSpec } from '../infra/data/cpuSpecMap'
 import { PcWithCpuSpec } from '../domain/models/pc'
 import { ServerUsageCategory as UsageCategory } from '../types'
 import { calculateBatteryLifeProfiles } from '../utils/powerCalculations'
@@ -11,7 +11,7 @@ export async function fetchPcList(usageCategory: UsageCategory = 'cafe'): Promis
   const supabasePcs = await fetchAllPcs()
   
   const pcsWithCalculations = supabasePcs.map((pc) => {
-    const cpuSpec = cpuPowerMap[pc.cpu ?? ''] ?? null
+    const cpuSpec = resolveCpuSpec(pc.cpu)
     
     const batteryLifeProfiles = (cpuSpec?.tdpW && pc.display_size && pc.battery_wh_normalized)
       ? calculateBatteryLifeProfiles({
