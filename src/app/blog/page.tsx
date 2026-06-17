@@ -3,7 +3,7 @@
 import BlogCard from '../../components/blog/BlogCard'
 import { blogStyles } from '../../components/blog/BlogLayout'
 import BlogNavLink from '../../components/blog/BlogNavLink'
-import { blogArticles } from '../../lib/blogMetadata'
+import { listedBlogArticles } from '../../lib/blogMetadata'
 
 export default function BlogPage() {
   return (
@@ -41,7 +41,7 @@ export default function BlogPage() {
           display: 'grid',
           gap: '24px'
         }}>
-          {blogArticles.map((article) => (
+          {listedBlogArticles.map((article) => (
             <BlogCard
               key={article.id}
               id={article.id}
