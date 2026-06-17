@@ -8,6 +8,7 @@ export default async function Article35Page() {
 
   return (
     <PcDbArticle
+      articlePath="/blog/article35"
       title="動画編集向けノートPC比較 2026｜CPU・GPU・メモリをPC-DBで見る"
       date="2026-06-17"
       usage="video_editing"

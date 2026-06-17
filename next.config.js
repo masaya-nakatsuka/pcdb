@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
-const legacyCostPerformanceArticles = [1, 2, 3, 6, 11, 21, 22]
+const legacyCostPerformanceArticles = [1, 6, 11, 21, 22]
+const legacyCpuArticles = [2, 3]
 const legacyMobileArticles = [4, 5, 7, 8, 9, 10, 12, 13, 14, 15, 19, 26, 27]
 const legacyVideoEditingArticles = [16, 20]
 const legacyGamingArticles = [17]
@@ -17,6 +18,7 @@ const nextConfig = {
   async redirects() {
     return [
       ...blogRedirects(legacyCostPerformanceArticles, '/blog/article33'),
+      ...blogRedirects(legacyCpuArticles, '/blog/article36'),
       ...blogRedirects(legacyGamingArticles, '/blog/article34'),
       ...blogRedirects(legacyVideoEditingArticles, '/blog/article35'),
       ...blogRedirects(legacyMobileArticles, '/blog/article28'),

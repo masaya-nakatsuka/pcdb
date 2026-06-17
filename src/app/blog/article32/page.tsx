@@ -1,100 +1,52 @@
-'use client'
+import PcDbArticle from '@/components/blog/PcDbArticle'
+import { fetchPcList } from '@/server/usecase/fetchPcList'
+import type { ServerPcWithCpuSpec } from '@/server/types'
 
-import { useEffect, useState } from 'react'
-import BlogLayout from '../../../components/blog/BlogLayout'
-import {
-  BlogArticle,
-  BlogContent,
-  BlogSection,
-  BlogParagraph,
-  BlogList,
-  BlogCallout
-} from '@/components/blog/BlogArticle'
-import ClientPcList from '../../pc-list/ClientPcList'
-import { fetchPcList } from '../../pc-list/fetchPcs'
-import type { ClientPcWithCpuSpec } from '../../../components/types'
+export const dynamic = 'force-dynamic'
 
-export default function Article32Page() {
-  const [pcs, setPcs] = useState<ClientPcWithCpuSpec[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+function filterMiniCpuPcs(pcs: ServerPcWithCpuSpec[], cpuName: string) {
+  const target = cpuName.toLowerCase()
+  return pcs.filter((pc) => (
+    (pc.cpu || '').toLowerCase().includes(target) &&
+    pc.display_size !== null &&
+    pc.display_size <= 13.5
+  ))
+}
 
-  useEffect(() => {
-    setIsLoading(true)
-    fetchPcList('mobile')
-      .then((data) => {
-        if (!Array.isArray(data)) {
-          setError('データの形式が正しくありません')
-          return
-        }
-
-        setPcs(data)
-        setError(null)
-      })
-      .catch((e: any) => {
-        setError(e?.message || 'PC一覧の取得に失敗しました')
-      })
-      .finally(() => {
-        setIsLoading(false)
-      })
-  }, [])
+export default async function Article32Page() {
+  const pcs = filterMiniCpuPcs(await fetchPcList('mobile'), 'N95')
 
   return (
-    <BlogLayout>
-      <BlogArticle
-        title={'Amazonで販売しているN95CPU搭載ミニノートPC一覧 2025｜モバイル性重視'}
-        date={'2025-09-10'}
-      >
-        <BlogContent>
-          <BlogParagraph>
-            インテルN95はエントリー機ながらN100よりもわずかに高いクロックで、普段使いをもう一段スムーズにしたい人に人気のCPUです。13インチ前後のミニノートと組み合わせると、軽さ・省電力・十分な処理性能のバランスが良く、外出先の作業にも対応しやすくなります。本ページでは当サイトのモバイルカテゴリを読み込み、CPUに「N95」、画面サイズに「13.5インチ以下」のフィルターを適用した状態で一覧を表示しています。
-          </BlogParagraph>
-
-          <BlogSection title="ポイント｜N95×ミニノートを選ぶ基準">
-            <BlogList>
-              <li>CPU：Intel N95を搭載（4コアでN100比のクロック向上、日常作業がより軽快）</li>
-              <li>筐体：13.5インチ以下を目安に“持ち運びやすさ”とバッテリー持ちを確保</li>
-              <li>快適性：メモリ8GBは必須、可能なら16GBでブラウジングや資料作成を快適に</li>
-            </BlogList>
-          </BlogSection>
-
-          <BlogSection title="用途の目安">
-            <BlogParagraph>
-              ブラウジングやOffice系作業、リモート会議といった用途はN95で快適にこなせます。軽めの写真編集や多タブ操作でもN100より余裕がありますが、重量級アプリは苦手なので“サブノート”または持ち歩き用のメイン機として割り切るのがコツです。
-            </BlogParagraph>
-            <BlogList>
-              <li>外出先での資料作成・会議ノート</li>
-              <li>学習用途やプログラミング入門用のモバイル端末</li>
-              <li>自宅でのセカンドPC（リビング利用や家族共用）</li>
-            </BlogList>
-          </BlogSection>
-
-          <BlogSection title="N95搭載ミニノート一覧">
-            <BlogParagraph>
-              以下は条件に合致したモデルの最新リストです。価格や在庫は日々変動するため、詳細リンクからAmazonの最新情報をご確認ください。
-            </BlogParagraph>
-            {isLoading ? (
-              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '200px', gap: '12px' }}>
-                <div style={{ width: '28px', height: '28px', border: '3px solid #f3f3f3', borderTop: '3px solid #3b82f6', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
-                <span style={{ color: '#6b7280', fontSize: '14px' }}>PCデータを読み込み中...</span>
-                <style jsx>{`
-                  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-                `}</style>
-              </div>
-            ) : error ? (
-              <div style={{ padding: '12px', color: 'red', textAlign: 'center' }}>エラー: {error}</div>
-            ) : pcs.length === 0 ? (
-              <div style={{ padding: '12px', textAlign: 'center', color: '#6b7280' }}>
-                現在表示できるPCがありません。データ更新までお待ちください。
-              </div>
-            ) : (
-              <div style={{ marginTop: '12px' }}>
-                <ClientPcList pcs={pcs} defaultCpu="N95" defaultMaxDisplaySize={13.5} />
-              </div>
-            )}
-          </BlogSection>
-        </BlogContent>
-      </BlogArticle>
-    </BlogLayout>
+    <PcDbArticle
+      articlePath="/blog/article32"
+      title="Amazon N95ミニノートPC一覧 2026｜低価格モバイルPCをDB比較"
+      date="2026-06-17"
+      usage="mobile"
+      listHref="/pc-list/mobile"
+      listLabel="軽量モバイルPCランキングを見る"
+      lead="Intel N95搭載ミニノートは、低価格帯で見かけることが多いCPUです。N100/N150と同じように普段使い向けですが、実際の満足度はメモリ、SSD、画面サイズ、重量、バッテリーで変わります。SpecsyのPC-DBからN95かつ13.5インチ以下の候補を抽出して比較します。"
+      conclusionTitle="結論｜N95は価格重視、ただし8GB/256GBには注意"
+      conclusion="N95搭載機は低価格で候補に入りやすい一方、メモリやSSDを削った構成もあります。価格だけで判断せず、16GBメモリ、SSD512GB以上、推定駆動時間、重量を同時に確認すると失敗しにくいです。"
+      criteriaTitle="N95ミニノートで優先する基準"
+      criteria={[
+        '価格重視の軽作業用として候補にする',
+        'メモリ8GBは用途を絞り、長期利用なら16GBを優先する',
+        'SSD256GBは容量不足になりやすいため、512GB以上を優先する',
+        '画面サイズが小さくても重量や電池持ちはモデル差があるため、DBで確認する',
+      ]}
+      dataAngleTitle="このサイト特有の見方"
+      dataAngle="SpecsyはN95搭載機をPC-DBから抽出し、CPU名だけでなく、メモリ、SSD、価格、推定駆動時間、モバイル用途スコアを同じ表で確認できます。低価格モデルほど、構成差を見える化する価値が高くなります。"
+      faq={[
+        {
+          question: 'N95とN100はどちらがいいですか？',
+          answer: '用途が軽作業中心ならどちらも候補です。価格差、メモリ、SSD、重量、推定駆動時間を比べ、構成が良い方を選ぶのが現実的です。',
+        },
+        {
+          question: 'N95搭載PCは長く使えますか？',
+          answer: '16GBメモリと512GB SSDがあれば軽作業用として長く使いやすいです。8GB/256GBは用途を絞ったサブPC向けと考えるのが無難です。',
+        },
+      ]}
+      pcs={pcs}
+    />
   )
 }

@@ -1,100 +1,52 @@
-'use client'
+import PcDbArticle from '@/components/blog/PcDbArticle'
+import { fetchPcList } from '@/server/usecase/fetchPcList'
+import type { ServerPcWithCpuSpec } from '@/server/types'
 
-import { useEffect, useState } from 'react'
-import BlogLayout from '../../../components/blog/BlogLayout'
-import {
-  BlogArticle,
-  BlogContent,
-  BlogSection,
-  BlogParagraph,
-  BlogList,
-  BlogCallout
-} from '@/components/blog/BlogArticle'
-import ClientPcList from '../../pc-list/ClientPcList'
-import { fetchPcList } from '../../pc-list/fetchPcs'
-import type { ClientPcWithCpuSpec } from '../../../components/types'
+export const dynamic = 'force-dynamic'
 
-export default function Article30Page() {
-  const [pcs, setPcs] = useState<ClientPcWithCpuSpec[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+function filterMiniCpuPcs(pcs: ServerPcWithCpuSpec[], cpuName: string) {
+  const target = cpuName.toLowerCase()
+  return pcs.filter((pc) => (
+    (pc.cpu || '').toLowerCase().includes(target) &&
+    pc.display_size !== null &&
+    pc.display_size <= 13.5
+  ))
+}
 
-  useEffect(() => {
-    setIsLoading(true)
-    fetchPcList('mobile')
-      .then((data) => {
-        if (!Array.isArray(data)) {
-          setError('データの形式が正しくありません')
-          return
-        }
-
-        setPcs(data)
-        setError(null)
-      })
-      .catch((e: any) => {
-        setError(e?.message || 'PC一覧の取得に失敗しました')
-      })
-      .finally(() => {
-        setIsLoading(false)
-      })
-  }, [])
+export default async function Article30Page() {
+  const pcs = filterMiniCpuPcs(await fetchPcList('mobile'), 'N100')
 
   return (
-    <BlogLayout>
-      <BlogArticle
-        title={'Amazonで販売しているN100CPU搭載ミニノートPC一覧 2025｜モバイル性重視'}
-        date={'2025-09-10'}
-      >
-        <BlogContent>
-          <BlogParagraph>
-            N100世代は「普段使いに十分な速さ × 低消費電力」が魅力。13インチ前後のミニノートと組み合わせると、手軽さとバッテリー持ちのバランスが際立ちます。本ページでは、当サイトのモバイルカテゴリを読み込み、CPU に「N100」、画面サイズに「13.5インチ以下」のフィルターを適用した状態で一覧を表示しています。
-          </BlogParagraph>
-
-          <BlogSection title="ポイント｜N100×ミニノートを選ぶ基準">
-            <BlogList>
-              <li>CPU：Intel N100を搭載していること（4コアで普段使いが軽快）</li>
-              <li>筐体：13.5インチ以下を目安に“持ち運びやすさ”を確保</li>
-              <li>快適性：メモリ8GB以上、可能なら16GBでタブ多用にも備える</li>
-            </BlogList>
-          </BlogSection>
-
-          <BlogSection title="用途の目安">
-            <BlogParagraph>
-              ブラウジング、Office系、リモート会議、学習用途までならN100で快適。動画編集や大型アプリの常用は得意ではないため、用途を限定した“サブノート”として割り切るのがコツです。
-            </BlogParagraph>
-            <BlogList>
-              <li>外出先での作業メモやドキュメント作成</li>
-              <li>学習/資格勉強用の持ち歩きマシン</li>
-              <li>自宅のセカンドPC（リビング利用や子ども用）</li>
-            </BlogList>
-          </BlogSection>
-
-          <BlogSection title="N100搭載ミニノート一覧">
-            <BlogParagraph>
-              以下は条件に合致したモデルの最新リストです。価格や在庫は日々変動するため、詳細リンクからAmazonの最新情報をご確認ください。
-            </BlogParagraph>
-            {isLoading ? (
-              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '200px', gap: '12px' }}>
-                <div style={{ width: '28px', height: '28px', border: '3px solid #f3f3f3', borderTop: '3px solid #3b82f6', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
-                <span style={{ color: '#6b7280', fontSize: '14px' }}>PCデータを読み込み中...</span>
-                <style jsx>{`
-                  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-                `}</style>
-              </div>
-            ) : error ? (
-              <div style={{ padding: '12px', color: 'red', textAlign: 'center' }}>エラー: {error}</div>
-            ) : pcs.length === 0 ? (
-              <div style={{ padding: '12px', textAlign: 'center', color: '#6b7280' }}>
-                現在表示できるPCがありません。データ更新までお待ちください。
-              </div>
-            ) : (
-              <div style={{ marginTop: '12px' }}>
-                <ClientPcList pcs={pcs} defaultCpu="N100" defaultMaxDisplaySize={13.5} />
-              </div>
-            )}
-          </BlogSection>
-        </BlogContent>
-      </BlogArticle>
-    </BlogLayout>
+    <PcDbArticle
+      articlePath="/blog/article30"
+      title="Amazon N100ミニノートPC一覧 2026｜PC-DBでモバイル性を比較"
+      date="2026-06-17"
+      usage="mobile"
+      listHref="/pc-list/mobile"
+      listLabel="軽量モバイルPCランキングを見る"
+      lead="Intel N100搭載のミニノートは、低価格で普段使いしやすい一方、メモリやSSD、画面サイズ、バッテリーで差が出ます。SpecsyのPC-DBからN100かつ13.5インチ以下の候補を抽出して比較します。"
+      conclusionTitle="結論｜N100は軽作業用として、メモリとSSDを優先する"
+      conclusion="N100は文書作成、ブラウジング、動画視聴には十分なことが多いですが、長く使うならメモリ16GBとSSD512GB以上を優先した方が安心です。安さだけでなく、推定駆動時間と重量も一緒に確認してください。"
+      criteriaTitle="N100ミニノートで優先する基準"
+      criteria={[
+        'CPUはN100搭載で、用途は文書作成・ブラウジング・動画視聴中心に考える',
+        'メモリは可能なら16GB、8GBは軽作業専用として割り切る',
+        'SSDは512GB以上が扱いやすく、256GBはクラウド保存前提で選ぶ',
+        '13.5インチ以下でも重量と推定駆動時間に差があるため、一覧で比較する',
+      ]}
+      dataAngleTitle="このサイト特有の見方"
+      dataAngle="SpecsyではN100搭載機だけをPC-DBから抽出し、同じ用途スコアで比較できます。N100というCPU名だけでなく、メモリ、SSD、価格、推定駆動時間を同時に見ることで、安いだけのモデルを避けやすくなります。"
+      faq={[
+        {
+          question: 'N100はメインPCとして使えますか？',
+          answer: '文書作成やブラウジング中心なら使えます。ただし動画編集、3Dゲーム、多数のアプリ同時利用を想定するならCore i5やRyzen 5以上も比較してください。',
+        },
+        {
+          question: 'N100とN150ではどちらを選ぶべきですか？',
+          answer: '価格差が小さければN150も候補です。ただし体感差はメモリやSSDの影響も大きいため、CPUだけで決めず構成全体を見てください。',
+        },
+      ]}
+      pcs={pcs}
+    />
   )
 }

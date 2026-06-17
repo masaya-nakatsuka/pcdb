@@ -8,6 +8,7 @@ export default async function Article34Page() {
 
   return (
     <PcDbArticle
+      articlePath="/blog/article34"
       title="ゲーム向けPCランキング 2026｜GPU・CPU・価格をPC-DBで比較"
       date="2026-06-17"
       usage="gaming"

@@ -8,6 +8,7 @@ export default async function Article33Page() {
 
   return (
     <PcDbArticle
+      articlePath="/blog/article33"
       title="Amazon PCコスパランキング 2026｜実売価格と性能スコアで選ぶ"
       date="2026-06-17"
       usage="cost_performance"

@@ -1,118 +1,42 @@
-'use client'
+import PcDbArticle from '@/components/blog/PcDbArticle'
+import { fetchPcList } from '@/server/usecase/fetchPcList'
 
-import BlogLayout from '../../../components/blog/BlogLayout'
-import { BlogArticle, BlogContent, BlogSection, BlogParagraph, BlogList, BlogTable, BlogTableHeader, BlogTableCell, BlogTableRow, BlogTableBody } from '@/components/blog/BlogArticle'
-import { useEffect, useState } from 'react'
-import ClientPcList from '../../pc-list/ClientPcList'
-import { fetchPcList } from '../../pc-list/fetchPcs'
-import type { ClientPcWithCpuSpec } from '../../../components/types'
+export const dynamic = 'force-dynamic'
 
-export default function Article28Page() {
-  const [pcs, setPcs] = useState<ClientPcWithCpuSpec[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    setIsLoading(true)
-    // 記事方針に合わせて「mobile」重みで一覧を提示
-    fetchPcList('mobile')
-      .then((data) => {
-        if (Array.isArray(data)) {
-          setPcs(data)
-        } else {
-          setError('データの形式が正しくありません')
-        }
-      })
-      .catch((e: any) => setError(e?.message || 'PC一覧の取得に失敗しました'))
-      .finally(() => setIsLoading(false))
-  }, [])
+export default async function Article28Page() {
+  const pcs = await fetchPcList('mobile')
 
   return (
-    <BlogLayout>
-      <BlogArticle 
-        title={'軽量モバイルノート おすすめ 2025｜“持続×軽さ×実用”の最適点'}
-        date={'2025-08-31'}
-      >
-        <BlogContent>
-          <BlogParagraph>
-            通学・通勤やカフェ学習、移動の多い働き方に効くのは「軽くて、十分に速く、長く持つ」こと。数値で語れる現実基準に沿って、軽量モバイルの最適解を整理します。
-          </BlogParagraph>
-
-          <BlogSection title="結論｜“1.3kg以下・推定8〜10時間・16GB/512GB”がまず安心">
-            <BlogParagraph>
-              迷ったらこの3点。持ち運び負担を抑えつつ、日常の待ち時間をなくし、電源の心配を減らします。価格は10〜15万円帯が満足度の上がり目安です。
-            </BlogParagraph>
-          </BlogSection>
-
-          <BlogSection title="用途別の現実的な構成目安（推定）">
-            <BlogParagraph>
-              体感差に直結する“重さ・メモリ・SSD・バッテリー”を軸に、用途別の目安を示します。いずれも目安で、予算や好みに応じて調整可能です。
-            </BlogParagraph>
-
-            <BlogTable>
-              <BlogTableHeader>
-                <BlogTableCell isHeader>用途</BlogTableCell>
-                <BlogTableCell isHeader>よくある作業</BlogTableCell>
-                <BlogTableCell isHeader>目安スペック</BlogTableCell>
-              </BlogTableHeader>
-              <BlogTableBody>
-                <BlogTableRow>
-                  <BlogTableCell>通学・講義メモ</BlogTableCell>
-                  <BlogTableCell>ノート取り/資料閲覧/ブラウジング</BlogTableCell>
-                  <BlogTableCell>1.3kg以下/16GB/256-512GB/推定8-10時間</BlogTableCell>
-                </BlogTableRow>
-                <BlogTableRow>
-                  <BlogTableCell>カフェ学習・外出作業</BlogTableCell>
-                  <BlogTableCell>文書作成/表計算/会議</BlogTableCell>
-                  <BlogTableCell>1.2-1.3kg/16GB/512GB/推定9-12時間</BlogTableCell>
-                </BlogTableRow>
-                <BlogTableRow>
-                  <BlogTableCell>軽い画像編集</BlogTableCell>
-                  <BlogTableCell>RAW整理/簡易補正/素材選定</BlogTableCell>
-                  <BlogTableCell>〜1.4kg/16-32GB/512GB以上/外部モニター併用</BlogTableCell>
-                </BlogTableRow>
-              </BlogTableBody>
-            </BlogTable>
-          </BlogSection>
-
-          <BlogSection title="選び方｜後悔しない3つの観点">
-            <BlogList>
-              <li>重量：毎日持ち運ぶなら1.2〜1.3kg以下が負担減</li>
-              <li>待ち時間：メモリ16GB/SSD512GBで体感の速さを確保</li>
-              <li>持ち時間：推定8〜10時間で電源探しのストレスを回避</li>
-            </BlogList>
-          </BlogSection>
-
-          <BlogSection title="価格感｜満足度が伸びるライン">
-            <BlogParagraph>
-              10万円前後で“軽くて十分速い”構成。12〜15万円で筐体品質や静音の精度が上がり、通年の安心感が高まります。
-            </BlogParagraph>
-          </BlogSection>
-
-          <BlogSection title="次のアクション">
-            <BlogParagraph>
-              総合スコア順の上位から、重量と推定駆動時間のバランスで3台に絞り、最後は価格で決めましょう。
-            </BlogParagraph>
-            {isLoading ? (
-              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '200px', gap: '12px' }}>
-                <div style={{ width: '28px', height: '28px', border: '3px solid #f3f3f3', borderTop: '3px solid #3b82f6', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
-                <span style={{ color: '#6b7280', fontSize: '14px' }}>PCデータを読み込み中...</span>
-                <style jsx>{`
-                  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-                `}</style>
-              </div>
-            ) : error ? (
-              <div style={{ padding: '12px', color: 'red', textAlign: 'center' }}>エラー: {error}</div>
-            ) : (
-              <div style={{ marginTop: '12px' }}>
-                <ClientPcList pcs={pcs} />
-              </div>
-            )}
-          </BlogSection>
-        </BlogContent>
-      </BlogArticle>
-    </BlogLayout>
+    <PcDbArticle
+      articlePath="/blog/article28"
+      title="軽量モバイルノートおすすめ 2026｜PC-DBで持ち運びやすさを比較"
+      date="2026-06-17"
+      usage="mobile"
+      listHref="/pc-list/mobile"
+      listLabel="軽量モバイルPCランキングを見る"
+      lead="軽量モバイルノートは、CPU名だけでは選びにくいカテゴリです。軽さ、画面サイズ、バッテリー、メモリ、SSD、価格のバランスで満足度が変わるため、SpecsyのPC-DBを使って持ち運びやすい候補を比較します。"
+      conclusionTitle="結論｜軽さだけでなく、16GBメモリと推定駆動時間を同時に見る"
+      conclusion="毎日持ち運ぶなら重量と画面サイズが重要ですが、メモリ8GBやSSD256GBに寄せすぎると長く使いにくくなります。まずはモバイルスコア上位から、重量、推定駆動時間、16GBメモリ、SSD512GB以上を同時に確認するのが現実的です。"
+      criteriaTitle="軽量モバイルノートで優先する基準"
+      criteria={[
+        '毎日持ち運ぶなら重量1.3kg前後までを優先する',
+        'メモリは16GBを基準にし、8GBは短期利用や軽作業専用として考える',
+        'SSDは512GB以上が扱いやすく、256GBはクラウド保存前提で選ぶ',
+        '推定駆動時間はExcel作業・動画視聴の両方を見て、外出時の余裕を確認する',
+      ]}
+      dataAngleTitle="このサイト特有の見方"
+      dataAngle="SpecsyではAmazon内のPCをDB化し、軽さだけでなくCPU型番、メモリ、SSD、価格、推定駆動時間を同じテーブルで比較できます。モバイル用途では性能の高さだけでなく、持ち運びやすさと電池持ちもスコアに反映します。"
+      faq={[
+        {
+          question: '軽量ノートは何kgまでが持ち運びやすいですか？',
+          answer: '毎日持ち運ぶなら1.3kg前後までが目安です。移動が多い場合は軽さを優先し、据置き利用が多い場合は性能や画面サイズを優先してもよいです。',
+        },
+        {
+          question: 'N100やN150の軽量PCでも十分ですか？',
+          answer: '文書作成、ブラウジング、動画視聴中心なら十分な場合があります。多タブ作業や長期利用を考えるなら、Core i5やRyzen 5系の詳細型番モデルも比較してください。',
+        },
+      ]}
+      pcs={pcs}
+    />
   )
 }
-
-

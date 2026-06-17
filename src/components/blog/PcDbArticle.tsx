@@ -5,6 +5,7 @@ import BlogLayout from './BlogLayout'
 import type { ClientPcWithCpuSpec, ClientUsageCategory } from '../types'
 
 interface PcDbArticleProps {
+  articlePath: string
   title: string
   date: string
   lead: string
@@ -55,6 +56,7 @@ function getTopScore(pcs: ClientPcWithCpuSpec[]) {
 }
 
 export default function PcDbArticle({
+  articlePath,
   title,
   date,
   lead,
@@ -73,9 +75,30 @@ export default function PcDbArticle({
   const topPcs = pcs.slice(0, 5)
   const lowestPrice = getLowestPrice(pcs)
   const topScore = getTopScore(pcs)
+  const canonicalUrl = `https://specsy-hub.com${articlePath}`
+  const articleJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: title,
+    datePublished: date,
+    dateModified: date,
+    author: {
+      '@type': 'Organization',
+      name: 'Specsy',
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: 'Specsy',
+    },
+    mainEntityOfPage: canonicalUrl,
+  }
 
   return (
     <BlogLayout>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }}
+      />
       <BlogArticle title={title} date={date}>
         <BlogContent>
           <BlogParagraph>{lead}</BlogParagraph>
@@ -115,30 +138,36 @@ export default function PcDbArticle({
             <BlogParagraph>
               下表は、現在のPC-DBを用途別スコアで並べた上位候補です。価格・CPU・GPU・メモリ・SSD・推定駆動時間を同じ軸で見られるため、単なる一般論ではなく、実際の候補比較から判断できます。
             </BlogParagraph>
-            <BlogTable>
-              <BlogTableHeader>
-                <BlogTableCell isHeader>順位</BlogTableCell>
-                <BlogTableCell isHeader>製品</BlogTableCell>
-                <BlogTableCell isHeader>CPU / GPU</BlogTableCell>
-                <BlogTableCell isHeader>RAM / SSD</BlogTableCell>
-                <BlogTableCell isHeader>推定駆動</BlogTableCell>
-                <BlogTableCell isHeader>価格</BlogTableCell>
-                <BlogTableCell isHeader>スコア</BlogTableCell>
-              </BlogTableHeader>
-              <BlogTableBody>
-                {topPcs.map((pc, index) => (
-                  <BlogTableRow key={pc.id}>
-                    <BlogTableCell>{index + 1}</BlogTableCell>
-                    <BlogTableCell>{pc.brand ? `${pc.brand} ` : ''}{pc.name || '-'}</BlogTableCell>
-                    <BlogTableCell>{pc.cpu || '-'} / {pc.gpu || '-'}</BlogTableCell>
-                    <BlogTableCell>{formatStorage(pc)}</BlogTableCell>
-                    <BlogTableCell>{formatBattery(pc)}</BlogTableCell>
-                    <BlogTableCell>{formatPrice(priceOf(pc))}</BlogTableCell>
-                    <BlogTableCell>{formatScore(pc.pcScore)}</BlogTableCell>
-                  </BlogTableRow>
-                ))}
-              </BlogTableBody>
-            </BlogTable>
+            {topPcs.length > 0 ? (
+              <BlogTable>
+                <BlogTableHeader>
+                  <BlogTableCell isHeader>順位</BlogTableCell>
+                  <BlogTableCell isHeader>製品</BlogTableCell>
+                  <BlogTableCell isHeader>CPU / GPU</BlogTableCell>
+                  <BlogTableCell isHeader>RAM / SSD</BlogTableCell>
+                  <BlogTableCell isHeader>推定駆動</BlogTableCell>
+                  <BlogTableCell isHeader>価格</BlogTableCell>
+                  <BlogTableCell isHeader>スコア</BlogTableCell>
+                </BlogTableHeader>
+                <BlogTableBody>
+                  {topPcs.map((pc, index) => (
+                    <BlogTableRow key={pc.id}>
+                      <BlogTableCell>{index + 1}</BlogTableCell>
+                      <BlogTableCell>{pc.brand ? `${pc.brand} ` : ''}{pc.name || '-'}</BlogTableCell>
+                      <BlogTableCell>{pc.cpu || '-'} / {pc.gpu || '-'}</BlogTableCell>
+                      <BlogTableCell>{formatStorage(pc)}</BlogTableCell>
+                      <BlogTableCell>{formatBattery(pc)}</BlogTableCell>
+                      <BlogTableCell>{formatPrice(priceOf(pc))}</BlogTableCell>
+                      <BlogTableCell>{formatScore(pc.pcScore)}</BlogTableCell>
+                    </BlogTableRow>
+                  ))}
+                </BlogTableBody>
+              </BlogTable>
+            ) : (
+              <BlogParagraph>
+                現在、この条件で表示できるPC候補がありません。データ更新後に再確認してください。
+              </BlogParagraph>
+            )}
           </BlogSection>
 
           <BlogSection title={criteriaTitle}>
