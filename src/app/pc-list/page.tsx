@@ -1,35 +1,14 @@
 'use client'
 
-import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import Head from 'next/head'
 import { fetchPcList } from './fetchPcs'
 import { ClientPcWithCpuSpec } from '../../components/types'
 import ClientPcList from './ClientPcList'
+import PcListHeader from './PcListHeader'
+import { getPcListUsagePage } from './usageConfig'
 
-function BackLink() {
-  return (
-    <Link 
-      href="/"
-      style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        color: '#93c5fd',
-        fontWeight: '500',
-        textDecoration: 'none',
-        transition: 'color 0.2s'
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.color = '#bfdbfe'
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.color = '#93c5fd'
-      }}
-    >
-      ← ホームに戻る
-    </Link>
-  )
-}
+const defaultPage = getPcListUsagePage('cafe')
 
 export default function PcListPage() {
   const [pcs, setPcs] = useState<ClientPcWithCpuSpec[]>([])
@@ -67,23 +46,7 @@ export default function PcListPage() {
           color: '#1f2937',
         }}
       >
-        <div
-          style={{
-            backgroundColor: '#ffffff',
-            borderBottom: '1px solid #e2e8f0',
-            boxShadow: '0 8px 24px rgba(148, 163, 184, 0.15)',
-          }}
-        >
-          <div
-            style={{
-              maxWidth: '1280px',
-              margin: '0 auto',
-              padding: '16px',
-            }}
-          >
-            <BackLink />
-          </div>
-        </div>
+        <PcListHeader usage="cafe" heading={defaultPage.heading} description={defaultPage.description} />
       {isLoading ? (
         <div style={{ 
           display: 'flex',
