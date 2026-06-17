@@ -4,7 +4,7 @@ import { fetchAllPcs } from '../infra/pcRepository'
 import { cpuPowerMap } from '../infra/data/cpuSpecMap'
 import { PcWithCpuSpec } from '../domain/models/pc'
 import { ServerUsageCategory as UsageCategory } from '../types'
-import { calculateSystemPowerConsumption, calculateBatteryLifeHours } from '../utils/powerCalculations'
+import { calculateBatteryLifeProfiles } from '../utils/powerCalculations'
 import { calculateRelativeRanking } from '../domain/services/relativePcScore'
 
 export async function fetchPcList(usageCategory: UsageCategory = 'cafe'): Promise<PcWithCpuSpec[]> {
@@ -13,24 +13,23 @@ export async function fetchPcList(usageCategory: UsageCategory = 'cafe'): Promis
   const pcsWithCalculations = supabasePcs.map((pc) => {
     const cpuSpec = cpuPowerMap[pc.cpu ?? ''] ?? null
     
-    let estimatedBatteryLifeHours: number | null = null
+    const batteryLifeProfiles = (cpuSpec?.tdpW && pc.display_size && pc.battery_wh_normalized)
+      ? calculateBatteryLifeProfiles({
+          batteryCapacityWh: pc.battery_wh_normalized,
+          cpuTdpW: cpuSpec.tdpW,
+          displaySizeInches: pc.display_size,
+          gpuScore: pc.gpu_score,
+          hasDgpu: pc.has_dgpu,
+        })
+      : null
 
-    // 駆動時間(推定)の計算
-    if (cpuSpec?.tdpW && pc.display_size && pc.battery_wh_normalized) {
-      const cpuTdpW = cpuSpec.tdpW
-      const powerConsumption = calculateSystemPowerConsumption(
-        cpuTdpW,
-        pc.display_size
-      )
-      estimatedBatteryLifeHours = Math.round(calculateBatteryLifeHours(
-        pc.battery_wh_normalized,
-        powerConsumption.totalPowerW
-      ) * 10) / 10
-    }
+    // 既存ソート・スコア互換の代表値はExcel作業時間にする。
+    const estimatedBatteryLifeHours = batteryLifeProfiles?.excelWorkHours ?? null
 
     return {
       ...pc,
       estimatedBatteryLifeHours,
+      batteryLifeProfiles,
       cpuSpec,
     }
   })

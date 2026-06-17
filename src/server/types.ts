@@ -25,7 +25,15 @@ export interface ServerPc {
 
 export interface ServerPcWithCpuSpec extends ServerPc {
   estimatedBatteryLifeHours: number | null
+  batteryLifeProfiles: ServerBatteryLifeProfiles | null
   pcScore: number | null
+}
+
+export interface ServerBatteryLifeProfiles {
+  excelWorkHours: number
+  videoPlaybackHours: number
+  gaming3dHours: number
+  videoEditingHours: number
 }
 
 export type ServerUsageCategory = 'mobile' | 'cafe' | 'home' | 'cost_performance' | 'gaming' | 'video_editing'

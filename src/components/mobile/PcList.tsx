@@ -561,7 +561,7 @@ export default function PcList({ pcs: initialPcs, defaultCpu, defaultMaxDisplayS
             { field: 'ram' as ClientSortField, label: 'メモリ' },
             { field: 'rom' as ClientSortField, label: 'ストレージ' },
             { field: 'display_size' as ClientSortField, label: '画面サイズ' },
-            { field: 'estimatedBatteryLifeHours' as ClientSortField, label: '駆動時間' },
+            { field: 'estimatedBatteryLifeHours' as ClientSortField, label: 'Excel駆動' },
             { field: 'weight' as ClientSortField, label: '重量' },
             { field: 'price' as ClientSortField, label: '価格' }
           ].map(({ field, label }) => {

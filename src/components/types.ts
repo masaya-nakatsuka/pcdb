@@ -23,7 +23,15 @@ export interface ClientPc {
 
 export interface ClientPcWithCpuSpec extends ClientPc {
   estimatedBatteryLifeHours: number | null
+  batteryLifeProfiles: ClientBatteryLifeProfiles | null
   pcScore: number | null
+}
+
+export interface ClientBatteryLifeProfiles {
+  excelWorkHours: number
+  videoPlaybackHours: number
+  gaming3dHours: number
+  videoEditingHours: number
 }
 
 export type ClientUsageCategory = 'mobile' | 'cafe' | 'home' | 'cost_performance' | 'gaming' | 'video_editing'

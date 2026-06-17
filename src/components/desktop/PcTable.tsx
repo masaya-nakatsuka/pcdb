@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { PcTableProps, ClientPcWithCpuSpec, ClientSortOptions, ClientSortField, ClientSortOrder, ClientUsageCategory } from '../types'
 import { sortPcs } from '../utils/pcSort'
+import { getBatteryLifeProfileRows } from '../utils/batteryLifeDisplay'
 import { fetchPcList } from '../../app/pc-list/fetchPcs'
 import { getPcListUsagePath } from '../../app/pc-list/usageConfig'
 import ImageComponent from './ImageComponent'
@@ -430,7 +431,7 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
             { field: 'ram' as ClientSortField, label: 'メモリ' },
             { field: 'rom' as ClientSortField, label: 'ストレージ' },
             { field: 'display_size' as ClientSortField, label: '画面サイズ' },
-            { field: 'estimatedBatteryLifeHours' as ClientSortField, label: '駆動時間' },
+            { field: 'estimatedBatteryLifeHours' as ClientSortField, label: 'Excel駆動' },
             { field: 'weight' as ClientSortField, label: '重量' },
             { field: 'price' as ClientSortField, label: '価格' }
           ].map(({ field, label }) => {
@@ -506,7 +507,7 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
               style={{
                 borderCollapse: 'collapse',
                 width: '100%',
-                minWidth: '1120px'
+                minWidth: '1220px'
               }}
             >
               <thead>
@@ -618,9 +619,9 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
                     fontWeight: '600',
                     color: '#495057',
                     transition: 'background-color 0.2s ease',
-                    minWidth: '90px'
+                    minWidth: '145px'
                   }} onClick={() => handleSortChange('estimatedBatteryLifeHours')}>
-                    駆動時間{getSortIcon('estimatedBatteryLifeHours')}
+                    駆動時間目安{getSortIcon('estimatedBatteryLifeHours')}
                   </th>
                   <th style={{
                     border: '1px solid #dee2e6',
@@ -647,6 +648,7 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
               <tbody>
                 {pcs.map((pc) => {
                   const productLink = pc.af_url || pc.url
+                  const batteryLifeRows = getBatteryLifeProfileRows(pc.batteryLifeProfiles)
 
                   return (
                     <tr key={pc.id}>
@@ -742,7 +744,27 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
                         {pc.weight != null ? `${pc.weight}g` : '-'}
                       </td>
                       <td style={{border: '1px solid #ddd', padding: '8px', fontSize: '12px'}}>
-                        {pc.estimatedBatteryLifeHours ? `${pc.estimatedBatteryLifeHours}時間` : '-'}
+                        {batteryLifeRows.length > 0 ? (
+                          <div style={{ display: 'grid', gap: '3px' }}>
+                            {batteryLifeRows.map(({ key, label, value }) => (
+                              <div
+                                key={key}
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'space-between',
+                                  gap: '8px',
+                                  whiteSpace: 'nowrap',
+                                }}
+                              >
+                                <span style={{ color: '#64748b' }}>{label}</span>
+                                <span style={{ fontWeight: 700, color: '#0f172a' }}>
+                                  {value}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        ) : '-'}
                       </td>
                       <td style={{border: '1px solid #ddd', padding: '8px'}}>
                         {pc.price && (

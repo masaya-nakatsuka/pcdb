@@ -1,9 +1,12 @@
 'use client'
 
 import { PcCardProps } from '../types'
+import { getBatteryLifeProfileRows } from '../utils/batteryLifeDisplay'
 import ImageComponent from './ImageComponent'
 
 export default function PcCard({ pc }: PcCardProps) {
+  const batteryLifeRows = getBatteryLifeProfileRows(pc.batteryLifeProfiles)
+
   return (
     <div style={{
       border: '1px solid #ddd',
@@ -61,7 +64,33 @@ export default function PcCard({ pc }: PcCardProps) {
             {pc.rom && <div style={{ marginBottom: '8px' }}>🔴 ストレージ：{pc.rom}GB</div>}
             {pc.display_size && <div>画面サイズ：{pc.display_size} インチ</div>}
             {pc.weight && <div>重さ：{pc.weight}g</div>}
-            {pc.estimatedBatteryLifeHours && <div>駆動時間(推定)：{pc.estimatedBatteryLifeHours}時間</div>}
+            {batteryLifeRows.length > 0 && (
+              <div style={{ marginTop: '8px' }}>
+                <div style={{ fontWeight: 700, marginBottom: '4px' }}>駆動時間目安</div>
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+                  gap: '4px 8px',
+                }}>
+                  {batteryLifeRows.map(({ key, label, value }) => (
+                    <div
+                      key={key}
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        gap: '6px',
+                        padding: '3px 6px',
+                        borderRadius: '6px',
+                        backgroundColor: '#f8fafc',
+                      }}
+                    >
+                      <span style={{ color: '#64748b' }}>{label}</span>
+                      <span style={{ fontWeight: 700 }}>{value}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* 価格 */}
