@@ -1,7 +1,9 @@
 import PcDbArticle from '@/components/blog/PcDbArticle'
+import { createBlogArticleMetadata } from '@/lib/blogMetadata'
 import { fetchPcList } from '@/server/usecase/fetchPcList'
 
 export const dynamic = 'force-dynamic'
+export const metadata = createBlogArticleMetadata(34)
 
 export default async function Article34Page() {
   const pcs = await fetchPcList('gaming')

@@ -20,6 +20,8 @@ interface PcDbArticleProps {
   dataAngle: string
   faq: Array<{ question: string; answer: string }>
   pcs: ClientPcWithCpuSpec[]
+  tableDescription?: string
+  batteryDisplay?: 'excel' | 'profiles'
 }
 
 function priceOf(pc: ClientPcWithCpuSpec) {
@@ -34,7 +36,12 @@ function formatScore(score: number | null) {
   return score === null ? '-' : `${Math.round(score)}`
 }
 
-function formatBattery(pc: ClientPcWithCpuSpec) {
+function formatBattery(pc: ClientPcWithCpuSpec, display: 'excel' | 'profiles' = 'excel') {
+  if (display === 'profiles' && pc.batteryLifeProfiles) {
+    const profiles = pc.batteryLifeProfiles
+    return `Excel ${profiles.excelWorkHours.toFixed(1)}h / 動画 ${profiles.videoPlaybackHours.toFixed(1)}h / 編集 ${profiles.videoEditingHours.toFixed(1)}h / 3Dゲーム ${profiles.gaming3dHours.toFixed(1)}h`
+  }
+
   const hours = pc.batteryLifeProfiles?.excelWorkHours ?? pc.estimatedBatteryLifeHours
   return hours ? `${hours.toFixed(1)}時間` : '-'
 }
@@ -71,6 +78,8 @@ export default function PcDbArticle({
   dataAngle,
   faq,
   pcs,
+  tableDescription = '下表は、現在のPC-DBを用途別スコアで並べた上位候補です。価格・CPU・GPU・メモリ・SSD・推定駆動時間を同じ軸で見られるため、単なる一般論ではなく、実際の候補比較から判断できます。',
+  batteryDisplay = 'excel',
 }: PcDbArticleProps) {
   const topPcs = pcs.slice(0, 5)
   const lowestPrice = getLowestPrice(pcs)
@@ -92,12 +101,40 @@ export default function PcDbArticle({
     },
     mainEntityOfPage: canonicalUrl,
   }
+  const breadcrumbJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'ホーム',
+        item: 'https://specsy-hub.com/',
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: 'ブログ',
+        item: 'https://specsy-hub.com/blog',
+      },
+      {
+        '@type': 'ListItem',
+        position: 3,
+        name: title,
+        item: canonicalUrl,
+      },
+    ],
+  }
 
   return (
     <BlogLayout>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
       <BlogArticle title={title} date={date}>
         <BlogContent>
@@ -135,9 +172,7 @@ export default function PcDbArticle({
           </BlogSection>
 
           <BlogSection title="PC-DB上位候補">
-            <BlogParagraph>
-              下表は、現在のPC-DBを用途別スコアで並べた上位候補です。価格・CPU・GPU・メモリ・SSD・推定駆動時間を同じ軸で見られるため、単なる一般論ではなく、実際の候補比較から判断できます。
-            </BlogParagraph>
+            <BlogParagraph>{tableDescription}</BlogParagraph>
             {topPcs.length > 0 ? (
               <BlogTable>
                 <BlogTableHeader>
@@ -156,7 +191,7 @@ export default function PcDbArticle({
                       <BlogTableCell>{pc.brand ? `${pc.brand} ` : ''}{pc.name || '-'}</BlogTableCell>
                       <BlogTableCell>{pc.cpu || '-'} / {pc.gpu || '-'}</BlogTableCell>
                       <BlogTableCell>{formatStorage(pc)}</BlogTableCell>
-                      <BlogTableCell>{formatBattery(pc)}</BlogTableCell>
+                      <BlogTableCell>{formatBattery(pc, batteryDisplay)}</BlogTableCell>
                       <BlogTableCell>{formatPrice(priceOf(pc))}</BlogTableCell>
                       <BlogTableCell>{formatScore(pc.pcScore)}</BlogTableCell>
                     </BlogTableRow>

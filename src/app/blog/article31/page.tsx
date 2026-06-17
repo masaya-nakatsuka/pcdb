@@ -1,8 +1,10 @@
 import PcDbArticle from '@/components/blog/PcDbArticle'
+import { createBlogArticleMetadata } from '@/lib/blogMetadata'
 import { fetchPcList } from '@/server/usecase/fetchPcList'
 import type { ServerPcWithCpuSpec } from '@/server/types'
 
 export const dynamic = 'force-dynamic'
+export const metadata = createBlogArticleMetadata(31)
 
 function filterMiniCpuPcs(pcs: ServerPcWithCpuSpec[], cpuName: string) {
   const target = cpuName.toLowerCase()
