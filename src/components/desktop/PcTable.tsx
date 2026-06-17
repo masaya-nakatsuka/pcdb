@@ -456,7 +456,7 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
           boxShadow: '0 1px 3px rgba(15, 23, 42, 0.06)',
         }}
       >
-        <div style={{ marginBottom: '18px' }}>
+        <div style={{ marginBottom: '18px', textAlign: 'center' }}>
           <h2 style={{ fontSize: '18px', color: '#0f172a', margin: 0, fontWeight: 800 }}>
             ランキング条件
           </h2>
