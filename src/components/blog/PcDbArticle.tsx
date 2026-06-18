@@ -23,6 +23,9 @@ interface PcDbArticleProps {
   pcs: ClientPcWithCpuSpec[]
   tableDescription?: string
   batteryDisplay?: 'excel' | 'profiles'
+  secondaryLead?: string | null
+  conclusionIntro?: string | null
+  tableIntro?: string | null
 }
 
 function priceOf(pc: ClientPcWithCpuSpec) {
@@ -86,6 +89,9 @@ export default function PcDbArticle({
   pcs,
   tableDescription = '下表は、現在のPC-DBを用途別スコアで並べた上位候補です。価格・CPU・GPU・メモリ・SSD・推定駆動時間を同じ軸で見られるため、単なる一般論ではなく、実際の候補比較から判断できます。',
   batteryDisplay = 'excel',
+  secondaryLead,
+  conclusionIntro,
+  tableIntro,
 }: PcDbArticleProps) {
   const topPcs = pcs.slice(0, 5)
   const lowestPrice = getLowestPrice(pcs)
@@ -149,9 +155,11 @@ export default function PcDbArticle({
       <BlogArticle title={title} date={date} variant="wide">
         <BlogContent variant="wide">
           <BlogParagraph>{lead}</BlogParagraph>
-          <BlogParagraph>
-            PC選びは、商品名の印象や価格だけで決めるよりも、用途に対してどこが弱点になりそうかを先に見る方が失敗しにくいです。この記事では、先に結論を整理し、そのあとPC-DBの実データで候補を見比べます。
-          </BlogParagraph>
+          {secondaryLead !== null && (
+            <BlogParagraph>
+              {secondaryLead ?? 'PC選びは、商品名の印象や価格だけで決めるよりも、用途に対してどこが弱点になりそうかを先に見る方が失敗しにくいです。この記事では、先に結論を整理し、そのあとPC-DBの実データで候補を見比べます。'}
+            </BlogParagraph>
+          )}
 
           <div style={{
             display: 'grid',
@@ -182,16 +190,20 @@ export default function PcDbArticle({
           </div>
 
           <BlogSection title={conclusionTitle}>
-            <BlogParagraph>
-              まず大枠だけ押さえるなら、見るべきポイントはかなり絞れます。
-            </BlogParagraph>
+            {conclusionIntro !== null && (
+              <BlogParagraph>
+                {conclusionIntro ?? 'まず大枠だけ押さえるなら、見るべきポイントはかなり絞れます。'}
+              </BlogParagraph>
+            )}
             <BlogParagraph>{conclusion}</BlogParagraph>
           </BlogSection>
 
           <BlogSection title="PC-DB上位候補">
-            <BlogParagraph>
-              ここからは実際の候補です。文章だけだと差が分かりにくいので、CPU、GPU、メモリ、SSD、価格、推定駆動時間を同じ表で確認します。
-            </BlogParagraph>
+            {tableIntro !== null && (
+              <BlogParagraph>
+                {tableIntro ?? 'ここからは実際の候補です。文章だけだと差が分かりにくいので、CPU、GPU、メモリ、SSD、価格、推定駆動時間を同じ表で確認します。'}
+              </BlogParagraph>
+            )}
             <BlogParagraph>{tableDescription}</BlogParagraph>
             {topPcs.length > 0 ? (
               <BlogTable>

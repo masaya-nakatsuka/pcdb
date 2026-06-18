@@ -12,8 +12,8 @@ export interface ArticleMetadata {
 export const blogArticles: ArticleMetadata[] = [
   {
     id: 33,
-    title: 'Amazon PCコスパランキング 2026｜実売価格と性能スコアで選ぶ',
-    description: 'SpecsyのPC-DBを使い、Amazon内のPCを価格・CPU型番・GPU・メモリ・SSDで比較。安いだけではないコスパPCを探す記事。',
+    title: 'Amazon PCはいくら出せばいい？2026｜PC-DB価格分布メモ',
+    description: 'SpecsyのPC-DBにあるAmazon PCの価格分布を集計し、5万円以下・6万円以下・7万円以下・10万円以上の割合から予算感をメモする記事。',
     date: '2026-06-17',
   },
   {

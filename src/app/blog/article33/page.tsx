@@ -1,41 +1,102 @@
 import PcDbArticle from '@/components/blog/PcDbArticle'
 import { createBlogArticleMetadata } from '@/lib/blogMetadata'
 import { fetchPcList } from '@/server/usecase/fetchPcList'
+import type { ServerPcWithCpuSpec } from '@/server/types'
 
 export const dynamic = 'force-dynamic'
 export const metadata = createBlogArticleMetadata(33)
 
+function priceOf(pc: ServerPcWithCpuSpec) {
+  return pc.real_price || pc.price || null
+}
+
+function formatPrice(price: number | null) {
+  return price ? `${price.toLocaleString('ja-JP')}円` : '不明'
+}
+
+function percent(count: number, total: number) {
+  return total > 0 ? Math.round((count / total) * 100) : 0
+}
+
+function getMedian(prices: number[]) {
+  if (prices.length === 0) {
+    return null
+  }
+
+  const sorted = [...prices].sort((a, b) => a - b)
+  const middle = Math.floor(sorted.length / 2)
+
+  return sorted.length % 2 === 0
+    ? Math.round((sorted[middle - 1] + sorted[middle]) / 2)
+    : sorted[middle]
+}
+
+function summarizePrices(pcs: ServerPcWithCpuSpec[]) {
+  const pricedPcs = pcs.filter((pc) => priceOf(pc) !== null)
+  const prices = pricedPcs.map((pc) => priceOf(pc)).filter((price): price is number => price !== null)
+  const total = pricedPcs.length
+  const under50000 = pricedPcs.filter((pc) => (priceOf(pc) ?? Infinity) <= 50000).length
+  const under60000 = pricedPcs.filter((pc) => (priceOf(pc) ?? Infinity) <= 60000).length
+  const under70000 = pricedPcs.filter((pc) => (priceOf(pc) ?? Infinity) <= 70000).length
+  const over100000 = pricedPcs.filter((pc) => (priceOf(pc) ?? 0) >= 100000).length
+  const practicalUnder70000 = pricedPcs.filter((pc) => (
+    (priceOf(pc) ?? Infinity) <= 70000 &&
+    (pc.ram ?? 0) >= 16 &&
+    (pc.rom ?? 0) >= 512
+  )).length
+
+  return {
+    total,
+    median: getMedian(prices),
+    under50000,
+    under60000,
+    under70000,
+    over100000,
+    practicalUnder70000,
+    under50000Pct: percent(under50000, total),
+    under60000Pct: percent(under60000, total),
+    under70000Pct: percent(under70000, total),
+    over100000Pct: percent(over100000, total),
+    practicalUnder70000Pct: percent(practicalUnder70000, under70000),
+  }
+}
+
 export default async function Article33Page() {
   const pcs = await fetchPcList('cost_performance')
+  const priceStats = summarizePrices(pcs)
 
   return (
     <PcDbArticle
       articlePath="/blog/article33"
-      title="Amazon PCコスパランキング 2026｜実売価格と性能スコアで選ぶ"
+      title="Amazon PCはいくら出せばいい？2026｜PC-DB価格分布メモ"
       date="2026-06-17"
       usage="cost_performance"
       listHref="/pc-list/cost-performance"
       listLabel="コスパPCランキングを見る"
-      lead="安いPCを探すと、CPU世代・メモリ・SSD・GPUの差が見えにくくなります。この記事ではSpecsyのPC-DBを使い、実売価格と用途別スコアを同じ表で見ながら、価格だけでは分からないコスパを整理します。"
-      conclusionTitle="結論｜価格だけでなく、CPU型番と16GBメモリを同時に見る"
-      conclusion="同じRyzen 5やCore i5でも世代差で性能は大きく変わります。まずはPC-DBのコスパスコア上位から見て、CPU型番、メモリ16GB、SSD512GB以上、価格の順に絞ると失敗しにくいです。"
-      criteriaTitle="コスパPCで優先する基準"
+      lead={`AmazonのPCを見ていると、安いものはかなり安い一方で、「結局いくら出せば普通に使えるのか」が分かりにくいです。そこで今回は、SpecsyのPC-DBで価格が取れている${priceStats.total}件をざっと集計して、価格帯の傾向をメモしておきます。`}
+      secondaryLead={`この記事は「おすすめランキングをきれいに作る」というより、自分がPCを選ぶ前に価格感を掴むための記録です。5万円以下、6万円以下、7万円以下、10万円以上に分けて見ると、どのあたりから実用構成が増えるのかが少し見えてきます。`}
+      conclusionTitle="結論｜まずは7万円前後まで見ればよさそう"
+      conclusion={`今回の集計では、5万円以下が${priceStats.under50000Pct}%、6万円以下が${priceStats.under60000Pct}%、7万円以下が${priceStats.under70000Pct}%、10万円以上が${priceStats.over100000Pct}%でした。中央値は${formatPrice(priceStats.median)}です。つまり、最安だけを狙うなら5万円台にも候補はありますが、メインPCとして無理なく選びたいなら、まず7万円前後まで広げて見るのが現実的っぽいです。`}
+      conclusionIntro="先に価格だけでざっくり見ると、思ったより低価格帯にも候補はあります。ただし、安いほどメモリやSSD、CPU世代の確認は必須です。"
+      criteriaTitle="今回の集計メモ"
       criteria={[
-        'CPUはCore i5/Ryzen 5という大分類ではなく、Core i5-1334UやRyzen 5 7530Uなど型番まで確認する',
-        '長く使うならメモリ16GBを基準にし、8GBは短期・軽作業用として割り切る',
-        'SSDは512GB以上が扱いやすく、256GBはクラウド前提なら候補にする',
-        '専用GPUが必要ない用途では、GPUよりCPU・メモリ・価格のバランスを優先する',
+        `5万円以下は${priceStats.under50000}件。かなり安い候補はあるが、8GBメモリや古めのCPUが混ざりやすい価格帯として見る。`,
+        `6万円以下は${priceStats.under60000}件。低価格PCとしては現実的な候補が増え、N95/N100/N150系の16GB構成も見つけやすくなる。`,
+        `7万円以下は${priceStats.under70000}件。この中でメモリ16GB・SSD512GB以上を満たす候補は${priceStats.practicalUnder70000}件で、7万円以下全体の${priceStats.practicalUnder70000Pct}%だった。`,
+        `10万円以上は${priceStats.over100000}件。性能やブランド、画面サイズに余裕は出るが、普段使いだけなら必須ラインではなさそう。`,
       ]}
-      dataAngleTitle="このサイト特有の見方"
-      dataAngle="SpecsyはAmazon内のPCをDB化し、CPU型番、GPU、メモリ、SSD、価格を同じ軸でスコア化しています。一般的な「おすすめ」ではなく、今DBにある候補を実際に並べ替えて判断できるのが強みです。"
+      dataAngleTitle="このデータから見た感想"
+      dataAngle="価格だけで見ると5万〜7万円台に候補がかなり集まります。ただ、安いPCほどスペック表の見落としがそのまま不満になりやすいので、価格の次にメモリ16GB、SSD512GB、CPU型番を確認するのが良さそうです。コスパスコアは最初の並び替えとして使い、最後は自分の用途に対して何を妥協しているかを見る、という使い方が合っています。"
+      tableIntro="ここからは、集計だけでなく実際の候補も見ます。価格帯の印象と、表に出てくるCPU・メモリ・SSDを照らし合わせると、安い理由が分かりやすくなります。"
+      tableDescription="下表は、PC-DB内の候補をコスパスコア順に並べたものです。ランキングとして見るより、価格帯ごとにどんな構成が混ざっているかを確認するための表として使ってください。"
       faq={[
         {
-          question: '安いPCならN100やN150で十分ですか？',
-          answer: '文書作成、ブラウジング、動画視聴中心なら十分なケースがあります。ただし多タブ作業や長期利用では、Ryzen 5やCore i5系の詳細型番モデルの方が余裕があります。',
+          question: '大体いくら出せば普通に使えるPCを選べそうですか？',
+          answer: '今回の集計だけで見るなら、まず7万円前後まで見れば候補はかなり増えます。5万円以下でも候補はありますが、メインPCとして長く使うなら、7万円以下で16GBメモリ・SSD512GB以上の候補を探す方が現実的です。',
         },
         {
-          question: 'コスパスコアだけで買っていいですか？',
-          answer: '最初の絞り込みには有効ですが、最後は重量、画面サイズ、端子、キーボード配列など体感に関わる要素も確認してください。',
+          question: '5万円以下のPCは避けた方がいいですか？',
+          answer: '避ける必要はありません。ただし、5万円以下は用途を軽作業に絞る前提で見た方が安全です。Web閲覧、文書作成、動画視聴中心なら候補になりますが、メモリ8GBやSSD256GBの構成は割り切りが必要です。',
         },
       ]}
       pcs={pcs}
