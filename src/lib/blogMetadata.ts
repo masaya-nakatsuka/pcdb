@@ -101,6 +101,12 @@ export const blogArticles: ArticleMetadata[] = [
     date: '2026-06-18',
   },
   {
+    id: 61,
+    title: '1kg以下・16GB/512GB構成のAmazon軽量ノートPC 2026｜超軽量メインPCをPC-DB比較',
+    description: '1kg以下かつメモリ16GB・SSD512GB以上のAmazon軽量ノートPCを、重量、CPU型番、価格、推定駆動時間からPC-DBで比較する記事。',
+    date: '2026-06-18',
+  },
+  {
     id: 58,
     title: '14インチ前後・16GB/512GB構成のAmazonノートPC 2026｜作業しやすい実用PCをPC-DB比較',
     description: '14インチ前後かつメモリ16GB・SSD512GB以上のAmazonノートPCを、画面サイズ、重量、CPU型番、価格、推定駆動時間からPC-DBで比較する記事。',
