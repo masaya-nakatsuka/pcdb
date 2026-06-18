@@ -107,6 +107,12 @@ export const blogArticles: ArticleMetadata[] = [
     date: '2026-06-18',
   },
   {
+    id: 59,
+    title: '2in1・16GB/512GB構成のAmazonノートPC 2026｜タブレット兼用の実用PCをPC-DB比較',
+    description: '2in1かつメモリ16GB・SSD512GB以上のAmazonノートPCを、重量、画面サイズ、CPU型番、価格、推定駆動時間からPC-DBで比較する記事。',
+    date: '2026-06-18',
+  },
+  {
     id: 45,
     title: '15.6インチ前後のAmazonノートPC 2026｜大画面をPC-DB比較',
     description: '15.6インチ前後のAmazonノートPCを、CPU型番、メモリ、SSD、重量、価格、推定駆動時間からPC-DBで比較する記事。',
