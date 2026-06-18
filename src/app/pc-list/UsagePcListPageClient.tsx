@@ -1,18 +1,21 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import { fetchPcList } from './fetchPcs'
-import { ClientPcWithCpuSpec, ClientUsageCategory } from '../../components/types'
+import { ClientPcListing, ClientPcWithCpuSpec, ClientUsageCategory } from '../../components/types'
 import ClientPcList from './ClientPcList'
 import PcListHeader from './PcListHeader'
+import PcUsageGuide from '../../components/pc-list/PcUsageGuide'
 
 interface UsagePcListPageClientProps {
   usage: ClientUsageCategory
   heading: string
   description: string
+  listing?: ClientPcListing
 }
 
-export default function UsagePcListPageClient({ usage, heading, description }: UsagePcListPageClientProps) {
+export default function UsagePcListPageClient({ usage, heading, description, listing = 'new' }: UsagePcListPageClientProps) {
   const [pcs, setPcs] = useState<ClientPcWithCpuSpec[]>([])
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -21,7 +24,7 @@ export default function UsagePcListPageClient({ usage, heading, description }: U
     setIsLoading(true)
     setError(null)
 
-    fetchPcList(usage)
+    fetchPcList(usage, listing)
       .then((data) => {
         if (Array.isArray(data)) {
           setPcs(data)
@@ -35,7 +38,7 @@ export default function UsagePcListPageClient({ usage, heading, description }: U
       .finally(() => {
         setIsLoading(false)
       })
-  }, [usage])
+  }, [usage, listing])
 
   return (
     <div
@@ -74,6 +77,37 @@ export default function UsagePcListPageClient({ usage, heading, description }: U
           </p>
         </section>
 
+        {listing === 'used' && (
+          <section style={{
+            maxWidth: '1080px',
+            margin: '18px auto 0',
+            padding: '0 16px',
+          }}>
+            <div style={{
+              border: '1px solid #fed7aa',
+              borderRadius: '8px',
+              backgroundColor: '#fffbeb',
+              padding: '14px 16px',
+              color: '#92400e',
+              fontSize: '13px',
+              lineHeight: 1.8,
+              fontWeight: 700,
+            }}>
+              中古PCは同じ型番でも状態差があります。価格だけでなく、販売元、保証、バッテリー劣化、付属品、整備済み表記を確認してください。
+              <Link href="/pc-list/cost-performance" style={{
+                color: '#b45309',
+                fontWeight: 900,
+                marginLeft: '8px',
+                textDecoration: 'underline',
+              }}>
+                新品ランキングへ
+              </Link>
+            </div>
+          </section>
+        )}
+
+        <PcUsageGuide usage={usage} />
+
         {isLoading ? (
           <div style={{
             display: 'flex',
@@ -107,8 +141,58 @@ export default function UsagePcListPageClient({ usage, heading, description }: U
             `}</style>
           </div>
         ) : error ? (
-          <div style={{ padding: '20px', color: '#dc2626', textAlign: 'center' }}>
-            エラー: {error}
+          <div style={{
+            maxWidth: '720px',
+            margin: '28px auto 0',
+            padding: '0 16px',
+          }}>
+            <div style={{
+              border: '1px solid #fecaca',
+              borderRadius: '8px',
+              backgroundColor: '#fff7f7',
+              padding: '18px',
+              textAlign: 'center',
+            }}>
+              <div style={{ color: '#b91c1c', fontSize: '15px', fontWeight: 900, marginBottom: '8px' }}>
+                PCデータの取得に失敗しました
+              </div>
+              <p style={{ margin: '0 0 14px', color: '#7f1d1d', fontSize: '13px', lineHeight: 1.7 }}>
+                {error}。時間を置くか、価格分布メモや条件別の記事から確認してください。
+              </p>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                <Link href="/" style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  minHeight: '36px',
+                  padding: '0 12px',
+                  borderRadius: '8px',
+                  backgroundColor: '#ffffff',
+                  border: '1px solid #fecaca',
+                  color: '#991b1b',
+                  textDecoration: 'none',
+                  fontSize: '13px',
+                  fontWeight: 900,
+                }}>
+                  トップへ戻る
+                </Link>
+                <Link href="/blog/article33" style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  minHeight: '36px',
+                  padding: '0 12px',
+                  borderRadius: '8px',
+                  backgroundColor: '#b91c1c',
+                  color: '#ffffff',
+                  textDecoration: 'none',
+                  fontSize: '13px',
+                  fontWeight: 900,
+                }}>
+                  価格分布を見る
+                </Link>
+              </div>
+            </div>
           </div>
         ) : (
           <div
@@ -117,7 +201,7 @@ export default function UsagePcListPageClient({ usage, heading, description }: U
               color: '#1f2937'
             }}
           >
-            <ClientPcList pcs={pcs} initialUsage={usage} urlBasedUsage />
+            <ClientPcList pcs={pcs} initialUsage={usage} listing={listing} urlBasedUsage />
           </div>
         )}
       </main>

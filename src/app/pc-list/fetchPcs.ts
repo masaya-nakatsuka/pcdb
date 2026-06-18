@@ -1,11 +1,17 @@
 import { ClientUsageCategory } from '../../components/types'
+import type { PcListingType } from '../../lib/pcListing'
 
 /**
  * API Route経由でPC一覧取得（レート制限付き）
  */
-export async function fetchPcList(usageCategory: ClientUsageCategory = 'cafe') {
+export async function fetchPcList(usageCategory: ClientUsageCategory = 'cafe', listing: PcListingType = 'new') {
   try {
-    const response = await fetch(`/api/pc-list?category=${usageCategory}`, {
+    const params = new URLSearchParams({ category: usageCategory })
+    if (listing !== 'new') {
+      params.set('listing', listing)
+    }
+
+    const response = await fetch(`/api/pc-list?${params.toString()}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

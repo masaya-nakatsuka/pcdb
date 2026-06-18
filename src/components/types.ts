@@ -1,9 +1,19 @@
+import type { PcQuickFilterKey } from './utils/pcQuickFilters'
+import type { PcListingType } from '@/lib/pcListing'
+
 export interface ClientPc {
   id: number
   form_factor: string | null
   display_size: number | null
   brand: string | null
   name: string | null
+  condition?: string | null
+  item_condition?: string | null
+  product_condition?: string | null
+  condition_label?: string | null
+  availability?: string | null
+  is_used?: boolean | null
+  is_refurbished?: boolean | null
   price: number | null
   real_price: number | null
   cpu: string | null
@@ -35,6 +45,7 @@ export interface ClientBatteryLifeProfiles {
 }
 
 export type ClientUsageCategory = 'mobile' | 'cafe' | 'home' | 'cost_performance' | 'gaming' | 'video_editing'
+export type ClientPcListing = PcListingType
 
 export type ClientSortField = 'pcScore' | 'cpu' | 'gpu_score' | 'ram' | 'rom' | 'display_size' | 'estimatedBatteryLifeHours' | 'weight' | 'price'
 export type ClientSortOrder = 'asc' | 'desc'
@@ -53,6 +64,9 @@ export interface PcTableProps {
   defaultCpu?: string
   defaultMaxDisplaySize?: number
   initialUsage?: ClientUsageCategory
+  initialQuickFilters?: PcQuickFilterKey[]
+  initialSearchQuery?: string
+  listing?: ClientPcListing
   urlBasedUsage?: boolean
   embeddedInArticle?: boolean
 }
@@ -62,6 +76,9 @@ export interface PcListProps {
   defaultCpu?: string
   defaultMaxDisplaySize?: number
   initialUsage?: ClientUsageCategory
+  initialQuickFilters?: PcQuickFilterKey[]
+  initialSearchQuery?: string
+  listing?: ClientPcListing
   urlBasedUsage?: boolean
 }
 

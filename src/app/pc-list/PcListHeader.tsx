@@ -8,6 +8,7 @@ const navItems = [
   { href: '/pc-list/cafe', label: 'カフェ' },
   { href: '/pc-list/home', label: '自宅' },
   { href: '/pc-list/cost-performance', label: 'コスパ' },
+  { href: '/pc-list/used', label: '中古' },
   { href: '/pc-list/gaming', label: 'ゲーム' },
   { href: '/pc-list/video-editing', label: '動画編集' },
 ]

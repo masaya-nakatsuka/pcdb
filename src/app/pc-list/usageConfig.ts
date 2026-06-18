@@ -1,4 +1,13 @@
-import type { ClientUsageCategory } from '../../components/types'
+import type { ClientPcListing, ClientUsageCategory } from '../../components/types'
+
+export const pcListUsageLabels: Record<ClientUsageCategory, string> = {
+  mobile: 'モバイル',
+  cafe: 'カフェ作業',
+  home: '自宅作業',
+  cost_performance: 'コスパ',
+  gaming: 'ゲーム',
+  video_editing: '動画編集',
+}
 
 export const pcListUsagePages: Record<ClientUsageCategory, {
   path: string
@@ -50,4 +59,40 @@ export function getPcListUsagePath(usage: ClientUsageCategory): string {
 
 export function getPcListUsagePage(usage: ClientUsageCategory) {
   return pcListUsagePages[usage]
+}
+
+export function parsePcListUsage(value: string | string[] | undefined): ClientUsageCategory {
+  const normalizedValue = Array.isArray(value) ? value[0] : value
+
+  if (
+    normalizedValue === 'mobile' ||
+    normalizedValue === 'cafe' ||
+    normalizedValue === 'home' ||
+    normalizedValue === 'cost_performance' ||
+    normalizedValue === 'gaming' ||
+    normalizedValue === 'video_editing'
+  ) {
+    return normalizedValue
+  }
+
+  return 'cost_performance'
+}
+
+export function getPcListUsageUrl(
+  usage: ClientUsageCategory,
+  params: URLSearchParams,
+  listing: ClientPcListing = 'new'
+): string {
+  const nextParams = new URLSearchParams(params)
+  nextParams.delete('preset')
+
+  if (listing === 'used') {
+    nextParams.set('usage', usage)
+    const query = nextParams.toString()
+    return `/pc-list/used${query ? `?${query}` : ''}`
+  }
+
+  nextParams.delete('usage')
+  const query = nextParams.toString()
+  return `${getPcListUsagePath(usage)}${query ? `?${query}` : ''}`
 }

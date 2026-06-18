@@ -7,6 +7,7 @@ const pcListRoutes = [
   '/pc-list/cafe',
   '/pc-list/home',
   '/pc-list/cost-performance',
+  '/pc-list/used',
   '/pc-list/gaming',
   '/pc-list/video-editing',
 ]

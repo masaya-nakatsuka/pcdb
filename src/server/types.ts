@@ -4,6 +4,13 @@ export interface ServerPc {
   display_size: number | null
   brand: string | null
   name: string | null
+  condition?: string | null
+  item_condition?: string | null
+  product_condition?: string | null
+  condition_label?: string | null
+  availability?: string | null
+  is_used?: boolean | null
+  is_refurbished?: boolean | null
   price: number | null
   real_price: number | null
   cpu: string | null

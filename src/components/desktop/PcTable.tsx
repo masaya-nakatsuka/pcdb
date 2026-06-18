@@ -5,8 +5,14 @@ import { useRouter } from 'next/navigation'
 import { PcTableProps, ClientPcWithCpuSpec, ClientSortOptions, ClientSortField, ClientSortOrder, ClientUsageCategory } from '../types'
 import { sortPcs } from '../utils/pcSort'
 import { getBatteryLifeProfileRows } from '../utils/batteryLifeDisplay'
+import { formatCurrency, getPcHighlights, getProductLink } from '../utils/pcInsights'
+import PcListSummary from '../pc-list/PcListSummary'
+import PcQuickFilters from '../pc-list/PcQuickFilters'
+import PcListEmptyState from '../pc-list/PcListEmptyState'
+import { applyPcQuickFilters, getPcQuickFilterLabel, type PcQuickFilterKey } from '../utils/pcQuickFilters'
+import { matchesPcSearchQuery, normalizePcSearchQuery } from '../utils/pcSearch'
 import { fetchPcList } from '../../app/pc-list/fetchPcs'
-import { getPcListUsagePath } from '../../app/pc-list/usageConfig'
+import { getPcListUsageUrl } from '../../app/pc-list/usageConfig'
 import ImageComponent from './ImageComponent'
 
 const podiumRankStyles = {
@@ -74,8 +80,9 @@ function TopRankedPcPodium({ pcs }: { pcs: ClientPcWithCpuSpec[] }) {
         }}
       >
         {displayItems.map(({ pc, rank }) => {
-          const productLink = pc.af_url || pc.url
+          const productLink = getProductLink(pc)
           const rankStyle = podiumRankStyles[rank]
+          const highlights = getPcHighlights(pc, 3)
 
           return (
             <article
@@ -206,10 +213,36 @@ function TopRankedPcPodium({ pcs }: { pcs: ClientPcWithCpuSpec[] }) {
                   }}>
                     <div style={{ color: '#64748b', fontSize: '11px', fontWeight: 600 }}>価格</div>
                     <div style={{ color: '#dc2626', fontSize: '15px', fontWeight: 800 }}>
-                      {pc.price != null ? `¥${pc.price.toLocaleString()}` : '-'}
+                      {formatCurrency(pc.price ?? pc.real_price)}
                     </div>
                   </div>
                 </div>
+                {highlights.length > 0 && (
+                  <div style={{
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    gap: '6px',
+                    marginBottom: '12px',
+                  }}>
+                    {highlights.map((highlight) => (
+                      <span
+                        key={highlight}
+                        style={{
+                          padding: '4px 7px',
+                          borderRadius: '999px',
+                          backgroundColor: '#eef6ff',
+                          color: '#1d4ed8',
+                          border: '1px solid #bfdbfe',
+                          fontSize: '11px',
+                          fontWeight: 800,
+                          lineHeight: 1,
+                        }}
+                      >
+                        {highlight}
+                      </span>
+                    ))}
+                  </div>
+                )}
                 <div style={{
                   display: 'grid',
                   gap: '5px',
@@ -255,8 +288,10 @@ function TopRankedPcPodium({ pcs }: { pcs: ClientPcWithCpuSpec[] }) {
   )
 }
 
-export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplaySize, initialUsage = 'cafe', urlBasedUsage = false, embeddedInArticle = false }: PcTableProps) {
+export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplaySize, initialUsage = 'cafe', initialQuickFilters, initialSearchQuery = '', listing = 'new', urlBasedUsage = false, embeddedInArticle = false }: PcTableProps) {
   const router = useRouter()
+  const initialQuickFilterValues = useMemo(() => initialQuickFilters ?? [], [initialQuickFilters])
+  const initialSearchValue = normalizePcSearchQuery(initialSearchQuery)
   const [pcs, setPcs] = useState(initialPcs)
   const [allPcs, setAllPcs] = useState(initialPcs)
   const [sortOptions, setSortOptions] = useState<ClientSortOptions>({ field: 'pcScore', order: 'desc' })
@@ -266,6 +301,8 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
   const [selectedDisplaySize, setSelectedDisplaySize] = useState<string>(
     defaultMaxDisplaySize ? `max:${defaultMaxDisplaySize}` : 'all'
   )
+  const [searchQuery, setSearchQuery] = useState(initialSearchValue)
+  const [activeQuickFilters, setActiveQuickFilters] = useState<PcQuickFilterKey[]>(initialQuickFilterValues)
   const [isSortApplied, setIsSortApplied] = useState(false)
   const [loading, setLoading] = useState(false)
   const scrollContainerRef = useRef<HTMLDivElement | null>(null)
@@ -296,10 +333,33 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
     return Array.from(sizeSet).sort((a, b) => a - b)
   }, [allPcs])
 
+  const quickFilterScopePcs = useMemo(() => {
+    let filtered = selectedCpu === 'all' ? allPcs : allPcs.filter((pc) => pc.cpu === selectedCpu)
+
+    if (selectedDisplaySize.startsWith('max:')) {
+      const limit = Number(selectedDisplaySize.replace('max:', ''))
+      filtered = filtered.filter((pc) =>
+        typeof pc.display_size === 'number' ? pc.display_size <= limit : false
+      )
+    } else if (selectedDisplaySize !== 'all') {
+      const targetSize = Number(selectedDisplaySize)
+      filtered = filtered.filter((pc) => pc.display_size === targetSize)
+    }
+
+    return filtered.filter((pc) => matchesPcSearchQuery(pc, searchQuery))
+  }, [allPcs, selectedCpu, selectedDisplaySize, searchQuery])
+
+  const activeQuickFilterLabels = useMemo(
+    () => activeQuickFilters.map(getPcQuickFilterLabel),
+    [activeQuickFilters]
+  )
+
   const applyCpuFilterAndSort = useCallback((
     sourcePcs: ClientPcWithCpuSpec[],
     cpuName: string,
     displaySize: string,
+    keyword: string,
+    quickFilters: PcQuickFilterKey[],
     options: ClientSortOptions,
     sortApplied: boolean
   ) => {
@@ -315,9 +375,38 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
       filtered = filtered.filter((pc) => pc.display_size === targetSize)
     }
 
+    filtered = filtered.filter((pc) => matchesPcSearchQuery(pc, keyword))
+    filtered = applyPcQuickFilters(filtered, quickFilters)
+
     const displayed = sortApplied ? sortPcs(filtered, options, cpuOrderList) : filtered
     setPcs(displayed)
   }, [cpuOrderList])
+
+  const replaceListUrl = useCallback((filters: PcQuickFilterKey[], keyword: string) => {
+    if (!urlBasedUsage || typeof window === 'undefined') {
+      return
+    }
+
+    const params = new URLSearchParams(window.location.search)
+    params.delete('preset')
+
+    if (filters.length > 0) {
+      params.set('filters', filters.join(','))
+    } else {
+      params.delete('filters')
+    }
+
+    const normalizedKeyword = normalizePcSearchQuery(keyword)
+    if (normalizedKeyword) {
+      params.set('q', normalizedKeyword)
+    } else {
+      params.delete('q')
+    }
+
+    const query = params.toString()
+    const nextUrl = `${window.location.pathname}${query ? `?${query}` : ''}${window.location.hash}`
+    window.history.replaceState(null, '', nextUrl)
+  }, [urlBasedUsage])
 
   // initialPcsが変更されたときに基データを更新
   useEffect(() => {
@@ -331,9 +420,11 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
     setSortOptions(baseSortOptions)
     setSelectedCpu(initialCpuFilter)
     setSelectedDisplaySize(initialDisplayFilter)
+    setSearchQuery(initialSearchValue)
+    setActiveQuickFilters(initialQuickFilterValues)
     setSelectedUsage(initialUsage)
-    applyCpuFilterAndSort(initialPcs, initialCpuFilter, initialDisplayFilter, baseSortOptions, false)
-  }, [initialPcs, defaultCpu, defaultMaxDisplaySize, initialUsage, applyCpuFilterAndSort])
+    applyCpuFilterAndSort(initialPcs, initialCpuFilter, initialDisplayFilter, initialSearchValue, initialQuickFilterValues, baseSortOptions, false)
+  }, [initialPcs, defaultCpu, defaultMaxDisplaySize, initialUsage, initialQuickFilterValues, initialSearchValue, applyCpuFilterAndSort])
 
   // ページ読み込み時にCPUリストを取得
   useEffect(() => {
@@ -356,17 +447,26 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
     if (urlBasedUsage) {
       if (usage !== selectedUsage) {
         setSelectedUsage(usage)
-        router.push(getPcListUsagePath(usage))
+        const params = new URLSearchParams()
+        if (activeQuickFilters.length > 0) {
+          params.set('filters', activeQuickFilters.join(','))
+        }
+        if (searchQuery) {
+          params.set('q', searchQuery)
+        }
+        router.push(getPcListUsageUrl(usage, params, listing))
       }
       return
     }
 
     setLoading(true)
     try {
-      const newPcs = await fetchPcList(usage)
+      const newPcs = await fetchPcList(usage, listing)
       setAllPcs(newPcs)
       setSelectedCpu(defaultCpu ?? 'all')
       setSelectedDisplaySize(defaultMaxDisplaySize ? `max:${defaultMaxDisplaySize}` : 'all')
+      setSearchQuery(initialSearchValue)
+      setActiveQuickFilters(initialQuickFilterValues)
       setIsSortApplied(false)
       const baseSortOptions: ClientSortOptions = { field: 'pcScore', order: 'desc' }
       setSortOptions(baseSortOptions)
@@ -374,6 +474,8 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
         newPcs,
         defaultCpu ?? 'all',
         defaultMaxDisplaySize ? `max:${defaultMaxDisplaySize}` : 'all',
+        initialSearchValue,
+        initialQuickFilterValues,
         baseSortOptions,
         false
       )
@@ -391,7 +493,7 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
     setSortOptions(newSortOptions)
     setIsSortApplied(true)
 
-    applyCpuFilterAndSort(allPcs, selectedCpu, selectedDisplaySize, newSortOptions, true)
+    applyCpuFilterAndSort(allPcs, selectedCpu, selectedDisplaySize, searchQuery, activeQuickFilters, newSortOptions, true)
   }
 
   const getSortIcon = (field: ClientSortField) => {
@@ -401,19 +503,63 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
 
   const handleCpuFilterChange = (cpuName: string) => {
     setSelectedCpu(cpuName)
-    applyCpuFilterAndSort(allPcs, cpuName, selectedDisplaySize, sortOptions, isSortApplied)
+    applyCpuFilterAndSort(allPcs, cpuName, selectedDisplaySize, searchQuery, activeQuickFilters, sortOptions, isSortApplied)
   }
 
   const handleDisplaySizeChange = (size: string) => {
     setSelectedDisplaySize(size)
-    applyCpuFilterAndSort(allPcs, selectedCpu, size, sortOptions, isSortApplied)
+    applyCpuFilterAndSort(allPcs, selectedCpu, size, searchQuery, activeQuickFilters, sortOptions, isSortApplied)
+  }
+
+  const handleSearchQueryChange = (value: string) => {
+    const nextSearchQuery = value.slice(0, 80)
+    setSearchQuery(nextSearchQuery)
+    replaceListUrl(activeQuickFilters, nextSearchQuery)
+    applyCpuFilterAndSort(allPcs, selectedCpu, selectedDisplaySize, nextSearchQuery, activeQuickFilters, sortOptions, isSortApplied)
+  }
+
+  const handleQuickFilterToggle = (filter: PcQuickFilterKey) => {
+    const nextFilters = activeQuickFilters.includes(filter)
+      ? activeQuickFilters.filter((item) => item !== filter)
+      : [...activeQuickFilters, filter]
+
+    setActiveQuickFilters(nextFilters)
+    replaceListUrl(nextFilters, searchQuery)
+    applyCpuFilterAndSort(allPcs, selectedCpu, selectedDisplaySize, searchQuery, nextFilters, sortOptions, isSortApplied)
+  }
+
+  const handleQuickFilterClear = () => {
+    setActiveQuickFilters([])
+    replaceListUrl([], searchQuery)
+    applyCpuFilterAndSort(allPcs, selectedCpu, selectedDisplaySize, searchQuery, [], sortOptions, isSortApplied)
+  }
+
+  const handleQuickFilterPreset = (filters: PcQuickFilterKey[]) => {
+    setActiveQuickFilters(filters)
+    replaceListUrl(filters, searchQuery)
+    applyCpuFilterAndSort(allPcs, selectedCpu, selectedDisplaySize, searchQuery, filters, sortOptions, isSortApplied)
+  }
+
+  const handleAllFiltersClear = () => {
+    const initialCpuFilter = defaultCpu ?? 'all'
+    const initialDisplayFilter = defaultMaxDisplaySize ? `max:${defaultMaxDisplaySize}` : 'all'
+    const baseSortOptions: ClientSortOptions = { field: 'pcScore', order: 'desc' }
+
+    setSelectedCpu(initialCpuFilter)
+    setSelectedDisplaySize(initialDisplayFilter)
+    setSearchQuery('')
+    setActiveQuickFilters([])
+    replaceListUrl([], '')
+    setSortOptions(baseSortOptions)
+    setIsSortApplied(false)
+    applyCpuFilterAndSort(allPcs, initialCpuFilter, initialDisplayFilter, '', [], baseSortOptions, false)
   }
 
   useEffect(() => {
     if (isSortApplied && sortOptions.field === 'cpu') {
-      applyCpuFilterAndSort(allPcs, selectedCpu, selectedDisplaySize, sortOptions, true)
+      applyCpuFilterAndSort(allPcs, selectedCpu, selectedDisplaySize, searchQuery, activeQuickFilters, sortOptions, true)
     }
-  }, [cpuOrderList, isSortApplied, sortOptions, allPcs, selectedCpu, selectedDisplaySize, applyCpuFilterAndSort])
+  }, [cpuOrderList, isSortApplied, sortOptions, allPcs, selectedCpu, selectedDisplaySize, searchQuery, activeQuickFilters, applyCpuFilterAndSort])
 
   useEffect(() => {
     const container = scrollContainerRef.current
@@ -607,6 +753,36 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
       }}>
         <div
           style={{
+            minWidth: '240px',
+            maxWidth: '360px',
+            flex: '1 1 260px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '6px'
+          }}
+        >
+          <label htmlFor="pcSearchQuery" style={{ fontSize: '14px', color: '#333' }}>
+            キーワードで絞り込み
+          </label>
+          <input
+            id="pcSearchQuery"
+            type="search"
+            value={searchQuery}
+            onChange={(event) => handleSearchQueryChange(event.target.value)}
+            placeholder="例: Ryzen / Lenovo / 16GB"
+            style={{
+              width: '100%',
+              padding: '8px 10px',
+              borderRadius: '8px',
+              border: '1px solid #ddd',
+              fontSize: '13px',
+              backgroundColor: '#fff',
+              color: '#333'
+            }}
+          />
+        </div>
+        <div
+          style={{
             minWidth: '180px',
             maxWidth: '220px',
             display: 'flex',
@@ -681,6 +857,15 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
         </div>
       </div>
 
+      <PcQuickFilters
+        pcs={quickFilterScopePcs}
+        activeFilters={activeQuickFilters}
+        onToggle={handleQuickFilterToggle}
+        onApplyPreset={handleQuickFilterPreset}
+        onClear={handleQuickFilterClear}
+        embeddedInArticle={embeddedInArticle}
+      />
+
       {/* ソート機能 */}
       <div>
         <h3 style={{ fontSize: '14px', color: '#334155', marginBottom: '12px', textAlign: 'left' }}>並び替え</h3>
@@ -734,6 +919,15 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
       </div>
       </section>
 
+      <PcListSummary
+        pcs={pcs}
+        selectedCpu={selectedCpu}
+        selectedDisplaySize={selectedDisplaySize}
+        searchQuery={searchQuery}
+        activeQuickFilterLabels={activeQuickFilterLabels}
+        embeddedInArticle={embeddedInArticle}
+      />
+
       {loading && (
         <div style={{
           display: 'flex',
@@ -747,7 +941,21 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
         </div>
       )}
 
-      {!loading && (
+      {!loading && pcs.length === 0 && (
+          <PcListEmptyState
+            activeQuickFilterLabels={activeQuickFilterLabels}
+            searchQuery={searchQuery}
+            hasAnyFilters={
+              selectedCpu !== (defaultCpu ?? 'all') ||
+              selectedDisplaySize !== (defaultMaxDisplaySize ? `max:${defaultMaxDisplaySize}` : 'all') ||
+              searchQuery.trim().length > 0 ||
+              activeQuickFilters.length > 0
+            }
+          onClearFilters={handleAllFiltersClear}
+        />
+      )}
+
+      {!loading && pcs.length > 0 && (
         <>
           <TopRankedPcPodium pcs={pcs} />
           <section
@@ -945,7 +1153,7 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
               </thead>
               <tbody>
                 {pcs.map((pc) => {
-                  const productLink = pc.af_url || pc.url
+                  const productLink = getProductLink(pc)
                   const batteryLifeRows = getBatteryLifeProfileRows(pc.batteryLifeProfiles)
 
                   return (
