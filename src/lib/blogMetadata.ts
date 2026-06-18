@@ -101,6 +101,12 @@ export const blogArticles: ArticleMetadata[] = [
     date: '2026-06-18',
   },
   {
+    id: 58,
+    title: '14インチ前後・16GB/512GB構成のAmazonノートPC 2026｜作業しやすい実用PCをPC-DB比較',
+    description: '14インチ前後かつメモリ16GB・SSD512GB以上のAmazonノートPCを、画面サイズ、重量、CPU型番、価格、推定駆動時間からPC-DBで比較する記事。',
+    date: '2026-06-18',
+  },
+  {
     id: 45,
     title: '15.6インチ前後のAmazonノートPC 2026｜大画面をPC-DB比較',
     description: '15.6インチ前後のAmazonノートPCを、CPU型番、メモリ、SSD、重量、価格、推定駆動時間からPC-DBで比較する記事。',
