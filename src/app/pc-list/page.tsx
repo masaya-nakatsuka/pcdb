@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import Head from 'next/head'
-import Link from 'next/link'
 import { fetchPcList } from './fetchPcs'
 import { ClientPcWithCpuSpec } from '../../components/types'
 import ClientPcList from './ClientPcList'
@@ -79,58 +78,8 @@ export default function PcListPage() {
               `}</style>
             </div>
           ) : error ? (
-            <div style={{
-              maxWidth: '720px',
-              margin: '28px auto 0',
-              padding: '0 16px',
-            }}>
-              <div style={{
-                border: '1px solid #fecaca',
-                borderRadius: '8px',
-                backgroundColor: '#fff7f7',
-                padding: '18px',
-                textAlign: 'center',
-              }}>
-                <div style={{ color: '#b91c1c', fontSize: '15px', fontWeight: 900, marginBottom: '8px' }}>
-                  PCデータの取得に失敗しました
-                </div>
-                <p style={{ margin: '0 0 14px', color: '#7f1d1d', fontSize: '13px', lineHeight: 1.7 }}>
-                  {error}。時間を置くか、価格分布メモや条件別の記事から確認してください。
-                </p>
-                <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                  <Link href="/" style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    minHeight: '36px',
-                    padding: '0 12px',
-                    borderRadius: '8px',
-                    backgroundColor: '#ffffff',
-                    border: '1px solid #fecaca',
-                    color: '#991b1b',
-                    textDecoration: 'none',
-                    fontSize: '13px',
-                    fontWeight: 900,
-                  }}>
-                    トップへ戻る
-                  </Link>
-                  <Link href="/blog/article33" style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    minHeight: '36px',
-                    padding: '0 12px',
-                    borderRadius: '8px',
-                    backgroundColor: '#b91c1c',
-                    color: '#ffffff',
-                    textDecoration: 'none',
-                    fontSize: '13px',
-                    fontWeight: 900,
-                  }}>
-                    価格分布を見る
-                  </Link>
-                </div>
-              </div>
+            <div style={{ padding: '20px', color: '#dc2626', textAlign: 'center' }}>
+              エラー: {error}
             </div>
           ) : (
             <div

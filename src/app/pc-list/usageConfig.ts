@@ -53,7 +53,12 @@ export const pcListUsagePages: Record<ClientUsageCategory, {
   }
 }
 
-export function getPcListUsagePath(usage: ClientUsageCategory): string {
+export function getPcListUsagePath(usage: ClientUsageCategory, listing: ClientPcListing = 'new'): string {
+  if (listing === 'used') {
+    const params = new URLSearchParams({ usage })
+    return `/pc-list/used?${params.toString()}`
+  }
+
   return pcListUsagePages[usage].path
 }
 
@@ -62,37 +67,23 @@ export function getPcListUsagePage(usage: ClientUsageCategory) {
 }
 
 export function parsePcListUsage(value: string | string[] | undefined): ClientUsageCategory {
-  const normalizedValue = Array.isArray(value) ? value[0] : value
+  const rawValue = Array.isArray(value) ? value[0] : value
+  const normalized = rawValue === 'cost-performance'
+    ? 'cost_performance'
+    : rawValue === 'video-editing'
+      ? 'video_editing'
+      : rawValue
 
   if (
-    normalizedValue === 'mobile' ||
-    normalizedValue === 'cafe' ||
-    normalizedValue === 'home' ||
-    normalizedValue === 'cost_performance' ||
-    normalizedValue === 'gaming' ||
-    normalizedValue === 'video_editing'
+    normalized === 'mobile' ||
+    normalized === 'cafe' ||
+    normalized === 'home' ||
+    normalized === 'cost_performance' ||
+    normalized === 'gaming' ||
+    normalized === 'video_editing'
   ) {
-    return normalizedValue
+    return normalized
   }
 
   return 'cost_performance'
-}
-
-export function getPcListUsageUrl(
-  usage: ClientUsageCategory,
-  params: URLSearchParams,
-  listing: ClientPcListing = 'new'
-): string {
-  const nextParams = new URLSearchParams(params)
-  nextParams.delete('preset')
-
-  if (listing === 'used') {
-    nextParams.set('usage', usage)
-    const query = nextParams.toString()
-    return `/pc-list/used${query ? `?${query}` : ''}`
-  }
-
-  nextParams.delete('usage')
-  const query = nextParams.toString()
-  return `${getPcListUsagePath(usage)}${query ? `?${query}` : ''}`
 }

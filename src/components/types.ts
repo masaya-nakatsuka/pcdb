@@ -1,4 +1,3 @@
-import type { PcQuickFilterKey } from './utils/pcQuickFilters'
 import type { PcListingType } from '@/lib/pcListing'
 
 export interface ClientPc {
@@ -64,8 +63,6 @@ export interface PcTableProps {
   defaultCpu?: string
   defaultMaxDisplaySize?: number
   initialUsage?: ClientUsageCategory
-  initialQuickFilters?: PcQuickFilterKey[]
-  initialSearchQuery?: string
   listing?: ClientPcListing
   urlBasedUsage?: boolean
   embeddedInArticle?: boolean
@@ -76,8 +73,6 @@ export interface PcListProps {
   defaultCpu?: string
   defaultMaxDisplaySize?: number
   initialUsage?: ClientUsageCategory
-  initialQuickFilters?: PcQuickFilterKey[]
-  initialSearchQuery?: string
   listing?: ClientPcListing
   urlBasedUsage?: boolean
 }
