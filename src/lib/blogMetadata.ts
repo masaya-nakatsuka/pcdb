@@ -83,6 +83,12 @@ export const blogArticles: ArticleMetadata[] = [
     date: '2026-06-17',
   },
   {
+    id: 55,
+    title: 'メモリ16GB・SSD512GB以上のAmazon PC 2026｜実用構成をPC-DB比較',
+    description: 'メモリ16GBかつSSD512GB以上のAmazon PCを、CPU型番、GPU、価格、推定駆動時間、用途別スコアからPC-DBで比較する記事。',
+    date: '2026-06-18',
+  },
+  {
     id: 45,
     title: '15.6インチ前後のAmazonノートPC 2026｜大画面をPC-DB比較',
     description: '15.6インチ前後のAmazonノートPCを、CPU型番、メモリ、SSD、重量、価格、推定駆動時間からPC-DBで比較する記事。',
