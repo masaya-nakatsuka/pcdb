@@ -1,11 +1,11 @@
-import { ReactNode } from 'react'
+import { CSSProperties, ReactNode } from 'react'
 import BlogNavLink from './BlogNavLink'
 
 interface BlogLayoutProps {
   children: ReactNode
 }
 
-export const blogStyles = {
+export const blogStyles: Record<string, CSSProperties> = {
   container: {
     minHeight: '100vh',
     backgroundColor: '#f9f9f9'
@@ -30,11 +30,20 @@ export const blogStyles = {
   },
   article: {
     maxWidth: '800px',
+    width: '100%',
+    boxSizing: 'border-box',
     margin: '0 auto',
     padding: '60px 30px'
   },
+  articleWide: {
+    maxWidth: 'min(1760px, calc(100vw - 24px))',
+    padding: '48px 12px'
+  },
   articleHeader: {
     marginBottom: '50px'
+  },
+  articleHeaderWide: {
+    maxWidth: '1040px'
   },
   date: {
     fontSize: '14px',
@@ -52,25 +61,33 @@ export const blogStyles = {
     backgroundColor: 'white',
     borderRadius: '12px',
     padding: '50px',
+    boxSizing: 'border-box',
     boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
     lineHeight: '1.6',
     fontSize: '16px',
     color: '#333'
+  },
+  contentWide: {
+    width: '100%',
+    padding: '40px clamp(18px, 2.5vw, 34px)'
   },
   h2: {
     fontSize: '24px',
     fontWeight: '600',
     marginTop: '40px',
     marginBottom: '20px',
-    color: '#333'
+    color: '#333',
+    maxWidth: '920px'
   },
   paragraph: {
-    marginBottom: '20px'
+    marginBottom: '20px',
+    maxWidth: '920px'
   },
   list: {
     paddingLeft: '20px',
     marginTop: '20px',
-    marginBottom: '24px'
+    marginBottom: '24px',
+    maxWidth: '920px'
   }
 }
 

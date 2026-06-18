@@ -255,7 +255,7 @@ function TopRankedPcPodium({ pcs }: { pcs: ClientPcWithCpuSpec[] }) {
   )
 }
 
-export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplaySize, initialUsage = 'cafe', urlBasedUsage = false }: PcTableProps) {
+export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplaySize, initialUsage = 'cafe', urlBasedUsage = false, embeddedInArticle = false }: PcTableProps) {
   const router = useRouter()
   const [pcs, setPcs] = useState(initialPcs)
   const [allPcs, setAllPcs] = useState(initialPcs)
@@ -445,7 +445,11 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
   }, [pcs])
 
   return (
-    <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '20px' }}>
+    <div style={{
+      maxWidth: embeddedInArticle ? 'none' : '1400px',
+      margin: embeddedInArticle ? '0' : '0 auto',
+      padding: embeddedInArticle ? '8px 0 0' : '20px'
+    }}>
       <section
         style={{
           marginBottom: '28px',

@@ -146,15 +146,19 @@ export default function PcDbArticle({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
-      <BlogArticle title={title} date={date}>
-        <BlogContent>
+      <BlogArticle title={title} date={date} variant="wide">
+        <BlogContent variant="wide">
           <BlogParagraph>{lead}</BlogParagraph>
+          <BlogParagraph>
+            PC選びは、商品名の印象や価格だけで決めるよりも、用途に対してどこが弱点になりそうかを先に見る方が失敗しにくいです。この記事では、先に結論を整理し、そのあとPC-DBの実データで候補を見比べます。
+          </BlogParagraph>
 
           <div style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
             gap: '12px',
             margin: '20px 0 8px',
+            maxWidth: '860px',
           }}>
             {[
               { label: 'DB掲載候補', value: `${pcs.length}件` },
@@ -178,10 +182,16 @@ export default function PcDbArticle({
           </div>
 
           <BlogSection title={conclusionTitle}>
+            <BlogParagraph>
+              まず大枠だけ押さえるなら、見るべきポイントはかなり絞れます。
+            </BlogParagraph>
             <BlogParagraph>{conclusion}</BlogParagraph>
           </BlogSection>
 
           <BlogSection title="PC-DB上位候補">
+            <BlogParagraph>
+              ここからは実際の候補です。文章だけだと差が分かりにくいので、CPU、GPU、メモリ、SSD、価格、推定駆動時間を同じ表で確認します。
+            </BlogParagraph>
             <BlogParagraph>{tableDescription}</BlogParagraph>
             {topPcs.length > 0 ? (
               <BlogTable>
@@ -276,8 +286,12 @@ export default function PcDbArticle({
             }}>
               {listLabel}
             </Link>
-            <div style={{ marginTop: '12px' }}>
-              <ClientPcList pcs={pcs} initialUsage={usage} urlBasedUsage />
+            <div style={{
+              marginTop: '14px',
+              marginLeft: 'calc(clamp(18px, 2.5vw, 34px) * -1)',
+              marginRight: 'calc(clamp(18px, 2.5vw, 34px) * -1)',
+            }}>
+              <ClientPcList pcs={pcs} initialUsage={usage} urlBasedUsage embeddedInArticle />
             </div>
           </BlogSection>
 

@@ -1,16 +1,18 @@
 'use client'
 
-import { ReactNode } from 'react'
+import { CSSProperties, ReactNode } from 'react'
 import { blogStyles } from './BlogLayout'
 
 interface BlogArticleProps {
   title: string
   date: string
   children: ReactNode
+  variant?: 'standard' | 'wide'
 }
 
 interface BlogContentProps {
   children: ReactNode
+  variant?: 'standard' | 'wide'
 }
 
 interface BlogSectionProps {
@@ -18,10 +20,17 @@ interface BlogSectionProps {
   children: ReactNode
 }
 
-export function BlogArticle({ title, date, children }: BlogArticleProps) {
+export function BlogArticle({ title, date, children, variant = 'standard' }: BlogArticleProps) {
+  const articleStyle: CSSProperties = variant === 'wide'
+    ? { ...blogStyles.article, ...blogStyles.articleWide }
+    : blogStyles.article
+  const headerStyle: CSSProperties = variant === 'wide'
+    ? { ...blogStyles.articleHeader, ...blogStyles.articleHeaderWide }
+    : blogStyles.articleHeader
+
   return (
-    <article style={blogStyles.article}>
-      <header style={blogStyles.articleHeader}>
+    <article style={articleStyle}>
+      <header style={headerStyle}>
         <div style={blogStyles.date}>
           {date}
         </div>
@@ -34,9 +43,13 @@ export function BlogArticle({ title, date, children }: BlogArticleProps) {
   )
 }
 
-export function BlogContent({ children }: BlogContentProps) {
+export function BlogContent({ children, variant = 'standard' }: BlogContentProps) {
+  const contentStyle: CSSProperties = variant === 'wide'
+    ? { ...blogStyles.content, ...blogStyles.contentWide }
+    : blogStyles.content
+
   return (
-    <div style={blogStyles.content}>
+    <div style={contentStyle}>
       {children}
     </div>
   )
@@ -76,10 +89,12 @@ export function BlogTable({ children }: { children: ReactNode }) {
       borderRadius: '8px',
       marginTop: '16px',
       marginBottom: '16px',
-      overflow: 'hidden'
+      overflowX: 'auto',
+      overflowY: 'hidden'
     }}>
       <table style={{
         width: '100%',
+        minWidth: '920px',
         borderCollapse: 'collapse',
         fontSize: '14px'
       }}>
@@ -126,7 +141,8 @@ export function BlogTableCell({ children, isHeader = false }: { children: ReactN
       padding: '12px 16px',
       textAlign: 'left',
       fontWeight: isHeader ? '600' : 'normal',
-      color: isHeader ? '#374151' : '#6b7280'
+      color: isHeader ? '#374151' : '#6b7280',
+      verticalAlign: 'top'
     }}>
       {children}
     </Tag>

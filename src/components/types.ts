@@ -54,6 +54,7 @@ export interface PcTableProps {
   defaultMaxDisplaySize?: number
   initialUsage?: ClientUsageCategory
   urlBasedUsage?: boolean
+  embeddedInArticle?: boolean
 }
 
 export interface PcListProps {
