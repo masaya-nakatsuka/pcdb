@@ -69,7 +69,7 @@ export default async function Article33Page() {
     <PcDbArticle
       articlePath="/blog/article33"
       title="Amazon PCはいくら出せばいい？2026｜PC-DB価格分布メモ"
-      date="2026-06-17"
+      date="2026-06-18"
       usage="cost_performance"
       listHref="/pc-list/cost-performance"
       listLabel="コスパPCランキングを見る"

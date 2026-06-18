@@ -14,7 +14,7 @@ export const blogArticles: ArticleMetadata[] = [
     id: 33,
     title: 'Amazon PCはいくら出せばいい？2026｜PC-DB価格分布メモ',
     description: 'SpecsyのPC-DBにあるAmazon PCの価格分布を集計し、5万円以下・6万円以下・7万円以下・10万円以上の割合から予算感をメモする記事。',
-    date: '2026-06-17',
+    date: '2026-06-18',
   },
   {
     id: 38,
@@ -104,6 +104,12 @@ export const blogArticles: ArticleMetadata[] = [
     id: 61,
     title: '1kg以下・16GB/512GB構成のAmazon軽量ノートPC 2026｜超軽量メインPCをPC-DB比較',
     description: '1kg以下かつメモリ16GB・SSD512GB以上のAmazon軽量ノートPCを、重量、CPU型番、価格、推定駆動時間からPC-DBで比較する記事。',
+    date: '2026-06-18',
+  },
+  {
+    id: 62,
+    title: '11インチ以下・16GB/512GB構成のAmazonミニノートPC 2026｜超小型の実用PCをPC-DB比較',
+    description: '11インチ以下かつメモリ16GB・SSD512GB以上のAmazonミニノートPCを、画面サイズ、重量、CPU型番、価格、推定駆動時間からPC-DBで比較する記事。',
     date: '2026-06-18',
   },
   {
