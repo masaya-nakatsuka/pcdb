@@ -59,6 +59,12 @@ export const blogArticles: ArticleMetadata[] = [
     date: '2026-06-17',
   },
   {
+    id: 56,
+    title: 'N95/N100/N150・16GB/512GB構成のAmazon PC 2026｜低価格実用PCをPC-DB比較',
+    description: 'N95/N100/N150搭載かつメモリ16GB・SSD512GB以上のAmazon PCを、価格、CPU型番、重量、画面サイズ、推定駆動時間からPC-DBで比較する記事。',
+    date: '2026-06-18',
+  },
+  {
     id: 43,
     title: 'Ryzen搭載Amazon PC 2026｜Ryzen 5/7をPC-DBで比較',
     description: 'Ryzen搭載のAmazon PCを、Ryzen 5/7の世代差、メモリ、SSD、GPU、価格、推定駆動時間からPC-DBで比較する記事。',
