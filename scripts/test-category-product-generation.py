@@ -36,6 +36,7 @@ generator = load_script_module("category_product_generator", ROOT / "scripts/gen
 validator = load_script_module("category_product_sql_validator", ROOT / "scripts/validate-category-products-sql.py")
 review_validator = load_script_module("category_review_csv_validator", ROOT / "scripts/validate-category-review-csv.py")
 readiness = load_script_module("category_product_readiness", ROOT / "scripts/check-category-product-readiness.py")
+planner = load_script_module("category_product_planner", ROOT / "scripts/plan-category-products.py")
 
 
 def amazon_item(
@@ -306,6 +307,22 @@ class CategoryProductGenerationTest(unittest.TestCase):
                     os.environ.pop(key, None)
                 else:
                     os.environ[key] = value
+
+    def test_plan_prints_monitor_execution_commands(self) -> None:
+        stdout = io.StringIO()
+        with contextlib.redirect_stdout(stdout):
+            exit_code = planner.main(["monitor", "--max-add", "12"])
+        output = stdout.getvalue()
+
+        self.assertEqual(exit_code, 0)
+        self.assertIn("Specsy category product plan", output)
+        self.assertIn("Page: /monitor-list", output)
+        self.assertIn("scripts/insert_monitor_products.sql", output)
+        self.assertIn("scripts/review_monitor_products.csv", output)
+        self.assertIn("モニター 24インチ IPS", output)
+        self.assertIn("python3 scripts/generate-category-products.py monitor --dry-run", output)
+        self.assertIn("python3 scripts/generate-category-products.py monitor --max-add 12", output)
+        self.assertIn("npm run category:ready -- --skip-production", output)
 
 
 if __name__ == "__main__":
