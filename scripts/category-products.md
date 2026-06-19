@@ -16,6 +16,7 @@ npm run category:test
 python3 scripts/generate-category-products.py monitor --dry-run --review-output scripts/review_monitor_products.csv
 python3 scripts/generate-category-products.py mini-pc --dry-run --review-output scripts/review_mini_pc_products.csv
 python3 scripts/generate-category-products.py desktop-pc --dry-run --review-output scripts/review_desktop_pc_products.csv
+npm run category:review
 ```
 
 3. Generate SQL after checking the candidate list.
@@ -54,4 +55,5 @@ Use the review CSV to check ASINs, prices, inferred specs, and accidental access
 
 `production:check` also verifies the home page, cafe PC API rows, Mini PC/Desktop/Monitor category API rows, product-link URLs, and the deployed external-link marker CSS/JS assets.
 `category:ready` checks `.env.amazon`, generated SQL validation, monitor table SQL presence, and category API row counts without printing credential values.
+`category:review` validates review CSV rows for duplicate ASINs, required inferred specs, suspicious category words, prices, and ASIN-bearing detail URLs.
 `category:test` checks product parsing, target/exclusion filters, generated SQL, and SQL validation without Amazon API credentials.

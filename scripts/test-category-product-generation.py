@@ -31,6 +31,7 @@ def load_script_module(name: str, path: Path) -> ModuleType:
 
 generator = load_script_module("category_product_generator", ROOT / "scripts/generate-category-products.py")
 validator = load_script_module("category_product_sql_validator", ROOT / "scripts/validate-category-products-sql.py")
+review_validator = load_script_module("category_review_csv_validator", ROOT / "scripts/validate-category-review-csv.py")
 
 
 def amazon_item(
@@ -101,6 +102,7 @@ class CategoryProductGenerationTest(unittest.TestCase):
             review_path = Path(tmp_dir) / "mini_pc_review.csv"
             generator.write_review_csv("mini-pc", [candidate], review_path)
             review_csv = review_path.read_text(encoding="utf-8")
+            self.assertEqual(review_validator.validate_csv(review_path), [])
         self.assertIn("B0MINIPC01", review_csv)
         self.assertIn("N100", review_csv)
         self.assertIn("512", review_csv)
@@ -152,6 +154,11 @@ class CategoryProductGenerationTest(unittest.TestCase):
         self.assertEqual(row["resolution"], "2560x1440")
         self.assertEqual(row["usb_c_power_delivery_w"], 65)
 
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            review_path = Path(tmp_dir) / "monitor_review.csv"
+            generator.write_review_csv("monitor", [candidate], review_path)
+            self.assertEqual(review_validator.validate_csv(review_path), [])
+
     def test_rejects_used_pc_and_monitor_accessory(self) -> None:
         used_pc = self.candidate_from_item(amazon_item(
             asin="B0USEDPC01",
@@ -170,6 +177,22 @@ class CategoryProductGenerationTest(unittest.TestCase):
 
         self.assertFalse(generator.is_valid_candidate("mini-pc", used_pc))
         self.assertFalse(generator.is_valid_candidate("monitor", monitor_arm))
+
+    def test_review_validator_rejects_suspicious_rows(self) -> None:
+        used_pc = self.candidate_from_item(amazon_item(
+            asin="B0USEDPC01",
+            title="中古 MINISFORUM ミニPC Windows 11 N100",
+            brand="MINISFORUM",
+            price=24800,
+            features=["16GB RAM", "512GB SSD", "小型PC"],
+        ))
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            review_path = Path(tmp_dir) / "used_pc_review.csv"
+            generator.write_review_csv("mini-pc", [used_pc], review_path)
+            errors = review_validator.validate_csv(review_path)
+
+        self.assertTrue(any("suspicious PC title word" in error for error in errors))
 
 
 if __name__ == "__main__":
