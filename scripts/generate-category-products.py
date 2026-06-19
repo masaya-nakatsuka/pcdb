@@ -22,6 +22,7 @@ import datetime as dt
 import json
 import os
 import re
+import subprocess
 import sys
 import time
 import urllib.error
@@ -792,6 +793,36 @@ def default_review_output_path(profile: str) -> Path:
     return Path("scripts") / f"review_{profile.replace('-', '_')}_products.csv"
 
 
+def run_validator(script_name: str, path: Path) -> tuple[bool, str]:
+    script_path = Path(__file__).resolve().parent / script_name
+    result = subprocess.run(
+        [sys.executable, str(script_path), str(path)],
+        check=False,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    output = "\n".join(part for part in (result.stdout.strip(), result.stderr.strip()) if part)
+    return result.returncode == 0, output
+
+
+def validate_generated_outputs(sql_path: Path, review_path: Path) -> bool:
+    checks = [
+        ("SQL", "validate-category-products-sql.py", sql_path),
+        ("REVIEW", "validate-category-review-csv.py", review_path),
+    ]
+    all_ok = True
+    for label, script_name, path in checks:
+        ok, output = run_validator(script_name, path)
+        print(f"Validate {label} {path}: {'ok' if ok else 'failed'}")
+        if output:
+            for line in output.splitlines():
+                print(f"  {line}")
+        if not ok:
+            all_ok = False
+    return all_ok
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
     parser.add_argument("profile", choices=sorted(DEFAULT_QUERIES))
@@ -804,6 +835,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--env-file", default=".env.amazon", help="Optional env file with PAAPI_* keys.")
     parser.add_argument("--output", type=Path, help="Output SQL path.")
     parser.add_argument("--review-output", type=Path, help="Optional CSV path for reviewing candidates before SQL insertion.")
+    parser.add_argument("--skip-output-validation", action="store_true", help="Skip SQL/review CSV validation after writing outputs.")
     parser.add_argument("--dry-run", action="store_true", help="Print candidates without writing SQL.")
     return parser
 
@@ -897,6 +929,9 @@ def main() -> int:
         write_review_csv(args.profile, candidates, review_output_path)
         print(f"Review CSV written: {review_output_path}")
     print(f"SQL written: {output_path}")
+    if review_output_path is not None and not args.skip_output_validation:
+        if not validate_generated_outputs(output_path, review_output_path):
+            return 3
     return 0
 
 

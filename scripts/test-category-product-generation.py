@@ -282,14 +282,18 @@ class CategoryProductGenerationTest(unittest.TestCase):
                     "--request-sleep",
                     "0",
                 ]
-                with contextlib.redirect_stdout(io.StringIO()):
+                stdout = io.StringIO()
+                with contextlib.redirect_stdout(stdout):
                     exit_code = generator.main()
+                output = stdout.getvalue()
 
                 sql_path = Path("scripts/insert_mini_pc_products.sql")
                 review_path = Path("scripts/review_mini_pc_products.csv")
                 self.assertEqual(exit_code, 0)
                 self.assertTrue(sql_path.exists())
                 self.assertTrue(review_path.exists())
+                self.assertIn("Validate SQL", output)
+                self.assertIn("Validate REVIEW", output)
                 self.assertEqual(readiness.compare_sql_review_asins(sql_path, review_path), [])
                 self.assertEqual(review_validator.validate_csv(review_path), [])
         finally:

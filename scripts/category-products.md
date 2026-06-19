@@ -28,9 +28,9 @@ python3 scripts/generate-category-products.py mini-pc --max-add 20
 python3 scripts/generate-category-products.py desktop-pc --max-add 20
 ```
 
-The generator writes the matching `scripts/review_*_products.csv` automatically when it writes SQL. It exits without writing SQL or an automatic review CSV when no valid candidates are found. Run the dry-run command first if you need to tune keywords or filters.
+The generator writes the matching `scripts/review_*_products.csv` automatically when it writes SQL, then validates both outputs. It exits without writing SQL or an automatic review CSV when no valid candidates are found. Run the dry-run command first if you need to tune keywords or filters.
 
-4. Validate generated SQL and matching review CSVs before opening Supabase.
+4. Re-validate generated SQL and matching review CSVs before opening Supabase.
 
 ```bash
 python3 scripts/validate-category-products-sql.py \
@@ -56,6 +56,7 @@ The generated SQL skips rows when the ASIN already appears in `url` or `af_url`.
 Use the review CSV to check ASINs, prices, inferred specs, and accidental accessories before running generated SQL in Supabase. Regenerate the SQL and review CSV together when you change keywords, max rows, or category filters; the default non-dry-run command does this automatically.
 
 `production:check` also verifies the home page, cafe PC API rows, Mini PC/Desktop/Monitor category API rows, product-link URLs, and the deployed external-link marker CSS/JS assets.
+`generate-category-products.py` validates generated SQL and review CSVs after writing them. Use `--skip-output-validation` only when debugging the validators themselves.
 `category:ready` checks `.env.amazon`, generated SQL validation, matching review CSV validation, SQL/review ASIN consistency, monitor table SQL presence, and category API row counts without printing credential values. If SQL exists for a category, the matching review CSV must exist, pass validation, and contain the same ASIN set as the SQL.
 `category:review` validates review CSV rows for duplicate ASINs, required inferred specs, suspicious category words, prices, and ASIN-bearing detail URLs.
 `category:test` checks product parsing, target/exclusion filters, generated SQL, and SQL validation without Amazon API credentials.
