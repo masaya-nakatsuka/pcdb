@@ -1,5 +1,9 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import type { Monitor } from '../../server/domain/models/monitor'
+import { fetchMonitorList } from '../../server/usecase/fetchMonitorList'
+
+export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
   title: 'モニター比較 - スペクシーハブ',
@@ -16,7 +20,47 @@ const monitorColumns = [
   '価格',
 ]
 
-export default function MonitorListPage() {
+function formatPrice(price: number | null): string {
+  if (price == null) {
+    return '-'
+  }
+
+  return `¥${price.toLocaleString('ja-JP')}`
+}
+
+function formatSize(size: number | null): string {
+  if (size == null) {
+    return '-'
+  }
+
+  return `${size.toLocaleString('ja-JP')}インチ`
+}
+
+function formatRefreshRate(refreshRate: number | null): string {
+  if (refreshRate == null) {
+    return '-'
+  }
+
+  return `${refreshRate.toLocaleString('ja-JP')}Hz`
+}
+
+function formatUsbC(hasUsbC: boolean | null, powerDelivery: number | null): string {
+  if (!hasUsbC) {
+    return '-'
+  }
+
+  return powerDelivery ? `USB-C ${powerDelivery}W` : 'USB-C'
+}
+
+export default async function MonitorListPage() {
+  let monitors: Monitor[] = []
+
+  try {
+    monitors = await fetchMonitorList()
+  } catch (error) {
+    console.error('Failed to fetch monitors:', error)
+  }
+
   return (
     <div style={{
       minHeight: '100vh',
@@ -118,17 +162,103 @@ export default function MonitorListPage() {
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td colSpan={monitorColumns.length} style={{
-                    padding: '40px 16px',
-                    color: '#64748b',
-                    fontSize: '14px',
-                    textAlign: 'center',
-                    borderBottom: '1px solid #f1f5f9',
-                  }}>
-                    モニターDB接続後、ここに商品一覧を表示します。
-                  </td>
-                </tr>
+                {monitors.length === 0 ? (
+                  <tr>
+                    <td colSpan={monitorColumns.length} style={{
+                      padding: '40px 16px',
+                      color: '#64748b',
+                      fontSize: '14px',
+                      textAlign: 'center',
+                      borderBottom: '1px solid #f1f5f9',
+                    }}>
+                      モニターDB接続後、ここに商品一覧を表示します。
+                    </td>
+                  </tr>
+                ) : monitors.map((monitor) => {
+                  const productUrl = monitor.af_url || monitor.url
+
+                  return (
+                    <tr key={monitor.id}>
+                      <td style={{
+                        padding: '12px',
+                        borderBottom: '1px solid #f1f5f9',
+                        minWidth: '280px',
+                      }}>
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '12px',
+                        }}>
+                          {monitor.img_url ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={monitor.img_url}
+                              alt={monitor.name ?? 'モニター画像'}
+                              style={{
+                                width: '56px',
+                                height: '56px',
+                                objectFit: 'contain',
+                                flex: '0 0 auto',
+                              }}
+                            />
+                          ) : null}
+                          <div>
+                            <div style={{
+                              color: '#64748b',
+                              fontSize: '12px',
+                              fontWeight: 700,
+                              marginBottom: '3px',
+                            }}>
+                              {monitor.brand ?? 'Unknown'}
+                            </div>
+                            {productUrl ? (
+                              <a href={productUrl} target="_blank" rel="noopener noreferrer" style={{
+                                color: '#0f172a',
+                                fontWeight: 800,
+                                textDecoration: 'none',
+                                lineHeight: 1.45,
+                              }}>
+                                {monitor.name}
+                              </a>
+                            ) : (
+                              <span style={{
+                                color: '#0f172a',
+                                fontWeight: 800,
+                                lineHeight: 1.45,
+                              }}>
+                                {monitor.name}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </td>
+                      <td style={{ padding: '12px', borderBottom: '1px solid #f1f5f9', whiteSpace: 'nowrap' }}>
+                        {formatSize(monitor.size_inch)}
+                      </td>
+                      <td style={{ padding: '12px', borderBottom: '1px solid #f1f5f9', whiteSpace: 'nowrap' }}>
+                        {monitor.resolution ?? '-'}
+                      </td>
+                      <td style={{ padding: '12px', borderBottom: '1px solid #f1f5f9', whiteSpace: 'nowrap' }}>
+                        {formatRefreshRate(monitor.refresh_rate_hz)}
+                      </td>
+                      <td style={{ padding: '12px', borderBottom: '1px solid #f1f5f9', whiteSpace: 'nowrap' }}>
+                        {monitor.panel_type ?? '-'}
+                      </td>
+                      <td style={{ padding: '12px', borderBottom: '1px solid #f1f5f9', whiteSpace: 'nowrap' }}>
+                        {formatUsbC(monitor.has_usb_c, monitor.usb_c_power_delivery_w)}
+                      </td>
+                      <td style={{
+                        padding: '12px',
+                        borderBottom: '1px solid #f1f5f9',
+                        color: '#0f172a',
+                        fontWeight: 900,
+                        whiteSpace: 'nowrap',
+                      }}>
+                        {formatPrice(monitor.real_price ?? monitor.price)}
+                      </td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </div>

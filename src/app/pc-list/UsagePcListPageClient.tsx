@@ -14,6 +14,43 @@ interface UsagePcListPageClientProps {
   device?: ClientPcDeviceCategory
 }
 
+function DeviceEmptyState({ device }: { device: ClientPcDeviceCategory }) {
+  const label = device === 'mini_pc' ? 'Mini PC' : 'デスクトップPC'
+
+  return (
+    <section style={{
+      maxWidth: '960px',
+      margin: '32px auto 0',
+      padding: '0 16px',
+    }}>
+      <div style={{
+        border: '1px solid #e2e8f0',
+        borderRadius: '8px',
+        backgroundColor: '#f8fafc',
+        padding: '28px 20px',
+        textAlign: 'center',
+      }}>
+        <h2 style={{
+          margin: '0 0 8px',
+          color: '#0f172a',
+          fontSize: '18px',
+          fontWeight: 900,
+        }}>
+          {label}のDB商品を準備中です
+        </h2>
+        <p style={{
+          margin: 0,
+          color: '#475569',
+          fontSize: '14px',
+          lineHeight: 1.8,
+        }}>
+          画面は作成済みです。Amazon商品データを追加すると、このページに一覧として表示されます。
+        </p>
+      </div>
+    </section>
+  )
+}
+
 export default function UsagePcListPageClient({ usage, heading, description, listing = 'new', device = 'all' }: UsagePcListPageClientProps) {
   const [pcs, setPcs] = useState<ClientPcWithCpuSpec[]>([])
   const [error, setError] = useState<string | null>(null)
@@ -112,6 +149,8 @@ export default function UsagePcListPageClient({ usage, heading, description, lis
           <div style={{ padding: '20px', color: '#dc2626', textAlign: 'center' }}>
             エラー: {error}
           </div>
+        ) : pcs.length === 0 && (device === 'mini_pc' || device === 'desktop_pc') ? (
+          <DeviceEmptyState device={device} />
         ) : (
           <div
             style={{
