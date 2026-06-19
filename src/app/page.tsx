@@ -118,6 +118,102 @@ export default function HomePage() {
         </Link>
 
         <Link
+          href="/monitor-list"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '16px 32px',
+            fontSize: '18px',
+            fontWeight: '600',
+            color: 'white',
+            background: 'linear-gradient(135deg, #0891b2 0%, #2563eb 100%)',
+            borderRadius: '16px',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.1)',
+            textDecoration: 'none',
+            transition: 'all 0.3s ease',
+            position: 'relative',
+            overflow: 'hidden'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'scale(1.05)'
+            e.currentTarget.style.background = 'linear-gradient(135deg, #0e7490 0%, #1d4ed8 100%)'
+            e.currentTarget.style.boxShadow = '0 32px 64px -12px rgba(8, 145, 178, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1)'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'scale(1)'
+            e.currentTarget.style.background = 'linear-gradient(135deg, #0891b2 0%, #2563eb 100%)'
+            e.currentTarget.style.boxShadow = '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.1)'
+          }}
+        >
+          モニター比較を見る
+        </Link>
+
+        <Link
+          href="/pc-list/mini-pc"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '16px 32px',
+            fontSize: '18px',
+            fontWeight: '600',
+            color: 'white',
+            background: 'linear-gradient(135deg, #7c3aed 0%, #db2777 100%)',
+            borderRadius: '16px',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.1)',
+            textDecoration: 'none',
+            transition: 'all 0.3s ease',
+            position: 'relative',
+            overflow: 'hidden'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'scale(1.05)'
+            e.currentTarget.style.background = 'linear-gradient(135deg, #6d28d9 0%, #be185d 100%)'
+            e.currentTarget.style.boxShadow = '0 32px 64px -12px rgba(124, 58, 237, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1)'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'scale(1)'
+            e.currentTarget.style.background = 'linear-gradient(135deg, #7c3aed 0%, #db2777 100%)'
+            e.currentTarget.style.boxShadow = '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.1)'
+          }}
+        >
+          Mini PCを見る
+        </Link>
+
+        <Link
+          href="/pc-list/desktop"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '16px 32px',
+            fontSize: '18px',
+            fontWeight: '600',
+            color: 'white',
+            background: 'linear-gradient(135deg, #475569 0%, #0f766e 100%)',
+            borderRadius: '16px',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.1)',
+            textDecoration: 'none',
+            transition: 'all 0.3s ease',
+            position: 'relative',
+            overflow: 'hidden'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'scale(1.05)'
+            e.currentTarget.style.background = 'linear-gradient(135deg, #334155 0%, #0f5f59 100%)'
+            e.currentTarget.style.boxShadow = '0 32px 64px -12px rgba(71, 85, 105, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.1)'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'scale(1)'
+            e.currentTarget.style.background = 'linear-gradient(135deg, #475569 0%, #0f766e 100%)'
+            e.currentTarget.style.boxShadow = '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.1)'
+          }}
+        >
+          デスクトップPCを見る
+        </Link>
+
+        <Link
           href="/todo/lp"
           style={{
             display: 'inline-flex',
