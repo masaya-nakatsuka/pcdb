@@ -132,6 +132,20 @@ class CategoryProductGenerationTest(unittest.TestCase):
         self.assertIn("'RTX 4060'", sql)
         self.assert_sql_valid(sql)
 
+    def test_cpu_inference_normalizes_symbols_and_fullwidth_digits(self) -> None:
+        self.assertEqual(
+            generator.infer_cpu("Lenovo IdeaPad Slim 3 AMD Ryzen™5 7520U メモリ16GB"),
+            "Ryzen 5 7520U",
+        )
+        self.assertEqual(
+            generator.infer_cpu("Wzbookl ノートパソコン Core i７-5500U 最大3.0GHz"),
+            "Core i7-5500U",
+        )
+        self.assertEqual(
+            generator.infer_cpu("Wzbookl ノートパソコン AMD Ryzen 5 3500u 4コア"),
+            "Ryzen 5 3500U",
+        )
+
     def test_monitor_candidate_generates_valid_sql(self) -> None:
         item = amazon_item(
             asin="B0MONITOR1",

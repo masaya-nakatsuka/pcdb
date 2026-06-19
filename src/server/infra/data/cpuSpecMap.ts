@@ -129,6 +129,14 @@ export const cpuPowerMap: Record<string, CpuSpec> = {
     tdpW: 15,
     passmarkScore: 6801,
   },
+  'Ryzen 5 3550H': {
+    cores: 4,
+    threads: 8,
+    baseClockGHz: 2.1,
+    boostClockGHz: 3.7,
+    tdpW: 35,
+    passmarkScore: 7625,
+  },
   'Ryzen 5 7520U': {
     cores: 4,
     threads: 8,

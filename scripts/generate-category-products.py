@@ -25,6 +25,7 @@ import re
 import subprocess
 import sys
 import time
+import unicodedata
 import urllib.error
 import urllib.request
 from pathlib import Path
@@ -351,8 +352,13 @@ def to_candidate(item: dict[str, Any]) -> Candidate | None:
     )
 
 
+def canonical_text(value: str) -> str:
+    without_marks = value.replace("™", " ").replace("®", " ")
+    return re.sub(r"\s+", " ", unicodedata.normalize("NFKC", without_marks).replace("　", " ")).strip()
+
+
 def normalized(value: str) -> str:
-    return value.lower().replace("　", " ")
+    return canonical_text(value).lower()
 
 
 def includes_any(text: str, words: list[str]) -> bool:
@@ -361,10 +367,11 @@ def includes_any(text: str, words: list[str]) -> bool:
 
 
 def infer_cpu(text: str) -> str:
+    text = canonical_text(text)
     patterns = [
         (r"(?:Core\s*)?Ultra\s*([975])\s*(\d{3}[A-Z]{0,2})", "Core Ultra {0} {1}"),
         (r"(?:Core\s*)?i([9753])[-\s]?(\d{4,5}[A-Z]{0,2})", "Core i{0}-{1}"),
-        (r"Ryzen\s*([9753])\s*(\d{4}[A-Z]{0,2})", "Ryzen {0} {1}"),
+        (r"Ryzen\s*([9753])\s*(\d{4,5}[A-Z]{0,2})", "Ryzen {0} {1}"),
         (r"Ryzen\s*([9753])\s*(40|150|170|250)", "Ryzen {0} {1}"),
         (r"\bN150\b", "N150"),
         (r"\bN100\b", "N100"),
@@ -376,7 +383,8 @@ def infer_cpu(text: str) -> str:
         match = re.search(pattern, text, re.I)
         if match:
             if "{" in label:
-                return label.format(*match.groups()).strip()
+                groups = tuple(group.upper() for group in match.groups())
+                return label.format(*groups).strip()
             return label
     if re.search(r"Core\s*i5", text, re.I):
         return "Core i5"
