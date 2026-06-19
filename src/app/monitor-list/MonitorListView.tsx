@@ -4,10 +4,10 @@ import { fetchMonitorList } from '../../server/usecase/fetchMonitorList'
 import {
   getMonitorUsageOption,
   getMonitorUsagePath,
-  MonitorUsage,
   monitorUsageOptions,
   rankMonitors,
 } from '../../lib/monitorRecommendation'
+import type { MonitorRecommendation, MonitorUsage } from '../../lib/monitorRecommendation'
 import PcListHeader from '../pc-list/PcListHeader'
 
 const monitorColumns = [
@@ -19,7 +19,35 @@ const monitorColumns = [
   'パネル',
   'USB-C',
   '価格',
+  '詳細',
 ]
+
+const podiumRankStyles = {
+  1: {
+    label: '1位',
+    ribbon: '#f59e0b',
+    border: '#f8c46b',
+    background: 'linear-gradient(180deg, #fffaf0 0%, #ffffff 46%)',
+    minHeight: '430px',
+    imageHeight: '200px',
+  },
+  2: {
+    label: '2位',
+    ribbon: '#64748b',
+    border: '#cbd5e1',
+    background: 'linear-gradient(180deg, #f8fafc 0%, #ffffff 48%)',
+    minHeight: '394px',
+    imageHeight: '164px',
+  },
+  3: {
+    label: '3位',
+    ribbon: '#b45309',
+    border: '#d6b58a',
+    background: 'linear-gradient(180deg, #fff7ed 0%, #ffffff 48%)',
+    minHeight: '380px',
+    imageHeight: '154px',
+  },
+} as const
 
 function formatPrice(price: number | null): string {
   if (price == null) {
@@ -51,6 +79,208 @@ function formatUsbC(hasUsbC: boolean | null, powerDelivery: number | null): stri
   }
 
   return powerDelivery ? `USB-C ${powerDelivery}W` : 'USB-C'
+}
+
+function TopRankedMonitorPodium({ monitors }: { monitors: MonitorRecommendation[] }) {
+  if (monitors.length === 0) {
+    return null
+  }
+
+  const rankedItems = monitors.slice(0, 3).map((item, index) => ({
+    item,
+    rank: (index + 1) as 1 | 2 | 3,
+  }))
+
+  return (
+    <section style={{ marginBottom: '24px' }}>
+      <h3 style={{
+        margin: '0 0 14px',
+        color: '#111827',
+        fontSize: '18px',
+        fontWeight: 700,
+        textAlign: 'center',
+      }}>
+        上位3モデル
+      </h3>
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+        alignItems: 'end',
+        justifyContent: 'center',
+        gap: '16px',
+      }}>
+        {rankedItems.map(({ item, rank }) => {
+          const { monitor, score, highlights } = item
+          const productUrl = monitor.af_url || monitor.url
+          const rankStyle = podiumRankStyles[rank]
+
+          return (
+            <article
+              key={monitor.id}
+              style={{
+                position: 'relative',
+                minHeight: rankStyle.minHeight,
+                border: `1px solid ${rankStyle.border}`,
+                borderRadius: '8px',
+                background: rankStyle.background,
+                boxShadow: rank === 1
+                  ? '0 14px 30px rgba(15, 23, 42, 0.16)'
+                  : '0 8px 18px rgba(15, 23, 42, 0.10)',
+                overflow: 'hidden',
+              }}
+            >
+              <div style={{
+                position: 'absolute',
+                top: '12px',
+                left: '12px',
+                zIndex: 1,
+                padding: rank === 1 ? '7px 12px' : '6px 10px',
+                borderRadius: '999px',
+                backgroundColor: rankStyle.ribbon,
+                color: 'white',
+                fontSize: rank === 1 ? '15px' : '13px',
+                fontWeight: 800,
+                lineHeight: 1,
+                boxShadow: '0 4px 10px rgba(15, 23, 42, 0.18)',
+              }}>
+                {rankStyle.label}
+              </div>
+              <div style={{
+                height: rankStyle.imageHeight,
+                padding: rank === 1 ? '28px 22px 10px' : '28px 18px 8px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: 'rgba(255, 255, 255, 0.72)',
+              }}>
+                {monitor.img_url ? (
+                  productUrl ? (
+                    <a
+                      href={productUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ display: 'block', width: '100%', height: '100%' }}
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={monitor.img_url}
+                        alt={monitor.name ?? 'モニター画像'}
+                        style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                      />
+                    </a>
+                  ) : (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={monitor.img_url}
+                      alt={monitor.name ?? 'モニター画像'}
+                      style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                    />
+                  )
+                ) : (
+                  <div style={{
+                    width: '100%',
+                    height: '100%',
+                    borderRadius: '6px',
+                    backgroundColor: '#f1f5f9',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#94a3b8',
+                    fontSize: '13px',
+                    fontWeight: 600,
+                  }}>
+                    No Image
+                  </div>
+                )}
+              </div>
+              <div style={{ padding: '14px 16px 16px' }}>
+                <div style={{
+                  marginBottom: '8px',
+                  color: '#0f172a',
+                  fontSize: rank === 1 ? '16px' : '14px',
+                  fontWeight: 800,
+                  lineHeight: 1.35,
+                  minHeight: rank === 1 ? '44px' : '38px',
+                  display: '-webkit-box',
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: 'vertical',
+                  overflow: 'hidden',
+                }}>
+                  {monitor.brand ?? 'Unknown'} / {monitor.name ?? 'Unnamed Monitor'}
+                </div>
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+                  gap: '8px',
+                  marginBottom: '12px',
+                }}>
+                  <div style={{
+                    padding: '8px',
+                    borderRadius: '6px',
+                    backgroundColor: '#f8fafc',
+                    border: '1px solid #e2e8f0',
+                  }}>
+                    <div style={{ color: '#64748b', fontSize: '11px', fontWeight: 600 }}>スコア</div>
+                    <div style={{ color: '#0f172a', fontSize: '15px', fontWeight: 800 }}>
+                      {score}点
+                    </div>
+                  </div>
+                  <div style={{
+                    padding: '8px',
+                    borderRadius: '6px',
+                    backgroundColor: '#f8fafc',
+                    border: '1px solid #e2e8f0',
+                  }}>
+                    <div style={{ color: '#64748b', fontSize: '11px', fontWeight: 600 }}>価格</div>
+                    <div style={{ color: '#dc2626', fontSize: '15px', fontWeight: 800 }}>
+                      {formatPrice(monitor.real_price ?? monitor.price)}
+                    </div>
+                  </div>
+                </div>
+                <div style={{
+                  display: 'grid',
+                  gap: '5px',
+                  marginBottom: '14px',
+                  color: '#334155',
+                  fontSize: '12px',
+                  lineHeight: 1.45,
+                }}>
+                  <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {formatSize(monitor.size_inch)} / {monitor.resolution ?? '-'} / {formatRefreshRate(monitor.refresh_rate_hz)}
+                  </div>
+                  <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {highlights.length > 0 ? highlights.join(' / ') : formatUsbC(monitor.has_usb_c, monitor.usb_c_power_delivery_w)}
+                  </div>
+                </div>
+                {productUrl && (
+                  <a
+                    href={productUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="external-link-mark"
+                    style={{
+                      display: 'block',
+                      width: '100%',
+                      padding: '9px 12px',
+                      borderRadius: '6px',
+                      backgroundColor: '#ee5a24',
+                      color: 'white',
+                      textAlign: 'center',
+                      textDecoration: 'none',
+                      fontSize: '13px',
+                      fontWeight: 800,
+                    }}
+                  >
+                    詳細を見る
+                  </a>
+                )}
+              </div>
+            </article>
+          )
+        })}
+      </div>
+    </section>
+  )
 }
 
 interface MonitorListViewProps {
@@ -100,45 +330,6 @@ export default async function MonitorListView({ usage }: MonitorListViewProps) {
           }}>
             {usageOption.description}
           </p>
-          <nav aria-label="モニター用途" style={{
-            marginTop: '18px',
-            display: 'flex',
-            justifyContent: 'center',
-            gap: '2px',
-            flexWrap: 'wrap',
-            padding: '4px',
-            border: '1px solid #e2e8f0',
-            borderRadius: '10px',
-            backgroundColor: 'rgba(248, 250, 252, 0.84)',
-          }}>
-            {monitorUsageOptions.map((option) => {
-              const isActive = option.value === usage
-
-              return (
-                <Link
-                  key={option.value}
-                  href={getMonitorUsagePath(option.value)}
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    minHeight: '34px',
-                    padding: '0 11px',
-                    borderRadius: '7px',
-                    backgroundColor: isActive ? '#ffffff' : 'transparent',
-                    color: isActive ? '#2563eb' : '#475569',
-                    boxShadow: isActive ? '0 1px 3px rgba(15, 23, 42, 0.12)' : 'none',
-                    textDecoration: 'none',
-                    fontSize: '13px',
-                    fontWeight: 800,
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {option.label}
-                </Link>
-              )
-            })}
-          </nav>
         </section>
 
         <section style={{
@@ -146,6 +337,65 @@ export default async function MonitorListView({ usage }: MonitorListViewProps) {
           margin: '28px auto 0',
           padding: '0 16px',
         }}>
+          <TopRankedMonitorPodium monitors={rankedMonitors} />
+
+          <section style={{
+            marginBottom: '28px',
+            padding: '18px',
+            border: '1px solid #dbe4ef',
+            borderRadius: '8px',
+            backgroundColor: '#f8fafc',
+            boxShadow: '0 1px 3px rgba(15, 23, 42, 0.06)',
+          }}>
+            <div style={{ marginBottom: '18px', textAlign: 'center' }}>
+              <h2 style={{ fontSize: '18px', color: '#0f172a', margin: 0, fontWeight: 800 }}>
+                ランキング条件
+              </h2>
+            </div>
+            <div>
+              <h3 style={{ fontSize: '14px', color: '#334155', margin: '0 0 12px', textAlign: 'left' }}>
+                用途を選択
+              </h3>
+              <nav aria-label="モニター用途" style={{
+                display: 'flex',
+                gap: '12px',
+                justifyContent: 'flex-start',
+                flexWrap: 'wrap',
+              }}>
+                {monitorUsageOptions.map((option) => {
+                  const isActive = option.value === usage
+
+                  return (
+                    <Link
+                      key={option.value}
+                      href={getMonitorUsagePath(option.value)}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        minHeight: '42px',
+                        padding: '0 18px',
+                        borderRadius: '8px',
+                        border: 'none',
+                        background: isActive
+                          ? 'linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%)'
+                          : 'linear-gradient(135deg, rgba(255, 107, 107, 0.50) 0%, rgba(238, 90, 36, 0.50) 100%)',
+                        color: 'white',
+                        textDecoration: 'none',
+                        fontSize: '14px',
+                        fontWeight: 700,
+                        whiteSpace: 'nowrap',
+                        boxShadow: isActive ? '0 8px 18px rgba(238, 90, 36, 0.18)' : 'none',
+                      }}
+                    >
+                      {option.label}
+                    </Link>
+                  )
+                })}
+              </nav>
+            </div>
+          </section>
+
           <div style={{
             overflowX: 'auto',
             border: '1px solid #e2e8f0',
@@ -206,8 +456,7 @@ export default async function MonitorListView({ usage }: MonitorListViewProps) {
                           color: '#0f172a',
                           fontWeight: 900,
                         }}>
-                          <span style={{ fontSize: '18px' }}>{score}</span>
-                          <span style={{ fontSize: '11px', color: '#64748b' }}>/100</span>
+                          <span style={{ fontSize: '14px' }}>{score}点</span>
                         </div>
                       </td>
                       <td style={{
@@ -244,9 +493,10 @@ export default async function MonitorListView({ usage }: MonitorListViewProps) {
                             </div>
                             {productUrl ? (
                               <a href={productUrl} target="_blank" rel="noopener noreferrer" className="external-link-mark" style={{
-                                color: '#0f172a',
+                                color: '#2563eb',
                                 fontWeight: 800,
-                                textDecoration: 'none',
+                                textDecoration: 'underline',
+                                textUnderlineOffset: '2px',
                                 lineHeight: 1.45,
                               }}>
                                 {monitor.name}
@@ -308,6 +558,35 @@ export default async function MonitorListView({ usage }: MonitorListViewProps) {
                         whiteSpace: 'nowrap',
                       }}>
                         {formatPrice(monitor.real_price ?? monitor.price)}
+                      </td>
+                      <td style={{
+                        padding: '12px',
+                        borderBottom: '1px solid #f1f5f9',
+                        textAlign: 'center',
+                        whiteSpace: 'nowrap',
+                      }}>
+                        {productUrl ? (
+                          <a
+                            href={productUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="external-link-mark"
+                            style={{
+                              display: 'inline-block',
+                              padding: '8px 12px',
+                              borderRadius: '6px',
+                              backgroundColor: '#ee5a24',
+                              color: 'white',
+                              textDecoration: 'none',
+                              fontSize: '12px',
+                              fontWeight: 800,
+                            }}
+                          >
+                            詳細を見る
+                          </a>
+                        ) : (
+                          <span style={{ color: '#94a3b8', fontSize: '12px' }}>-</span>
+                        )}
                       </td>
                     </tr>
                   )
