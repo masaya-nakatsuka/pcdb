@@ -35,4 +35,11 @@ python3 scripts/validate-category-products-sql.py \
 
 5. For monitors, run `scripts/create-monitor-data-table.sql` in Supabase SQL Editor before running `scripts/insert_monitor_products.sql`.
 
+6. Check production after deploy or DB insertion.
+
+```bash
+python3 scripts/check-category-pages.py
+python3 scripts/check-category-pages.py --expect-data
+```
+
 The generated SQL skips rows when the ASIN already appears in `url` or `af_url`.
