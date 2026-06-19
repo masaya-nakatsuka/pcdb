@@ -23,6 +23,11 @@ SQL_FILES = {
     "desktop-pc": Path("scripts/insert_desktop_pc_products.sql"),
     "monitor": Path("scripts/insert_monitor_products.sql"),
 }
+REVIEW_FILES = {
+    "mini-pc": Path("scripts/review_mini_pc_products.csv"),
+    "desktop-pc": Path("scripts/review_desktop_pc_products.csv"),
+    "monitor": Path("scripts/review_monitor_products.csv"),
+}
 API_CHECKS = {
     "mini-pc": "/api/pc-list?device=mini_pc",
     "desktop-pc": "/api/pc-list?device=desktop_pc",
@@ -79,6 +84,18 @@ def validate_sql_file(path: Path) -> tuple[bool, str]:
     return result.returncode == 0, output
 
 
+def validate_review_file(path: Path) -> tuple[bool, str]:
+    result = subprocess.run(
+        [sys.executable, "scripts/validate-category-review-csv.py", str(path)],
+        check=False,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    output = "\n".join(part for part in (result.stdout.strip(), result.stderr.strip()) if part)
+    return result.returncode == 0, output
+
+
 def check_sql_files() -> list[str]:
     blockers: list[str] = []
     existing_files: list[Path] = []
@@ -99,6 +116,28 @@ def check_sql_files() -> list[str]:
                 print(f"  {line}")
         if not ok:
             blockers.append(f"Fix validation errors in {path}")
+
+    return blockers
+
+
+def check_review_files() -> list[str]:
+    blockers: list[str] = []
+
+    for label, review_path in REVIEW_FILES.items():
+        sql_path = SQL_FILES[label]
+        if review_path.exists():
+            print(f"REVIEW {label}: found {review_path}")
+            ok, output = validate_review_file(review_path)
+            print(f"REVIEW validate {review_path}: {'ok' if ok else 'failed'}")
+            if output:
+                for line in output.splitlines():
+                    print(f"  {line}")
+            if not ok:
+                blockers.append(f"Fix validation errors in {review_path}")
+        else:
+            print(f"REVIEW {label}: missing {review_path}")
+            if sql_path.exists():
+                blockers.append(f"Generate/validate {review_path} with --review-output before using {sql_path}")
 
     return blockers
 
@@ -176,6 +215,7 @@ def main() -> int:
         blockers.append(f"Restore {monitor_table_sql}")
 
     blockers.extend(check_sql_files())
+    blockers.extend(check_review_files())
     if not args.skip_production:
         blockers.extend(check_production(args.base_url.rstrip("/"), args.expect_data))
 
@@ -185,7 +225,7 @@ def main() -> int:
             print(f"- {blocker}")
         return 1
 
-    print("\nREADY: category product SQL and production checks are clear.")
+    print("\nREADY: category product SQL, review CSV, and production checks are clear.")
     return 0
 
 

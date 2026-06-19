@@ -8,7 +8,9 @@ filters, SQL generation, and SQL validator with representative item payloads.
 
 from __future__ import annotations
 
+import contextlib
 import importlib.util
+import io
 import sys
 import tempfile
 import unittest
@@ -32,6 +34,7 @@ def load_script_module(name: str, path: Path) -> ModuleType:
 generator = load_script_module("category_product_generator", ROOT / "scripts/generate-category-products.py")
 validator = load_script_module("category_product_sql_validator", ROOT / "scripts/validate-category-products-sql.py")
 review_validator = load_script_module("category_review_csv_validator", ROOT / "scripts/validate-category-review-csv.py")
+readiness = load_script_module("category_product_readiness", ROOT / "scripts/check-category-product-readiness.py")
 
 
 def amazon_item(
@@ -193,6 +196,29 @@ class CategoryProductGenerationTest(unittest.TestCase):
             errors = review_validator.validate_csv(review_path)
 
         self.assertTrue(any("suspicious PC title word" in error for error in errors))
+
+    def test_readiness_requires_review_csv_when_sql_exists(self) -> None:
+        original_sql_files = readiness.SQL_FILES
+        original_review_files = readiness.REVIEW_FILES
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            sql_path = Path(tmp_dir) / "insert_mini_pc_products.sql"
+            review_path = Path(tmp_dir) / "review_mini_pc_products.csv"
+            sql_path.write_text("-- generated SQL placeholder", encoding="utf-8")
+
+            try:
+                readiness.SQL_FILES = {"mini-pc": sql_path}
+                readiness.REVIEW_FILES = {"mini-pc": review_path}
+                with contextlib.redirect_stdout(io.StringIO()):
+                    blockers = readiness.check_review_files()
+            finally:
+                readiness.SQL_FILES = original_sql_files
+                readiness.REVIEW_FILES = original_review_files
+
+        self.assertEqual(
+            blockers,
+            [f"Generate/validate {review_path} with --review-output before using {sql_path}"],
+        )
 
 
 if __name__ == "__main__":
