@@ -220,6 +220,37 @@ class CategoryProductGenerationTest(unittest.TestCase):
             [f"Generate/validate {review_path} with --review-output before using {sql_path}"],
         )
 
+    def test_readiness_compares_sql_and_review_csv_asins(self) -> None:
+        reviewed_item = amazon_item(
+            asin="B0REVIEW01",
+            title="MINISFORUM ミニPC Windows 11 Intel N100",
+            brand="MINISFORUM",
+            price=32980,
+            features=["16GB DDR4 RAM", "512GB SSD", "Intel UHD Graphics", "小型PC"],
+        )
+        sql_item = amazon_item(
+            asin="B0SQLONLY1",
+            title="MINISFORUM ミニPC Windows 11 Intel N150",
+            brand="MINISFORUM",
+            price=35980,
+            features=["16GB DDR4 RAM", "512GB SSD", "Intel UHD Graphics", "小型PC"],
+        )
+        reviewed_candidate = self.candidate_from_item(reviewed_item)
+        sql_candidate = self.candidate_from_item(sql_item)
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            sql_path = Path(tmp_dir) / "insert_mini_pc_products.sql"
+            review_path = Path(tmp_dir) / "review_mini_pc_products.csv"
+            sql_path.write_text(generator.pc_insert_sql("mini-pc", [sql_candidate]), encoding="utf-8")
+            generator.write_review_csv("mini-pc", [reviewed_candidate], review_path)
+
+            errors = readiness.compare_sql_review_asins(sql_path, review_path)
+            self.assertTrue(any("B0SQLONLY1" in error for error in errors))
+            self.assertTrue(any("B0REVIEW01" in error for error in errors))
+
+            sql_path.write_text(generator.pc_insert_sql("mini-pc", [reviewed_candidate]), encoding="utf-8")
+            self.assertEqual(readiness.compare_sql_review_asins(sql_path, review_path), [])
+
 
 if __name__ == "__main__":
     unittest.main()

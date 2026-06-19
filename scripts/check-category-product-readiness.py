@@ -8,7 +8,9 @@ This script intentionally reports readiness without printing credential values.
 from __future__ import annotations
 
 import argparse
+import csv
 import json
+import re
 import subprocess
 import sys
 import urllib.error
@@ -18,6 +20,7 @@ from pathlib import Path
 
 DEFAULT_BASE_URL = "https://specsy-hub.com"
 REQUIRED_ENV_KEYS = ("PAAPI_ACCESS_KEY", "PAAPI_SECRET_KEY", "PAAPI_PARTNER_TAG")
+ASIN_RE = re.compile(r"(?:/dp/|%)([A-Z0-9]{10})(?:[?%'&]|$)", re.I)
 SQL_FILES = {
     "mini-pc": Path("scripts/insert_mini_pc_products.sql"),
     "desktop-pc": Path("scripts/insert_desktop_pc_products.sql"),
@@ -96,6 +99,31 @@ def validate_review_file(path: Path) -> tuple[bool, str]:
     return result.returncode == 0, output
 
 
+def extract_sql_asins(path: Path) -> set[str]:
+    sql = path.read_text(encoding="utf-8")
+    return {match.group(1).upper() for match in ASIN_RE.finditer(sql)}
+
+
+def extract_review_asins(path: Path) -> set[str]:
+    with path.open(encoding="utf-8", newline="") as file:
+        reader = csv.DictReader(file)
+        return {str(row.get("asin", "")).strip().upper() for row in reader if row.get("asin")}
+
+
+def compare_sql_review_asins(sql_path: Path, review_path: Path) -> list[str]:
+    sql_asins = extract_sql_asins(sql_path)
+    review_asins = extract_review_asins(review_path)
+    errors: list[str] = []
+
+    missing_from_review = sorted(sql_asins - review_asins)
+    extra_in_review = sorted(review_asins - sql_asins)
+    if missing_from_review:
+        errors.append(f"{review_path} is missing SQL ASINs: {', '.join(missing_from_review)}")
+    if extra_in_review:
+        errors.append(f"{review_path} has ASINs not present in {sql_path}: {', '.join(extra_in_review)}")
+    return errors
+
+
 def check_sql_files() -> list[str]:
     blockers: list[str] = []
     existing_files: list[Path] = []
@@ -134,6 +162,13 @@ def check_review_files() -> list[str]:
                     print(f"  {line}")
             if not ok:
                 blockers.append(f"Fix validation errors in {review_path}")
+            if sql_path.exists():
+                match_errors = compare_sql_review_asins(sql_path, review_path)
+                print(f"REVIEW match {review_path} <-> {sql_path}: {'ok' if not match_errors else 'failed'}")
+                for error in match_errors:
+                    print(f"  {error}")
+                if match_errors:
+                    blockers.append(f"Regenerate matching SQL/review CSV for {label}")
         else:
             print(f"REVIEW {label}: missing {review_path}")
             if sql_path.exists():

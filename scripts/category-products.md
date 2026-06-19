@@ -53,9 +53,9 @@ npm run category:ready -- --expect-data
 ```
 
 The generated SQL skips rows when the ASIN already appears in `url` or `af_url`.
-Use the review CSV to check ASINs, prices, inferred specs, and accidental accessories before running generated SQL in Supabase.
+Use the review CSV to check ASINs, prices, inferred specs, and accidental accessories before running generated SQL in Supabase. Regenerate the SQL and review CSV together when you change keywords, max rows, or category filters.
 
 `production:check` also verifies the home page, cafe PC API rows, Mini PC/Desktop/Monitor category API rows, product-link URLs, and the deployed external-link marker CSS/JS assets.
-`category:ready` checks `.env.amazon`, generated SQL validation, matching review CSV validation, monitor table SQL presence, and category API row counts without printing credential values. If SQL exists for a category, the matching review CSV must exist and pass validation.
+`category:ready` checks `.env.amazon`, generated SQL validation, matching review CSV validation, SQL/review ASIN consistency, monitor table SQL presence, and category API row counts without printing credential values. If SQL exists for a category, the matching review CSV must exist, pass validation, and contain the same ASIN set as the SQL.
 `category:review` validates review CSV rows for duplicate ASINs, required inferred specs, suspicious category words, prices, and ASIN-bearing detail URLs.
 `category:test` checks product parsing, target/exclusion filters, generated SQL, and SQL validation without Amazon API credentials.
