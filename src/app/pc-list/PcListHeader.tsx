@@ -27,6 +27,10 @@ export default function PcListHeader() {
       )
     }
 
+    if (href === '/monitor-list') {
+      return pathname === '/monitor-list' || pathname.startsWith('/monitor-list/')
+    }
+
     return pathname === href
   }
 

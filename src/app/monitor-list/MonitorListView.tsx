@@ -8,6 +8,7 @@ import {
   monitorUsageOptions,
   rankMonitors,
 } from '../../lib/monitorRecommendation'
+import PcListHeader from '../pc-list/PcListHeader'
 
 const monitorColumns = [
   'おすすめ',
@@ -74,42 +75,9 @@ export default async function MonitorListView({ usage }: MonitorListViewProps) {
       backgroundColor: '#ffffff',
       color: '#1f2937',
     }}>
-      <header style={{
-        borderBottom: '1px solid #e2e8f0',
-        backgroundColor: '#ffffff',
-      }}>
-        <div style={{
-          maxWidth: '1200px',
-          minHeight: '64px',
-          margin: '0 auto',
-          padding: '0 20px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: '16px',
-        }}>
-          <Link href="/" style={{
-            color: '#0f172a',
-            textDecoration: 'none',
-            fontWeight: 900,
-            fontSize: '18px',
-            whiteSpace: 'nowrap',
-          }}>
-            Specsy Hub
-          </Link>
-          <Link href="/pc-list/cafe" style={{
-            color: '#475569',
-            textDecoration: 'none',
-            fontWeight: 800,
-            fontSize: '13px',
-            whiteSpace: 'nowrap',
-          }}>
-            PCランキング
-          </Link>
-        </div>
-      </header>
+      <PcListHeader />
 
-      <main>
+      <main id="monitor-list-results">
         <section style={{
           maxWidth: '960px',
           margin: '0 auto',
@@ -136,8 +104,12 @@ export default async function MonitorListView({ usage }: MonitorListViewProps) {
             marginTop: '18px',
             display: 'flex',
             justifyContent: 'center',
-            gap: '8px',
+            gap: '2px',
             flexWrap: 'wrap',
+            padding: '4px',
+            border: '1px solid #e2e8f0',
+            borderRadius: '10px',
+            backgroundColor: 'rgba(248, 250, 252, 0.84)',
           }}>
             {monitorUsageOptions.map((option) => {
               const isActive = option.value === usage
@@ -149,15 +121,17 @@ export default async function MonitorListView({ usage }: MonitorListViewProps) {
                   style={{
                     display: 'inline-flex',
                     alignItems: 'center',
-                    minHeight: '36px',
-                    padding: '8px 12px',
-                    borderRadius: '999px',
-                    border: isActive ? '1px solid #0f172a' : '1px solid #cbd5e1',
-                    backgroundColor: isActive ? '#0f172a' : '#ffffff',
-                    color: isActive ? '#ffffff' : '#334155',
+                    justifyContent: 'center',
+                    minHeight: '34px',
+                    padding: '0 11px',
+                    borderRadius: '7px',
+                    backgroundColor: isActive ? '#ffffff' : 'transparent',
+                    color: isActive ? '#2563eb' : '#475569',
+                    boxShadow: isActive ? '0 1px 3px rgba(15, 23, 42, 0.12)' : 'none',
                     textDecoration: 'none',
                     fontSize: '13px',
-                    fontWeight: 900,
+                    fontWeight: 800,
+                    whiteSpace: 'nowrap',
                   }}
                 >
                   {option.label}
@@ -177,6 +151,7 @@ export default async function MonitorListView({ usage }: MonitorListViewProps) {
             border: '1px solid #e2e8f0',
             borderRadius: '8px',
             backgroundColor: '#ffffff',
+            boxShadow: '0 18px 30px rgba(148, 163, 184, 0.12)',
           }}>
             <table style={{
               width: '100%',
@@ -342,6 +317,29 @@ export default async function MonitorListView({ usage }: MonitorListViewProps) {
           </div>
         </section>
       </main>
+
+      <footer style={{
+        backgroundColor: '#ffffff',
+        borderTop: '1px solid #e2e8f0',
+        padding: '32px 20px',
+        marginTop: '48px',
+      }}>
+        <div style={{
+          maxWidth: '1200px',
+          margin: '0 auto',
+          textAlign: 'center',
+          color: '#64748b',
+          fontSize: '14px',
+          lineHeight: 1.6,
+        }}>
+          <p style={{ margin: '0 0 8px' }}>
+            Amazonのアソシエイトとして、当メディアは適格販売により収入を得ています。
+          </p>
+          <p style={{ margin: 0 }}>
+            このサイトはアフィリエイト広告（Amazonアソシエイト含む）を掲載しています。
+          </p>
+        </div>
+      </footer>
     </div>
   )
 }
