@@ -11,6 +11,7 @@ from __future__ import annotations
 import contextlib
 import importlib.util
 import io
+import os
 import sys
 import tempfile
 import unittest
@@ -250,6 +251,57 @@ class CategoryProductGenerationTest(unittest.TestCase):
 
             sql_path.write_text(generator.pc_insert_sql("mini-pc", [reviewed_candidate]), encoding="utf-8")
             self.assertEqual(readiness.compare_sql_review_asins(sql_path, review_path), [])
+
+    def test_main_writes_default_review_csv_with_sql(self) -> None:
+        item = amazon_item(
+            asin="B0AUTOREV1",
+            title="MINISFORUM ミニPC Windows 11 Intel N100",
+            brand="MINISFORUM",
+            price=32980,
+            features=["16GB DDR4 RAM", "512GB SSD", "Intel UHD Graphics", "小型PC"],
+        )
+
+        original_argv = sys.argv
+        original_cwd = Path.cwd()
+        original_env = {key: os.environ.get(key) for key in ("PAAPI_ACCESS_KEY", "PAAPI_SECRET_KEY", "PAAPI_PARTNER_TAG")}
+        original_get_token = generator.get_token
+        original_search_items = generator.search_items
+        try:
+            os.environ["PAAPI_ACCESS_KEY"] = "dummy-access"
+            os.environ["PAAPI_SECRET_KEY"] = "dummy-secret"
+            os.environ["PAAPI_PARTNER_TAG"] = "dummy-tag"
+            generator.get_token = lambda _client_id, _client_secret: "dummy-token"
+            generator.search_items = lambda *_args, **_kwargs: [item]
+            with tempfile.TemporaryDirectory() as tmp_dir:
+                os.chdir(tmp_dir)
+                sys.argv = [
+                    "generate-category-products.py",
+                    "mini-pc",
+                    "--max-add",
+                    "1",
+                    "--request-sleep",
+                    "0",
+                ]
+                with contextlib.redirect_stdout(io.StringIO()):
+                    exit_code = generator.main()
+
+                sql_path = Path("scripts/insert_mini_pc_products.sql")
+                review_path = Path("scripts/review_mini_pc_products.csv")
+                self.assertEqual(exit_code, 0)
+                self.assertTrue(sql_path.exists())
+                self.assertTrue(review_path.exists())
+                self.assertEqual(readiness.compare_sql_review_asins(sql_path, review_path), [])
+                self.assertEqual(review_validator.validate_csv(review_path), [])
+        finally:
+            sys.argv = original_argv
+            os.chdir(original_cwd)
+            generator.get_token = original_get_token
+            generator.search_items = original_search_items
+            for key, value in original_env.items():
+                if value is None:
+                    os.environ.pop(key, None)
+                else:
+                    os.environ[key] = value
 
 
 if __name__ == "__main__":

@@ -788,6 +788,10 @@ def default_output_path(profile: str) -> Path:
     return Path("scripts") / f"insert_{profile.replace('-', '_')}_products.sql"
 
 
+def default_review_output_path(profile: str) -> Path:
+    return Path("scripts") / f"review_{profile.replace('-', '_')}_products.csv"
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
     parser.add_argument("profile", choices=sorted(DEFAULT_QUERIES))
@@ -807,6 +811,11 @@ def build_parser() -> argparse.ArgumentParser:
 def main() -> int:
     args = build_parser().parse_args()
     load_env_file(Path(args.env_file))
+    review_output_path = args.review_output
+    auto_review_output = False
+    if not args.dry_run and review_output_path is None:
+        review_output_path = default_review_output_path(args.profile)
+        auto_review_output = True
 
     client_id = env_value("PAAPI_ACCESS_KEY")
     client_secret = env_value("PAAPI_SECRET_KEY")
@@ -884,6 +893,9 @@ def main() -> int:
     output_path.parent.mkdir(parents=True, exist_ok=True)
     sql = monitor_insert_sql(candidates) if args.profile == "monitor" else pc_insert_sql(args.profile, candidates)
     output_path.write_text(sql, encoding="utf-8")
+    if auto_review_output and review_output_path is not None:
+        write_review_csv(args.profile, candidates, review_output_path)
+        print(f"Review CSV written: {review_output_path}")
     print(f"SQL written: {output_path}")
     return 0
 

@@ -28,7 +28,7 @@ python3 scripts/generate-category-products.py mini-pc --max-add 20
 python3 scripts/generate-category-products.py desktop-pc --max-add 20
 ```
 
-The generator exits without writing SQL when no valid candidates are found. Run the dry-run command first if you need to tune keywords or filters.
+The generator writes the matching `scripts/review_*_products.csv` automatically when it writes SQL. It exits without writing SQL or an automatic review CSV when no valid candidates are found. Run the dry-run command first if you need to tune keywords or filters.
 
 4. Validate generated SQL and matching review CSVs before opening Supabase.
 
@@ -53,7 +53,7 @@ npm run category:ready -- --expect-data
 ```
 
 The generated SQL skips rows when the ASIN already appears in `url` or `af_url`.
-Use the review CSV to check ASINs, prices, inferred specs, and accidental accessories before running generated SQL in Supabase. Regenerate the SQL and review CSV together when you change keywords, max rows, or category filters.
+Use the review CSV to check ASINs, prices, inferred specs, and accidental accessories before running generated SQL in Supabase. Regenerate the SQL and review CSV together when you change keywords, max rows, or category filters; the default non-dry-run command does this automatically.
 
 `production:check` also verifies the home page, cafe PC API rows, Mini PC/Desktop/Monitor category API rows, product-link URLs, and the deployed external-link marker CSS/JS assets.
 `category:ready` checks `.env.amazon`, generated SQL validation, matching review CSV validation, SQL/review ASIN consistency, monitor table SQL presence, and category API row counts without printing credential values. If SQL exists for a category, the matching review CSV must exist, pass validation, and contain the same ASIN set as the SQL.
