@@ -24,6 +24,15 @@ python3 scripts/generate-category-products.py mini-pc --max-add 20
 python3 scripts/generate-category-products.py desktop-pc --max-add 20
 ```
 
-4. For monitors, run `scripts/create-monitor-data-table.sql` in Supabase SQL Editor before running `scripts/insert_monitor_products.sql`.
+4. Validate generated SQL before opening Supabase.
+
+```bash
+python3 scripts/validate-category-products-sql.py \
+  scripts/insert_monitor_products.sql \
+  scripts/insert_mini_pc_products.sql \
+  scripts/insert_desktop_pc_products.sql
+```
+
+5. For monitors, run `scripts/create-monitor-data-table.sql` in Supabase SQL Editor before running `scripts/insert_monitor_products.sql`.
 
 The generated SQL skips rows when the ASIN already appears in `url` or `af_url`.
