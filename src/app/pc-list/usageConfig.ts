@@ -1,4 +1,4 @@
-import type { ClientPcListing, ClientUsageCategory } from '../../components/types'
+import type { ClientPcDeviceCategory, ClientPcListing, ClientUsageCategory } from '../../components/types'
 
 export const pcListUsageLabels: Record<ClientUsageCategory, string> = {
   mobile: 'モバイル',
@@ -53,10 +53,24 @@ export const pcListUsagePages: Record<ClientUsageCategory, {
   }
 }
 
-export function getPcListUsagePath(usage: ClientUsageCategory, listing: ClientPcListing = 'new'): string {
+export function getPcListUsagePath(
+  usage: ClientUsageCategory,
+  listing: ClientPcListing = 'new',
+  device: ClientPcDeviceCategory = 'all'
+): string {
   if (listing === 'used') {
     const params = new URLSearchParams({ usage })
     return `/pc-list/used?${params.toString()}`
+  }
+
+  if (device === 'mini_pc') {
+    const params = new URLSearchParams({ usage })
+    return `/pc-list/mini-pc?${params.toString()}`
+  }
+
+  if (device === 'desktop_pc') {
+    const params = new URLSearchParams({ usage })
+    return `/pc-list/desktop?${params.toString()}`
   }
 
   return pcListUsagePages[usage].path

@@ -7,6 +7,8 @@ const pcListRoutes = [
   '/pc-list/cafe',
   '/pc-list/home',
   '/pc-list/cost-performance',
+  '/pc-list/mini-pc',
+  '/pc-list/desktop',
   '/pc-list/used',
   '/pc-list/gaming',
   '/pc-list/video-editing',
@@ -16,6 +18,7 @@ const staticRoutes = [
   '/',
   '/about',
   '/blog',
+  '/monitor-list',
   '/privacy',
   ...pcListRoutes,
 ]

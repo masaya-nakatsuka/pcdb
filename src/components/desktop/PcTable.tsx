@@ -255,7 +255,7 @@ function TopRankedPcPodium({ pcs }: { pcs: ClientPcWithCpuSpec[] }) {
   )
 }
 
-export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplaySize, initialUsage = 'cafe', listing = 'new', urlBasedUsage = false, embeddedInArticle = false }: PcTableProps) {
+export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplaySize, initialUsage = 'cafe', listing = 'new', device = 'all', urlBasedUsage = false, embeddedInArticle = false }: PcTableProps) {
   const router = useRouter()
   const [pcs, setPcs] = useState(initialPcs)
   const [allPcs, setAllPcs] = useState(initialPcs)
@@ -356,14 +356,14 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
     if (urlBasedUsage) {
       if (usage !== selectedUsage) {
         setSelectedUsage(usage)
-        router.push(getPcListUsagePath(usage, listing))
+        router.push(getPcListUsagePath(usage, listing, device))
       }
       return
     }
 
     setLoading(true)
     try {
-      const newPcs = await fetchPcList(usage, listing)
+      const newPcs = await fetchPcList(usage, listing, device)
       setAllPcs(newPcs)
       setSelectedCpu(defaultCpu ?? 'all')
       setSelectedDisplaySize(defaultMaxDisplaySize ? `max:${defaultMaxDisplaySize}` : 'all')

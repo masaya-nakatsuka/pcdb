@@ -3,6 +3,7 @@ import { checkRateLimit, createRateLimitResponse, addRateLimitHeaders } from '..
 import { fetchPcList } from '../../../server/usecase/fetchPcList'
 import { ServerUsageCategory } from '../../../server/types'
 import { parsePcListingType } from '../../../lib/pcListing'
+import { parsePcDeviceCategory } from '../../../lib/pcDeviceCategory'
 
 export async function GET(request: NextRequest) {
   // レート制限チェック
@@ -16,8 +17,9 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const category = (searchParams.get('category') as ServerUsageCategory) || 'cafe'
     const listing = parsePcListingType(searchParams.get('listing') ?? searchParams.get('condition'))
+    const device = parsePcDeviceCategory(searchParams.get('device') ?? searchParams.get('form_factor'))
     
-    const pcs = await fetchPcList(category, listing)
+    const pcs = await fetchPcList(category, listing, device)
     
     const response = Response.json(pcs, {
       headers: {

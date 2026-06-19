@@ -7,12 +7,14 @@ import { ServerUsageCategory as UsageCategory } from '../types'
 import { calculateBatteryLifeProfiles } from '../utils/powerCalculations'
 import { calculateRelativeRanking } from '../domain/services/relativePcScore'
 import { filterPcsByListing, type PcListingType } from '../../lib/pcListing'
+import { filterPcsByDeviceCategory, type PcDeviceCategory } from '../../lib/pcDeviceCategory'
 
 export async function fetchPcList(
   usageCategory: UsageCategory = 'cafe',
-  listing: PcListingType = 'new'
+  listing: PcListingType = 'new',
+  device: PcDeviceCategory = 'all'
 ): Promise<PcWithCpuSpec[]> {
-  const supabasePcs = filterPcsByListing(await fetchAllPcs(), listing)
+  const supabasePcs = filterPcsByDeviceCategory(filterPcsByListing(await fetchAllPcs(), listing), device)
   
   const pcsWithCalculations = supabasePcs.map((pc) => {
     const cpuSpec = resolveCpuSpec(pc.cpu)

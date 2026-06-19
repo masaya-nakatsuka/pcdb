@@ -1,4 +1,5 @@
 import type { PcListingType } from '@/lib/pcListing'
+import type { PcDeviceCategory } from '@/lib/pcDeviceCategory'
 
 export interface ClientPc {
   id: number
@@ -45,6 +46,7 @@ export interface ClientBatteryLifeProfiles {
 
 export type ClientUsageCategory = 'mobile' | 'cafe' | 'home' | 'cost_performance' | 'gaming' | 'video_editing'
 export type ClientPcListing = PcListingType
+export type ClientPcDeviceCategory = PcDeviceCategory
 
 export type ClientSortField = 'pcScore' | 'cpu' | 'gpu_score' | 'ram' | 'rom' | 'display_size' | 'estimatedBatteryLifeHours' | 'weight' | 'price'
 export type ClientSortOrder = 'asc' | 'desc'
@@ -64,6 +66,7 @@ export interface PcTableProps {
   defaultMaxDisplaySize?: number
   initialUsage?: ClientUsageCategory
   listing?: ClientPcListing
+  device?: ClientPcDeviceCategory
   urlBasedUsage?: boolean
   embeddedInArticle?: boolean
 }
@@ -74,6 +77,7 @@ export interface PcListProps {
   defaultMaxDisplaySize?: number
   initialUsage?: ClientUsageCategory
   listing?: ClientPcListing
+  device?: ClientPcDeviceCategory
   urlBasedUsage?: boolean
 }
 

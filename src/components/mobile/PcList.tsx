@@ -8,7 +8,7 @@ import { getPcListUsagePath } from '../../app/pc-list/usageConfig'
 import { sortPcs } from '../utils/pcSort'
 import PcCard from './PcCard'
 
-export default function PcList({ pcs: initialPcs, defaultCpu, defaultMaxDisplaySize, initialUsage = 'cafe', listing = 'new', urlBasedUsage = false }: PcListProps) {
+export default function PcList({ pcs: initialPcs, defaultCpu, defaultMaxDisplaySize, initialUsage = 'cafe', listing = 'new', device = 'all', urlBasedUsage = false }: PcListProps) {
   const router = useRouter()
   const [selectedUsage, setSelectedUsage] = useState<ClientUsageCategory>(initialUsage)
   const [pcs, setPcs] = useState<ClientPcWithCpuSpec[]>(initialPcs)
@@ -108,14 +108,14 @@ export default function PcList({ pcs: initialPcs, defaultCpu, defaultMaxDisplayS
     if (urlBasedUsage) {
       if (usage !== selectedUsage) {
         setSelectedUsage(usage)
-        router.push(getPcListUsagePath(usage, listing))
+        router.push(getPcListUsagePath(usage, listing, device))
       }
       return
     }
 
     setLoading(true)
     try {
-      const newPcs = await fetchPcList(usage, listing)
+      const newPcs = await fetchPcList(usage, listing, device)
       setAllPcs(newPcs)
       setSelectedCpu(defaultCpu ?? 'all')
       setSelectedDisplaySize(defaultMaxDisplaySize ? `max:${defaultMaxDisplaySize}` : 'all')

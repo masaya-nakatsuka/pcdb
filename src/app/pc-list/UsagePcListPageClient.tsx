@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { fetchPcList } from './fetchPcs'
-import { ClientPcListing, ClientPcWithCpuSpec, ClientUsageCategory } from '../../components/types'
+import { ClientPcDeviceCategory, ClientPcListing, ClientPcWithCpuSpec, ClientUsageCategory } from '../../components/types'
 import ClientPcList from './ClientPcList'
 import PcListHeader from './PcListHeader'
 
@@ -11,9 +11,10 @@ interface UsagePcListPageClientProps {
   heading: string
   description: string
   listing?: ClientPcListing
+  device?: ClientPcDeviceCategory
 }
 
-export default function UsagePcListPageClient({ usage, heading, description, listing = 'new' }: UsagePcListPageClientProps) {
+export default function UsagePcListPageClient({ usage, heading, description, listing = 'new', device = 'all' }: UsagePcListPageClientProps) {
   const [pcs, setPcs] = useState<ClientPcWithCpuSpec[]>([])
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -22,7 +23,7 @@ export default function UsagePcListPageClient({ usage, heading, description, lis
     setIsLoading(true)
     setError(null)
 
-    fetchPcList(usage, listing)
+    fetchPcList(usage, listing, device)
       .then((data) => {
         if (Array.isArray(data)) {
           setPcs(data)
@@ -36,7 +37,7 @@ export default function UsagePcListPageClient({ usage, heading, description, lis
       .finally(() => {
         setIsLoading(false)
       })
-  }, [usage, listing])
+  }, [usage, listing, device])
 
   return (
     <div
@@ -118,7 +119,7 @@ export default function UsagePcListPageClient({ usage, heading, description, lis
               color: '#1f2937'
             }}
           >
-            <ClientPcList pcs={pcs} initialUsage={usage} listing={listing} urlBasedUsage />
+            <ClientPcList pcs={pcs} initialUsage={usage} listing={listing} device={device} urlBasedUsage />
           </div>
         )}
       </main>

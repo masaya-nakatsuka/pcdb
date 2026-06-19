@@ -1,6 +1,6 @@
 'use client'
 
-import { ClientPcListing, ClientPcWithCpuSpec, ClientUsageCategory } from '../../components/types'
+import { ClientPcDeviceCategory, ClientPcListing, ClientPcWithCpuSpec, ClientUsageCategory } from '../../components/types'
 import { useDeviceDetection } from '../../hooks/useDeviceDetection'
 import PcTable from '../../components/desktop/PcTable'
 import PcList from '../../components/mobile/PcList'
@@ -11,16 +11,17 @@ interface ClientPcListProps {
   defaultMaxDisplaySize?: number
   initialUsage?: ClientUsageCategory
   listing?: ClientPcListing
+  device?: ClientPcDeviceCategory
   urlBasedUsage?: boolean
   embeddedInArticle?: boolean
 }
 
-export default function ClientPcList({ pcs, defaultCpu, defaultMaxDisplaySize, initialUsage = 'cafe', listing = 'new', urlBasedUsage = false, embeddedInArticle = false }: ClientPcListProps) {
+export default function ClientPcList({ pcs, defaultCpu, defaultMaxDisplaySize, initialUsage = 'cafe', listing = 'new', device = 'all', urlBasedUsage = false, embeddedInArticle = false }: ClientPcListProps) {
   const { isMobile, isTablet } = useDeviceDetection()
 
   if (isMobile || isTablet) {
-    return <PcList pcs={pcs} defaultCpu={defaultCpu} defaultMaxDisplaySize={defaultMaxDisplaySize} initialUsage={initialUsage} listing={listing} urlBasedUsage={urlBasedUsage} />
+    return <PcList pcs={pcs} defaultCpu={defaultCpu} defaultMaxDisplaySize={defaultMaxDisplaySize} initialUsage={initialUsage} listing={listing} device={device} urlBasedUsage={urlBasedUsage} />
   }
 
-  return <PcTable pcs={pcs} defaultCpu={defaultCpu} defaultMaxDisplaySize={defaultMaxDisplaySize} initialUsage={initialUsage} listing={listing} urlBasedUsage={urlBasedUsage} embeddedInArticle={embeddedInArticle} />
+  return <PcTable pcs={pcs} defaultCpu={defaultCpu} defaultMaxDisplaySize={defaultMaxDisplaySize} initialUsage={initialUsage} listing={listing} device={device} urlBasedUsage={urlBasedUsage} embeddedInArticle={embeddedInArticle} />
 }
