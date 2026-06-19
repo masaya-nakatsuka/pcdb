@@ -40,6 +40,10 @@ python3 scripts/validate-category-products-sql.py \
 ```bash
 python3 scripts/check-category-pages.py
 python3 scripts/check-category-pages.py --expect-data
+npm run production:check
+npm run production:check -- --expect-category-data
 ```
 
 The generated SQL skips rows when the ASIN already appears in `url` or `af_url`.
+
+`production:check` also verifies the home page, cafe PC API rows, product-link URLs, and the deployed external-link marker CSS/JS assets.
