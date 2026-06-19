@@ -46,4 +46,4 @@ npm run production:check -- --expect-category-data
 
 The generated SQL skips rows when the ASIN already appears in `url` or `af_url`.
 
-`production:check` also verifies the home page, cafe PC API rows, product-link URLs, and the deployed external-link marker CSS/JS assets.
+`production:check` also verifies the home page, cafe PC API rows, Mini PC/Desktop/Monitor category API rows, product-link URLs, and the deployed external-link marker CSS/JS assets.

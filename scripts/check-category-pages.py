@@ -28,6 +28,7 @@ PAGE_CHECKS = [
 API_CHECKS = [
     ("mini_pc", "/api/pc-list?device=mini_pc"),
     ("desktop_pc", "/api/pc-list?device=desktop_pc"),
+    ("monitor", "/api/monitor-list"),
 ]
 
 
@@ -98,7 +99,7 @@ def check_api_counts(base_url: str, expect_data: bool) -> list[str]:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
     parser.add_argument("--base-url", default=DEFAULT_BASE_URL, help="Base URL to check")
-    parser.add_argument("--expect-data", action="store_true", help="Fail when Mini/Desktop API returns 0 rows")
+    parser.add_argument("--expect-data", action="store_true", help="Fail when Mini/Desktop/Monitor API returns 0 rows")
     return parser
 
 

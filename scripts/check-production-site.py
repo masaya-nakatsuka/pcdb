@@ -33,6 +33,7 @@ API_CHECKS = [
     ("cafe", "/api/pc-list?category=cafe", True),
     ("mini_pc", "/api/pc-list?device=mini_pc", False),
     ("desktop_pc", "/api/pc-list?device=desktop_pc", False),
+    ("monitor", "/api/monitor-list", False),
 ]
 
 
@@ -198,7 +199,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--expect-category-data",
         action="store_true",
-        help="Fail when Mini/Desktop API returns 0 rows after category product insertion",
+        help="Fail when Mini/Desktop/Monitor API returns 0 rows after category product insertion",
     )
     return parser
 
