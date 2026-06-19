@@ -152,6 +152,11 @@ class Candidate:
     text: str
 
 
+@dataclasses.dataclass(frozen=True)
+class SqlExpr:
+    value: str
+
+
 def load_env_file(path: Path) -> None:
     if not path.exists():
         return
@@ -522,6 +527,8 @@ def is_valid_candidate(profile: str, candidate: Candidate) -> bool:
 
 
 def sql_value(value: Any, numeric: bool = False, boolean: bool = False) -> str:
+    if isinstance(value, SqlExpr):
+        return value.value
     if value is None:
         return "NULL"
     if boolean:
@@ -543,6 +550,10 @@ def pc_name(candidate: Candidate, cpu: str) -> str:
     return cleaned
 
 
+def asin_exists_condition(table: str, asin: str) -> str:
+    return f"(url ILIKE '%{asin}%' OR af_url ILIKE '%{asin}%')"
+
+
 def pc_insert_sql(profile: str, candidates: list[Candidate]) -> str:
     form_factor = "MiniPC" if profile == "mini-pc" else "Desktop"
     lines = [
@@ -561,6 +572,7 @@ def pc_insert_sql(profile: str, candidates: list[Candidate]) -> str:
         "",
     ]
     cols = [
+        "id",
         "form_factor",
         "display_size",
         "brand",
@@ -592,6 +604,7 @@ def pc_insert_sql(profile: str, candidates: list[Candidate]) -> str:
         cpu = infer_cpu(candidate.text)
         gpu, gpu_class, gpu_score, has_dgpu = infer_gpu(candidate.text)
         row = {
+            "id": SqlExpr("(SELECT COALESCE(MAX(id), 0) + 1 FROM am_pc_data)"),
             "form_factor": form_factor,
             "display_size": None,
             "brand": candidate.brand,
@@ -623,12 +636,12 @@ def pc_insert_sql(profile: str, candidates: list[Candidate]) -> str:
         for col in cols:
             values.append(sql_value(
                 row[col],
-                numeric=col in {"display_size", "price", "real_price", "gpu_score", "ram", "rom", "battery_wh_normalized", "weight"},
+                numeric=col in {"id", "display_size", "price", "real_price", "gpu_score", "ram", "rom", "battery_wh_normalized", "weight"},
                 boolean=col in {"is_used", "is_refurbished", "has_dgpu", "is_active"},
             ))
         lines.append(f"INSERT INTO am_pc_data ({', '.join(cols)})")
         lines.append(f"SELECT {', '.join(values)}")
-        lines.append(f"WHERE NOT EXISTS (SELECT 1 FROM am_pc_data WHERE url = 'https://www.amazon.co.jp/dp/{candidate.asin}');")
+        lines.append(f"WHERE NOT EXISTS (SELECT 1 FROM am_pc_data WHERE {asin_exists_condition('am_pc_data', candidate.asin)});")
     lines.extend(["", "COMMIT;", ""])
     return "\n".join(lines)
 
@@ -686,7 +699,7 @@ def monitor_insert_sql(candidates: list[Candidate]) -> str:
             ))
         lines.append(f"INSERT INTO am_monitor_data ({', '.join(cols)})")
         lines.append(f"SELECT {', '.join(values)}")
-        lines.append(f"WHERE NOT EXISTS (SELECT 1 FROM am_monitor_data WHERE url = 'https://www.amazon.co.jp/dp/{candidate.asin}');")
+        lines.append(f"WHERE NOT EXISTS (SELECT 1 FROM am_monitor_data WHERE {asin_exists_condition('am_monitor_data', candidate.asin)});")
     lines.extend(["", "COMMIT;", ""])
     return "\n".join(lines)
 
