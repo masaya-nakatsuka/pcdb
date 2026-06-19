@@ -12,6 +12,7 @@ npm run category:ready -- --skip-production
 2. Dry-run candidates first.
 
 ```bash
+npm run category:test
 python3 scripts/generate-category-products.py monitor --dry-run
 python3 scripts/generate-category-products.py mini-pc --dry-run
 python3 scripts/generate-category-products.py desktop-pc --dry-run
@@ -52,3 +53,4 @@ The generated SQL skips rows when the ASIN already appears in `url` or `af_url`.
 
 `production:check` also verifies the home page, cafe PC API rows, Mini PC/Desktop/Monitor category API rows, product-link URLs, and the deployed external-link marker CSS/JS assets.
 `category:ready` checks `.env.amazon`, generated SQL validation, monitor table SQL presence, and category API row counts without printing credential values.
+`category:test` checks product parsing, target/exclusion filters, generated SQL, and SQL validation without Amazon API credentials.

@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "category:ready": "python3 scripts/check-category-product-readiness.py",
+    "category:test": "python3 scripts/test-category-product-generation.py",
     "production:check": "python3 scripts/check-production-site.py",
     "supabase-rls:test": "tsx scripts/supabase-rls-test.ts"
   },
