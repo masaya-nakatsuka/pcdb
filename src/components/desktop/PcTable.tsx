@@ -230,6 +230,7 @@ function TopRankedPcPodium({ pcs }: { pcs: ClientPcWithCpuSpec[] }) {
                     href={productLink}
                     target="_blank"
                     rel="noopener noreferrer"
+                    className="external-link-mark"
                     style={{
                       display: 'block',
                       width: '100%',
@@ -1002,6 +1003,7 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
                               href={productLink}
                               target="_blank"
                               rel="noopener noreferrer"
+                              className="external-link-mark"
                               style={{
                                 color: '#2563eb',
                                 textDecoration: 'underline',
@@ -1117,6 +1119,7 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
                             href={productLink}
                             target="_blank"
                             rel="noopener noreferrer"
+                            className="external-link-mark"
                             style={{
                               display: 'inline-block',
                               padding: '6px 12px',

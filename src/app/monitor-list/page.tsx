@@ -212,7 +212,7 @@ export default async function MonitorListPage() {
                               {monitor.brand ?? 'Unknown'}
                             </div>
                             {productUrl ? (
-                              <a href={productUrl} target="_blank" rel="noopener noreferrer" style={{
+                              <a href={productUrl} target="_blank" rel="noopener noreferrer" className="external-link-mark" style={{
                                 color: '#0f172a',
                                 fontWeight: 800,
                                 textDecoration: 'none',

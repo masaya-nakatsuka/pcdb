@@ -215,6 +215,7 @@ export default function HomePage() {
 
         <Link
           href="https://sesera231.com"
+          className="external-link-mark"
           style={{
             display: 'inline-flex',
             alignItems: 'center',

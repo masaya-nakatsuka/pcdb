@@ -148,6 +148,7 @@ export default function PcCard({ pc }: PcCardProps) {
             href={pc.af_url || pc.url || '#'}
             target="_blank"
             rel="noopener noreferrer"
+            className="external-link-mark"
             style={{
               display: 'inline-block',
               margin: '6px 0',
