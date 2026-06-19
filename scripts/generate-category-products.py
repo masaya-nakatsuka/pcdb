@@ -16,6 +16,7 @@ Required env:
 from __future__ import annotations
 
 import argparse
+import csv
 import dataclasses
 import datetime as dt
 import json
@@ -704,6 +705,85 @@ def monitor_insert_sql(candidates: list[Candidate]) -> str:
     return "\n".join(lines)
 
 
+def candidate_review_row(profile: str, candidate: Candidate) -> dict[str, str | int | float | bool | None]:
+    if profile == "monitor":
+        has_usb_c, usb_c_power = infer_usb_c(candidate.text)
+        return {
+            "profile": profile,
+            "asin": candidate.asin,
+            "brand": candidate.brand,
+            "title": candidate.title,
+            "price": candidate.price,
+            "availability": candidate.availability,
+            "cpu": "",
+            "ram_gb": "",
+            "rom_gb": "",
+            "gpu": "",
+            "gpu_class": "",
+            "has_dgpu": "",
+            "size_inch": infer_monitor_size(candidate.text),
+            "resolution": infer_resolution(candidate.text),
+            "refresh_rate_hz": infer_refresh_rate(candidate.text),
+            "panel_type": infer_panel_type(candidate.text),
+            "has_usb_c": has_usb_c,
+            "usb_c_power_delivery_w": usb_c_power,
+            "detail_url": candidate.detail_url,
+        }
+
+    gpu, gpu_class, _gpu_score, has_dgpu = infer_gpu(candidate.text)
+    return {
+        "profile": profile,
+        "asin": candidate.asin,
+        "brand": candidate.brand,
+        "title": pc_name(candidate, infer_cpu(candidate.text)),
+        "price": candidate.price,
+        "availability": candidate.availability,
+        "cpu": infer_cpu(candidate.text),
+        "ram_gb": infer_ram(candidate.text),
+        "rom_gb": infer_rom(candidate.text),
+        "gpu": gpu,
+        "gpu_class": gpu_class,
+        "has_dgpu": has_dgpu,
+        "size_inch": "",
+        "resolution": "",
+        "refresh_rate_hz": "",
+        "panel_type": "",
+        "has_usb_c": "",
+        "usb_c_power_delivery_w": "",
+        "detail_url": candidate.detail_url,
+    }
+
+
+def write_review_csv(profile: str, candidates: list[Candidate], output_path: Path) -> None:
+    fieldnames = [
+        "profile",
+        "asin",
+        "brand",
+        "title",
+        "price",
+        "availability",
+        "cpu",
+        "ram_gb",
+        "rom_gb",
+        "gpu",
+        "gpu_class",
+        "has_dgpu",
+        "size_inch",
+        "resolution",
+        "refresh_rate_hz",
+        "panel_type",
+        "has_usb_c",
+        "usb_c_power_delivery_w",
+        "detail_url",
+    ]
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    with output_path.open("w", encoding="utf-8", newline="") as file:
+        writer = csv.DictWriter(file, fieldnames=fieldnames)
+        writer.writeheader()
+        for candidate in candidates:
+            writer.writerow(candidate_review_row(profile, candidate))
+
+
 def default_output_path(profile: str) -> Path:
     return Path("scripts") / f"insert_{profile.replace('-', '_')}_products.sql"
 
@@ -719,6 +799,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--request-sleep", type=float, default=2.0, help="Seconds between API requests.")
     parser.add_argument("--env-file", default=".env.amazon", help="Optional env file with PAAPI_* keys.")
     parser.add_argument("--output", type=Path, help="Output SQL path.")
+    parser.add_argument("--review-output", type=Path, help="Optional CSV path for reviewing candidates before SQL insertion.")
     parser.add_argument("--dry-run", action="store_true", help="Print candidates without writing SQL.")
     return parser
 
@@ -783,6 +864,10 @@ def main() -> int:
 
     print(f"\nCandidates: {len(candidates)}")
     print(f"Skipped: {skipped}")
+
+    if args.review_output:
+        write_review_csv(args.profile, candidates, args.review_output)
+        print(f"Review CSV written: {args.review_output}")
 
     if args.dry_run:
         return 0

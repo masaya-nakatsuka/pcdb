@@ -13,9 +13,9 @@ npm run category:ready -- --skip-production
 
 ```bash
 npm run category:test
-python3 scripts/generate-category-products.py monitor --dry-run
-python3 scripts/generate-category-products.py mini-pc --dry-run
-python3 scripts/generate-category-products.py desktop-pc --dry-run
+python3 scripts/generate-category-products.py monitor --dry-run --review-output scripts/review_monitor_products.csv
+python3 scripts/generate-category-products.py mini-pc --dry-run --review-output scripts/review_mini_pc_products.csv
+python3 scripts/generate-category-products.py desktop-pc --dry-run --review-output scripts/review_desktop_pc_products.csv
 ```
 
 3. Generate SQL after checking the candidate list.
@@ -50,6 +50,7 @@ npm run category:ready -- --expect-data
 ```
 
 The generated SQL skips rows when the ASIN already appears in `url` or `af_url`.
+Use the review CSV to check ASINs, prices, inferred specs, and accidental accessories before running generated SQL in Supabase.
 
 `production:check` also verifies the home page, cafe PC API rows, Mini PC/Desktop/Monitor category API rows, product-link URLs, and the deployed external-link marker CSS/JS assets.
 `category:ready` checks `.env.amazon`, generated SQL validation, monitor table SQL presence, and category API row counts without printing credential values.

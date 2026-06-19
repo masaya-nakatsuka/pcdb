@@ -97,6 +97,14 @@ class CategoryProductGenerationTest(unittest.TestCase):
         self.assertIn("af_url ILIKE '%B0MINIPC01%'", sql)
         self.assert_sql_valid(sql)
 
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            review_path = Path(tmp_dir) / "mini_pc_review.csv"
+            generator.write_review_csv("mini-pc", [candidate], review_path)
+            review_csv = review_path.read_text(encoding="utf-8")
+        self.assertIn("B0MINIPC01", review_csv)
+        self.assertIn("N100", review_csv)
+        self.assertIn("512", review_csv)
+
     def test_desktop_candidate_generates_valid_sql(self) -> None:
         item = amazon_item(
             asin="B0DESKPC01",
@@ -138,6 +146,11 @@ class CategoryProductGenerationTest(unittest.TestCase):
         self.assertIn("INSERT INTO am_monitor_data", sql)
         self.assertIn("'2560x1440'", sql)
         self.assert_sql_valid(sql)
+
+        row = generator.candidate_review_row("monitor", candidate)
+        self.assertEqual(row["size_inch"], 27.0)
+        self.assertEqual(row["resolution"], "2560x1440")
+        self.assertEqual(row["usb_c_power_delivery_w"], 65)
 
     def test_rejects_used_pc_and_monitor_accessory(self) -> None:
         used_pc = self.candidate_from_item(amazon_item(
