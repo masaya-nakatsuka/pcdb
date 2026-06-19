@@ -27,6 +27,7 @@ python3 scripts/generate-category-products.py mini-pc --dry-run --review-output 
 python3 scripts/generate-category-products.py desktop-pc --dry-run --review-output scripts/review_desktop_pc_products.csv
 npm run category:review
 npm run category:review:strict
+npm run category:ready:strict -- --skip-production
 npm run category:ready -- --skip-production
 ```
 
@@ -49,6 +50,7 @@ python3 scripts/validate-category-products-sql.py \
   scripts/insert_desktop_pc_products.sql
 npm run category:ready -- --skip-production
 npm run category:review:strict
+npm run category:ready:strict -- --skip-production
 ```
 
 6. For monitors, run `scripts/create-monitor-data-table.sql` in Supabase SQL Editor before running `scripts/insert_monitor_products.sql`.
@@ -70,6 +72,7 @@ Use the review CSV to check ASINs, prices, inferred specs, and accidental access
 `category:plan` prints the category order, page URL, SQL path, review CSV path, search keywords, dry-run command, generate command, and final validation commands without calling Amazon APIs.
 `generate-category-products.py` validates generated SQL and review CSVs after writing them. Use `--skip-output-validation` only when debugging the validators themselves.
 `category:ready` checks `.env.amazon`, generated SQL validation, matching review CSV validation, SQL/review ASIN consistency, monitor table SQL presence, and category API row counts without printing credential values. If SQL exists for a category, the matching review CSV must exist, pass validation, and contain the same ASIN set as the SQL.
+`category:ready:strict` runs the same readiness checks with review CSV quality warnings treated as blockers. Use it before opening Supabase.
 `category:review` validates review CSV rows for duplicate ASINs, required inferred specs, suspicious category words, prices, and ASIN-bearing detail URLs. It also prints quality warnings for monitor rows that are missing comparison fields such as resolution, refresh rate, panel type, or USB-C power delivery.
 `category:review:strict` treats review CSV quality warnings as errors. Run it before opening Supabase; if it fails, refine keywords or inspect/edit candidates instead of inserting weak comparison rows.
 `category:test` checks product parsing, target/exclusion filters, generated SQL, and SQL validation without Amazon API credentials.

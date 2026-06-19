@@ -272,6 +272,37 @@ class CategoryProductGenerationTest(unittest.TestCase):
             sql_path.write_text(generator.pc_insert_sql("mini-pc", [reviewed_candidate]), encoding="utf-8")
             self.assertEqual(readiness.compare_sql_review_asins(sql_path, review_path), [])
 
+    def test_readiness_strict_review_blocks_monitor_quality_warnings(self) -> None:
+        original_sql_files = readiness.SQL_FILES
+        original_review_files = readiness.REVIEW_FILES
+        monitor = self.candidate_from_item(amazon_item(
+            asin="B0STRICT01",
+            title="27インチ モニター USB-C",
+            brand="DisplayTest",
+            price=24800,
+            features=["Type-C対応"],
+        ))
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            sql_path = Path(tmp_dir) / "insert_monitor_products.sql"
+            review_path = Path(tmp_dir) / "review_monitor_products.csv"
+            sql_path.write_text(generator.monitor_insert_sql([monitor]), encoding="utf-8")
+            generator.write_review_csv("monitor", [monitor], review_path)
+
+            try:
+                readiness.SQL_FILES = {"monitor": sql_path}
+                readiness.REVIEW_FILES = {"monitor": review_path}
+                with contextlib.redirect_stdout(io.StringIO()):
+                    normal_blockers = readiness.check_review_files()
+                with contextlib.redirect_stdout(io.StringIO()):
+                    strict_blockers = readiness.check_review_files(strict_review=True)
+            finally:
+                readiness.SQL_FILES = original_sql_files
+                readiness.REVIEW_FILES = original_review_files
+
+        self.assertEqual(normal_blockers, [])
+        self.assertEqual(strict_blockers, [f"Fix review CSV validation/quality errors in {review_path}"])
+
     def test_main_writes_default_review_csv_with_sql(self) -> None:
         item = amazon_item(
             asin="B0AUTOREV1",

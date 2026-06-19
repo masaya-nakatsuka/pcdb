@@ -87,9 +87,12 @@ def validate_sql_file(path: Path) -> tuple[bool, str]:
     return result.returncode == 0, output
 
 
-def validate_review_file(path: Path) -> tuple[bool, str]:
+def validate_review_file(path: Path, *, strict: bool = False) -> tuple[bool, str]:
+    command = [sys.executable, "scripts/validate-category-review-csv.py", str(path)]
+    if strict:
+        command.append("--warnings-as-errors")
     result = subprocess.run(
-        [sys.executable, "scripts/validate-category-review-csv.py", str(path)],
+        command,
         check=False,
         text=True,
         stdout=subprocess.PIPE,
@@ -148,20 +151,21 @@ def check_sql_files() -> list[str]:
     return blockers
 
 
-def check_review_files() -> list[str]:
+def check_review_files(*, strict_review: bool = False) -> list[str]:
     blockers: list[str] = []
 
     for label, review_path in REVIEW_FILES.items():
         sql_path = SQL_FILES[label]
         if review_path.exists():
             print(f"REVIEW {label}: found {review_path}")
-            ok, output = validate_review_file(review_path)
-            print(f"REVIEW validate {review_path}: {'ok' if ok else 'failed'}")
+            ok, output = validate_review_file(review_path, strict=strict_review)
+            mode_label = "strict" if strict_review else "validate"
+            print(f"REVIEW {mode_label} {review_path}: {'ok' if ok else 'failed'}")
             if output:
                 for line in output.splitlines():
                     print(f"  {line}")
             if not ok:
-                blockers.append(f"Fix validation errors in {review_path}")
+                blockers.append(f"Fix review CSV validation/quality errors in {review_path}")
             if sql_path.exists():
                 match_errors = compare_sql_review_asins(sql_path, review_path)
                 print(f"REVIEW match {review_path} <-> {sql_path}: {'ok' if not match_errors else 'failed'}")
@@ -234,6 +238,11 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Also fail when category production APIs return 0 rows",
     )
+    parser.add_argument(
+        "--strict-review",
+        action="store_true",
+        help="Treat review CSV quality warnings as blockers.",
+    )
     return parser
 
 
@@ -250,7 +259,7 @@ def main() -> int:
         blockers.append(f"Restore {monitor_table_sql}")
 
     blockers.extend(check_sql_files())
-    blockers.extend(check_review_files())
+    blockers.extend(check_review_files(strict_review=args.strict_review))
     if not args.skip_production:
         blockers.extend(check_production(args.base_url.rstrip("/"), args.expect_data))
 
