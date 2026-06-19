@@ -9,6 +9,7 @@
 ## ドキュメント一覧
 - [記事作成プロンプト（SEO最適化・ブロガー調）](./article_prompt.md)
 - [記事計画 TODO（データ準拠：サイズ/重量/価格/CPU/メモリ/ストレージ/スコア）](./article_todo.md)
+- [Specsy Next Tasks（次にやるべきこと）](./specsy-next-tasks.md)
 - [口調・トーン参考（抜粋）](./article_tone_reference.md)
 - [pc-list でできること／できないこと（データ基準のガイド）](./pc-list.md)
 
