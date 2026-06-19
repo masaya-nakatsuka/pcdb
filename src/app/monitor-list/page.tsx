@@ -2,6 +2,12 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import type { Monitor } from '../../server/domain/models/monitor'
 import { fetchMonitorList } from '../../server/usecase/fetchMonitorList'
+import {
+  getMonitorUsageOption,
+  monitorUsageOptions,
+  parseMonitorUsage,
+  rankMonitors,
+} from '../../lib/monitorRecommendation'
 
 export const dynamic = 'force-dynamic'
 
@@ -11,6 +17,7 @@ export const metadata: Metadata = {
 }
 
 const monitorColumns = [
+  'おすすめ',
   'モニター',
   'サイズ',
   '解像度',
@@ -52,7 +59,14 @@ function formatUsbC(hasUsbC: boolean | null, powerDelivery: number | null): stri
   return powerDelivery ? `USB-C ${powerDelivery}W` : 'USB-C'
 }
 
-export default async function MonitorListPage() {
+interface MonitorListPageProps {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>
+}
+
+export default async function MonitorListPage({ searchParams }: MonitorListPageProps) {
+  const resolvedSearchParams = searchParams ? await searchParams : {}
+  const usage = parseMonitorUsage(resolvedSearchParams.usage)
+  const usageOption = getMonitorUsageOption(usage)
   let monitors: Monitor[] = []
 
   try {
@@ -60,6 +74,8 @@ export default async function MonitorListPage() {
   } catch (error) {
     console.error('Failed to fetch monitors:', error)
   }
+
+  const rankedMonitors = rankMonitors(monitors, usage)
 
   return (
     <div style={{
@@ -123,8 +139,41 @@ export default async function MonitorListPage() {
             fontSize: '14px',
             lineHeight: 1.8,
           }}>
-            PCモニターを、サイズ・解像度・リフレッシュレート・パネル・USB-C・価格で比較します。
+            {usageOption.description}
           </p>
+          <nav aria-label="モニター用途" style={{
+            marginTop: '18px',
+            display: 'flex',
+            justifyContent: 'center',
+            gap: '8px',
+            flexWrap: 'wrap',
+          }}>
+            {monitorUsageOptions.map((option) => {
+              const isActive = option.value === usage
+
+              return (
+                <Link
+                  key={option.value}
+                  href={`/monitor-list?usage=${option.value}`}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    minHeight: '36px',
+                    padding: '8px 12px',
+                    borderRadius: '999px',
+                    border: isActive ? '1px solid #0f172a' : '1px solid #cbd5e1',
+                    backgroundColor: isActive ? '#0f172a' : '#ffffff',
+                    color: isActive ? '#ffffff' : '#334155',
+                    textDecoration: 'none',
+                    fontSize: '13px',
+                    fontWeight: 900,
+                  }}
+                >
+                  {option.label}
+                </Link>
+              )
+            })}
+          </nav>
         </section>
 
         <section style={{
@@ -174,11 +223,27 @@ export default async function MonitorListPage() {
                       モニターDB接続後、ここに商品一覧を表示します。
                     </td>
                   </tr>
-                ) : monitors.map((monitor) => {
+                ) : rankedMonitors.map(({ monitor, score, highlights }) => {
                   const productUrl = monitor.af_url || monitor.url
 
                   return (
                     <tr key={monitor.id}>
+                      <td style={{
+                        padding: '12px',
+                        borderBottom: '1px solid #f1f5f9',
+                        whiteSpace: 'nowrap',
+                      }}>
+                        <div style={{
+                          display: 'inline-flex',
+                          alignItems: 'baseline',
+                          gap: '4px',
+                          color: '#0f172a',
+                          fontWeight: 900,
+                        }}>
+                          <span style={{ fontSize: '18px' }}>{score}</span>
+                          <span style={{ fontSize: '11px', color: '#64748b' }}>/100</span>
+                        </div>
+                      </td>
                       <td style={{
                         padding: '12px',
                         borderBottom: '1px solid #f1f5f9',
@@ -229,6 +294,28 @@ export default async function MonitorListPage() {
                                 {monitor.name}
                               </span>
                             )}
+                            {highlights.length > 0 ? (
+                              <div style={{
+                                display: 'flex',
+                                flexWrap: 'wrap',
+                                gap: '5px',
+                                marginTop: '7px',
+                              }}>
+                                {highlights.map((highlight) => (
+                                  <span key={highlight} style={{
+                                    display: 'inline-flex',
+                                    padding: '3px 6px',
+                                    borderRadius: '999px',
+                                    backgroundColor: '#f1f5f9',
+                                    color: '#475569',
+                                    fontSize: '11px',
+                                    fontWeight: 800,
+                                  }}>
+                                    {highlight}
+                                  </span>
+                                ))}
+                              </div>
+                            ) : null}
                           </div>
                         </div>
                       </td>
