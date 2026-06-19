@@ -7,6 +7,7 @@
     "build": "next build --webpack",
     "start": "next start",
     "lint": "next lint",
+    "category:ready": "python3 scripts/check-category-product-readiness.py",
     "production:check": "python3 scripts/check-production-site.py",
     "supabase-rls:test": "tsx scripts/supabase-rls-test.ts"
   },

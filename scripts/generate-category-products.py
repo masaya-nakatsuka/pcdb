@@ -787,6 +787,14 @@ def main() -> int:
     if args.dry_run:
         return 0
 
+    if not candidates:
+        print(
+            "No valid candidates found; SQL was not written. "
+            "Check keywords, filters, credentials, or run with --dry-run first.",
+            file=sys.stderr,
+        )
+        return 2
+
     output_path = args.output or default_output_path(args.profile)
     output_path.parent.mkdir(parents=True, exist_ok=True)
     sql = monitor_insert_sql(candidates) if args.profile == "monitor" else pc_insert_sql(args.profile, candidates)
