@@ -56,6 +56,14 @@ npm run category:ready:strict -- --skip-production
 
 6. For monitors, run `scripts/create-monitor-data-table.sql` in Supabase SQL Editor before running `scripts/insert_monitor_products.sql`.
 
+If monitor rows were inserted but `/api/monitor-list` still returns `[]`, run:
+
+```bash
+scripts/fix-monitor-public-read-policy.sql
+```
+
+This adds the public read policy used by the production anon key and prints total/active row counts.
+
 7. Check production after deploy or DB insertion.
 
 ```bash

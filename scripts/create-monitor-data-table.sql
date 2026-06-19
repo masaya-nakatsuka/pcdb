@@ -28,4 +28,16 @@ CREATE INDEX IF NOT EXISTS idx_am_monitor_data_active_price
 CREATE INDEX IF NOT EXISTS idx_am_monitor_data_size_refresh
   ON am_monitor_data (size_inch, refresh_rate_hz);
 
+ALTER TABLE am_monitor_data ENABLE ROW LEVEL SECURITY;
+
+GRANT USAGE ON SCHEMA public TO anon, authenticated;
+GRANT SELECT ON am_monitor_data TO anon, authenticated;
+
+DROP POLICY IF EXISTS "Allow public read active monitor products" ON am_monitor_data;
+CREATE POLICY "Allow public read active monitor products"
+  ON am_monitor_data
+  FOR SELECT
+  TO anon, authenticated
+  USING (is_active = true);
+
 COMMIT;
