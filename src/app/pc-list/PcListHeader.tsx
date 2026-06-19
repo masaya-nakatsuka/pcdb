@@ -4,13 +4,11 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
 const navItems = [
-  { href: '/pc-list/mobile', label: 'モバイル' },
-  { href: '/pc-list/cafe', label: 'カフェ' },
-  { href: '/pc-list/home', label: '自宅' },
-  { href: '/pc-list/cost-performance', label: 'コスパ' },
-  { href: '/pc-list/used', label: '中古' },
-  { href: '/pc-list/gaming', label: 'ゲーム' },
-  { href: '/pc-list/video-editing', label: '動画編集' },
+  { href: '/pc-list/cafe', label: 'ノートPC（新品）' },
+  { href: '/pc-list/used', label: 'ノートPC（中古）' },
+  { href: '/pc-list/desktop', label: 'デスクトップ' },
+  { href: '/pc-list/mini-pc', label: 'ミニPC' },
+  { href: '/monitor-list', label: 'モニター' },
 ]
 
 export default function PcListHeader() {
@@ -18,7 +16,15 @@ export default function PcListHeader() {
 
   const isActiveNav = (href: string) => {
     if (href === '/pc-list/cafe') {
-      return pathname === '/pc-list' || pathname === '/pc-list/cafe'
+      return (
+        pathname === '/pc-list' ||
+        (
+          pathname.startsWith('/pc-list') &&
+          pathname !== '/pc-list/used' &&
+          pathname !== '/pc-list/desktop' &&
+          pathname !== '/pc-list/mini-pc'
+        )
+      )
     }
 
     return pathname === href
@@ -40,7 +46,7 @@ export default function PcListHeader() {
         </Link>
 
         <div className="pc-list-header__navigation">
-          <nav className="pc-list-header__nav" aria-label="用途別PCランキング">
+          <nav className="pc-list-header__nav" aria-label="カテゴリ別商品一覧">
             {navItems.map((item) => (
               <Link
                 key={item.href}
@@ -51,12 +57,6 @@ export default function PcListHeader() {
               </Link>
             ))}
           </nav>
-
-          <div className="pc-list-header__actions">
-            <Link href="/blog" className="pc-list-header__secondary-link">
-              ブログ
-            </Link>
-          </div>
         </div>
       </div>
 
@@ -202,35 +202,6 @@ export default function PcListHeader() {
           box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12);
         }
 
-        .pc-list-header__actions {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          flex: 0 0 auto;
-        }
-
-        .pc-list-header__secondary-link {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          min-height: 38px;
-          border-radius: 8px;
-          font-size: 13px;
-          font-weight: 800;
-          text-decoration: none;
-          white-space: nowrap;
-        }
-
-        .pc-list-header__secondary-link {
-          padding: 0 10px;
-          color: #64748b;
-        }
-
-        .pc-list-header__secondary-link:hover {
-          color: #0f172a;
-          background: #f1f5f9;
-        }
-
         @media (max-width: 980px) {
           .pc-list-header__inner {
             min-height: auto;
@@ -259,18 +230,9 @@ export default function PcListHeader() {
             gap: 8px;
           }
 
-          .pc-list-header__nav,
-          .pc-list-header__actions {
+          .pc-list-header__nav {
             width: 100%;
             justify-content: flex-start;
-          }
-
-          .pc-list-header__actions {
-            display: none;
-          }
-
-          .pc-list-header__secondary-link {
-            padding: 0 8px;
           }
 
           .pc-list-header__nav-link {
