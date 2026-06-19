@@ -34,6 +34,7 @@ TODAY = dt.date.today().isoformat()
 MARKETPLACE = "www.amazon.co.jp"
 TOKEN_URL = "https://api.amazon.co.jp/auth/o2/token"
 SEARCH_URL = "https://creatorsapi.amazon/catalog/v1/searchItems"
+ASIN_TOKEN_RE = re.compile(r"\b[A-Z0-9]{10}\b", re.I)
 
 RESOURCES = [
     "itemInfo.title",
@@ -793,6 +794,25 @@ def default_review_output_path(profile: str) -> Path:
     return Path("scripts") / f"review_{profile.replace('-', '_')}_products.csv"
 
 
+def parse_asins(value: str) -> set[str]:
+    return {match.group(0).upper() for match in ASIN_TOKEN_RE.finditer(value)}
+
+
+def load_excluded_asins(values: list[str] | None, files: list[Path] | None) -> set[str]:
+    asins: set[str] = set()
+    for value in values or []:
+        asins.update(parse_asins(value))
+
+    for path in files or []:
+        if not path.exists():
+            raise SystemExit(f"Exclude file not found: {path}")
+        for raw_line in path.read_text(encoding="utf-8").splitlines():
+            line = raw_line.split("#", 1)[0].strip()
+            if line:
+                asins.update(parse_asins(line))
+    return asins
+
+
 def run_validator(script_name: str, path: Path) -> tuple[bool, str]:
     script_path = Path(__file__).resolve().parent / script_name
     result = subprocess.run(
@@ -835,6 +855,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--env-file", default=".env.amazon", help="Optional env file with PAAPI_* keys.")
     parser.add_argument("--output", type=Path, help="Output SQL path.")
     parser.add_argument("--review-output", type=Path, help="Optional CSV path for reviewing candidates before SQL insertion.")
+    parser.add_argument("--exclude-asin", action="append", dest="exclude_asins", help="ASIN to skip. Can be repeated.")
+    parser.add_argument("--exclude-file", action="append", type=Path, dest="exclude_files", help="Text/CSV file containing ASINs to skip.")
     parser.add_argument("--skip-output-validation", action="store_true", help="Skip SQL/review CSV validation after writing outputs.")
     parser.add_argument("--dry-run", action="store_true", help="Print candidates without writing SQL.")
     return parser
@@ -857,10 +879,13 @@ def main() -> int:
     queries = args.queries or DEFAULT_QUERIES[args.profile]
     pages = max(1, min(args.pages, 10))
     item_count = max(1, min(args.item_count, 10))
+    excluded_asins = load_excluded_asins(args.exclude_asins, args.exclude_files)
+    if excluded_asins:
+        print(f"Excluded ASINs loaded: {len(excluded_asins)}")
 
     candidates: list[Candidate] = []
     seen_asins: set[str] = set()
-    skipped = {"duplicate": 0, "not_target": 0, "api_error": 0}
+    skipped = {"duplicate": 0, "excluded": 0, "not_target": 0, "api_error": 0}
 
     for query in queries:
         if len(candidates) >= args.max_add:
@@ -890,6 +915,9 @@ def main() -> int:
             for item in items:
                 candidate = to_candidate(item)
                 if candidate is None:
+                    continue
+                if candidate.asin in excluded_asins:
+                    skipped["excluded"] += 1
                     continue
                 if candidate.asin in seen_asins:
                     skipped["duplicate"] += 1

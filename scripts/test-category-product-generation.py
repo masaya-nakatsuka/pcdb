@@ -358,6 +358,80 @@ class CategoryProductGenerationTest(unittest.TestCase):
                 else:
                     os.environ[key] = value
 
+    def test_main_excludes_asins_from_cli_and_file(self) -> None:
+        inline_excluded = amazon_item(
+            asin="B0EXCLI001",
+            title="MINISFORUM ミニPC Windows 11 Intel N100",
+            brand="MINISFORUM",
+            price=32980,
+            features=["16GB DDR4 RAM", "512GB SSD", "Intel UHD Graphics", "小型PC"],
+        )
+        file_excluded = amazon_item(
+            asin="B0EXFILE01",
+            title="GMKtec ミニPC Windows 11 Intel N150",
+            brand="GMKtec",
+            price=35980,
+            features=["16GB DDR4 RAM", "512GB SSD", "Intel UHD Graphics", "小型PC"],
+        )
+        kept = amazon_item(
+            asin="B0KEEP0001",
+            title="Beelink ミニPC Windows 11 Intel N100",
+            brand="Beelink",
+            price=31980,
+            features=["16GB DDR4 RAM", "512GB SSD", "Intel UHD Graphics", "小型PC"],
+        )
+
+        original_argv = sys.argv
+        original_cwd = Path.cwd()
+        original_env = {key: os.environ.get(key) for key in ("PAAPI_ACCESS_KEY", "PAAPI_SECRET_KEY", "PAAPI_PARTNER_TAG")}
+        original_get_token = generator.get_token
+        original_search_items = generator.search_items
+        try:
+            os.environ["PAAPI_ACCESS_KEY"] = "dummy-access"
+            os.environ["PAAPI_SECRET_KEY"] = "dummy-secret"
+            os.environ["PAAPI_PARTNER_TAG"] = "dummy-tag"
+            generator.get_token = lambda _client_id, _client_secret: "dummy-token"
+            generator.search_items = lambda *_args, **_kwargs: [inline_excluded, file_excluded, kept]
+            with tempfile.TemporaryDirectory() as tmp_dir:
+                os.chdir(tmp_dir)
+                Path("exclude-asins.txt").write_text("B0EXFILE01 # weak candidate\n", encoding="utf-8")
+                sys.argv = [
+                    "generate-category-products.py",
+                    "mini-pc",
+                    "--query",
+                    "test mini pc",
+                    "--max-add",
+                    "3",
+                    "--request-sleep",
+                    "0",
+                    "--exclude-asin",
+                    "B0EXCLI001",
+                    "--exclude-file",
+                    "exclude-asins.txt",
+                ]
+                stdout = io.StringIO()
+                with contextlib.redirect_stdout(stdout):
+                    exit_code = generator.main()
+                output = stdout.getvalue()
+
+                sql = Path("scripts/insert_mini_pc_products.sql").read_text(encoding="utf-8")
+                self.assertEqual(exit_code, 0)
+                self.assertIn("B0KEEP0001", sql)
+                self.assertNotIn("B0EXCLI001", sql)
+                self.assertNotIn("B0EXFILE01", sql)
+                self.assertIn("Excluded ASINs loaded: 2", output)
+                self.assertIn("'excluded': 2", output)
+        finally:
+            sys.argv = original_argv
+            os.chdir(original_cwd)
+            generator.get_token = original_get_token
+            generator.search_items = original_search_items
+            for key, value in original_env.items():
+                if value is None:
+                    os.environ.pop(key, None)
+                else:
+                    os.environ[key] = value
+
     def test_plan_prints_monitor_execution_commands(self) -> None:
         stdout = io.StringIO()
         with contextlib.redirect_stdout(stdout):

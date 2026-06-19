@@ -40,6 +40,7 @@ python3 scripts/generate-category-products.py desktop-pc --max-add 20
 ```
 
 The generator writes the matching `scripts/review_*_products.csv` automatically when it writes SQL, then validates both outputs. It exits without writing SQL or an automatic review CSV when no valid candidates are found. Run the dry-run command first if you need to tune keywords or filters.
+If strict review finds a weak candidate, rerun generation with `--exclude-asin B0XXXXXXXX` or `--exclude-file path/to/excluded-asins.txt` instead of editing generated SQL by hand.
 
 5. Re-validate generated SQL and matching review CSVs before opening Supabase.
 
