@@ -14,13 +14,21 @@ const pcListRoutes = [
   '/pc-list/video-editing',
 ]
 
+const monitorRoutes = [
+  '/monitor-list',
+  '/monitor-list/work',
+  '/monitor-list/gaming',
+  '/monitor-list/creative',
+  '/monitor-list/usb-c',
+]
+
 const staticRoutes = [
   '/',
   '/about',
   '/blog',
-  '/monitor-list',
   '/privacy',
   ...pcListRoutes,
+  ...monitorRoutes,
 ]
 
 export default function sitemap(): MetadataRoute.Sitemap {

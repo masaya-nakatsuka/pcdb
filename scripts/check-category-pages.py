@@ -23,6 +23,10 @@ PAGE_CHECKS = [
     ("/pc-list/mini-pc", "Mini PCランキング"),
     ("/pc-list/desktop", "デスクトップPCランキング"),
     ("/monitor-list", "モニター比較"),
+    ("/monitor-list/work", "モニター比較"),
+    ("/monitor-list/gaming", "モニター比較"),
+    ("/monitor-list/creative", "モニター比較"),
+    ("/monitor-list/usb-c", "モニター比較"),
 ]
 
 API_CHECKS = [

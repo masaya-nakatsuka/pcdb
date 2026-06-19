@@ -4,26 +4,31 @@ export type MonitorUsage = 'work' | 'gaming' | 'creative' | 'usb_c'
 
 export const monitorUsageOptions: Array<{
   value: MonitorUsage
+  slug: string
   label: string
   description: string
 }> = [
   {
     value: 'work',
+    slug: 'work',
     label: '仕事用',
     description: '27インチ前後、WQHD以上、価格、USB-Cのバランスで比較します。',
   },
   {
     value: 'gaming',
+    slug: 'gaming',
     label: 'ゲーム用',
     description: '高リフレッシュレート、見やすさ、価格のバランスで比較します。',
   },
   {
     value: 'creative',
+    slug: 'creative',
     label: '制作向け',
     description: '解像度、パネル、画面サイズを重視して比較します。',
   },
   {
     value: 'usb_c',
+    slug: 'usb-c',
     label: 'USB-C重視',
     description: 'USB-C給電、解像度、価格のバランスで比較します。',
   },
@@ -178,16 +183,27 @@ function buildHighlights(monitor: Monitor): string[] {
   return highlights.slice(0, 3)
 }
 
-export function parseMonitorUsage(value: string | string[] | undefined): MonitorUsage {
+export function parseMonitorUsageSlug(value: string | string[] | undefined): MonitorUsage | null {
   const rawValue = Array.isArray(value) ? value[0] : value
+  const normalizedValue = rawValue === 'usb-c' ? 'usb_c' : rawValue
 
   if (
-    rawValue === 'work' ||
-    rawValue === 'gaming' ||
-    rawValue === 'creative' ||
-    rawValue === 'usb_c'
+    normalizedValue === 'work' ||
+    normalizedValue === 'gaming' ||
+    normalizedValue === 'creative' ||
+    normalizedValue === 'usb_c'
   ) {
-    return rawValue
+    return normalizedValue
+  }
+
+  return null
+}
+
+export function parseMonitorUsage(value: string | string[] | undefined): MonitorUsage {
+  const usage = parseMonitorUsageSlug(value)
+
+  if (usage) {
+    return usage
   }
 
   return 'work'
@@ -195,6 +211,12 @@ export function parseMonitorUsage(value: string | string[] | undefined): Monitor
 
 export function getMonitorUsageOption(usage: MonitorUsage) {
   return monitorUsageOptions.find((option) => option.value === usage) ?? monitorUsageOptions[0]
+}
+
+export function getMonitorUsagePath(usage: MonitorUsage): string {
+  const option = getMonitorUsageOption(usage)
+
+  return `/monitor-list/${option.slug}`
 }
 
 export function rankMonitors(monitors: Monitor[], usage: MonitorUsage): MonitorRecommendation[] {
