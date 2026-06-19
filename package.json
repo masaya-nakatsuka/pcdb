@@ -10,6 +10,7 @@
     "category:plan": "python3 scripts/plan-category-products.py",
     "category:ready": "python3 scripts/check-category-product-readiness.py",
     "category:review": "python3 scripts/validate-category-review-csv.py",
+    "category:review:strict": "python3 scripts/validate-category-review-csv.py --warnings-as-errors",
     "category:test": "python3 scripts/test-category-product-generation.py",
     "production:check": "python3 scripts/check-production-site.py",
     "supabase-rls:test": "tsx scripts/supabase-rls-test.ts"

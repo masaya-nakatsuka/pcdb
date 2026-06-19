@@ -143,20 +143,36 @@ def validate_row(row: dict[str, str], row_number: int) -> list[str]:
     return errors
 
 
-def validate_csv(path: Path) -> list[str]:
+def quality_warnings(row: dict[str, str], row_number: int) -> list[str]:
+    warnings: list[str] = []
+    row_label = f"row {row_number}"
+    profile = row.get("profile", "")
+
+    if profile == "monitor":
+        for field in ("resolution", "refresh_rate_hz", "panel_type"):
+            if not row.get(field):
+                warnings.append(f"{row_label}: monitor is missing comparison field {field}")
+        if normalized(row.get("has_usb_c", "")) == "true" and not row.get("usb_c_power_delivery_w"):
+            warnings.append(f"{row_label}: monitor has USB-C but missing usb_c_power_delivery_w")
+
+    return warnings
+
+
+def audit_csv(path: Path) -> tuple[list[str], list[str]]:
     errors: list[str] = []
+    warnings: list[str] = []
 
     with path.open(encoding="utf-8", newline="") as file:
         reader = csv.DictReader(file)
         columns = set(reader.fieldnames or [])
         missing_columns = sorted(REQUIRED_COLUMNS - columns)
         if missing_columns:
-            return [f"missing columns: {', '.join(missing_columns)}"]
+            return [f"missing columns: {', '.join(missing_columns)}"], []
 
         rows = list(reader)
 
     if not rows:
-        return ["no rows"]
+        return ["no rows"], []
 
     seen_asins: dict[str, int] = {}
     profiles = set()
@@ -169,16 +185,27 @@ def validate_csv(path: Path) -> list[str]:
         else:
             seen_asins[asin] = row_number
         errors.extend(validate_row(row, row_number))
+        warnings.extend(quality_warnings(row, row_number))
 
     if len(profiles) > 1:
         errors.append(f"{path}: mixed profiles found: {', '.join(sorted(profiles))}")
 
+    return errors, warnings
+
+
+def validate_csv(path: Path) -> list[str]:
+    errors, _warnings = audit_csv(path)
     return errors
 
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
     parser.add_argument("files", nargs="*", type=Path, help="Review CSV files to validate")
+    parser.add_argument(
+        "--warnings-as-errors",
+        action="store_true",
+        help="Fail when quality warnings are found. Useful before opening Supabase.",
+    )
     return parser
 
 
@@ -191,19 +218,32 @@ def main() -> int:
         return 0
 
     all_errors: list[str] = []
+    all_warnings: list[str] = []
     for path in files:
         if not path.exists():
             all_errors.append(f"{path}: file not found")
             continue
-        errors = validate_csv(path)
+        errors, warnings = audit_csv(path)
         if errors:
             all_errors.extend(f"{path}: {error}" for error in errors)
-        else:
+        if warnings:
+            all_warnings.extend(f"{path}: {warning}" for warning in warnings)
+        if not errors and not warnings:
             print(f"OK: {path}")
+        elif not errors:
+            print(f"OK with warnings: {path}")
+
+    for warning in all_warnings:
+        print(f"WARNING: {warning}", file=sys.stderr)
 
     if all_errors:
         for error in all_errors:
             print(f"ERROR: {error}", file=sys.stderr)
+        return 1
+
+    if args.warnings_as_errors and all_warnings:
+        for warning in all_warnings:
+            print(f"ERROR: warning treated as error: {warning}", file=sys.stderr)
         return 1
 
     return 0

@@ -199,6 +199,25 @@ class CategoryProductGenerationTest(unittest.TestCase):
 
         self.assertTrue(any("suspicious PC title word" in error for error in errors))
 
+    def test_review_validator_reports_monitor_quality_warnings(self) -> None:
+        monitor = self.candidate_from_item(amazon_item(
+            asin="B0MONWARN1",
+            title="27インチ モニター USB-C",
+            brand="DisplayTest",
+            price=24800,
+            features=["Type-C対応"],
+        ))
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            review_path = Path(tmp_dir) / "monitor_warning_review.csv"
+            generator.write_review_csv("monitor", [monitor], review_path)
+            errors, warnings = review_validator.audit_csv(review_path)
+
+        self.assertEqual(errors, [])
+        self.assertTrue(any("resolution" in warning for warning in warnings))
+        self.assertTrue(any("refresh_rate_hz" in warning for warning in warnings))
+        self.assertTrue(any("panel_type" in warning for warning in warnings))
+
     def test_readiness_requires_review_csv_when_sql_exists(self) -> None:
         original_sql_files = readiness.SQL_FILES
         original_review_files = readiness.REVIEW_FILES
