@@ -90,6 +90,9 @@ function TopRankedMonitorPodium({ monitors }: { monitors: MonitorRecommendation[
     item,
     rank: (index + 1) as 1 | 2 | 3,
   }))
+  const displayItems = rankedItems.length === 3
+    ? [rankedItems[1], rankedItems[0], rankedItems[2]]
+    : rankedItems
 
   return (
     <section style={{ marginBottom: '24px' }}>
@@ -109,7 +112,7 @@ function TopRankedMonitorPodium({ monitors }: { monitors: MonitorRecommendation[
         justifyContent: 'center',
         gap: '16px',
       }}>
-        {rankedItems.map(({ item, rank }) => {
+        {displayItems.map(({ item, rank }) => {
           const { monitor, score, highlights } = item
           const productUrl = monitor.af_url || monitor.url
           const rankStyle = podiumRankStyles[rank]
