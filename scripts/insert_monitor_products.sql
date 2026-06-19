@@ -1,30 +1,61 @@
 -- Specsy monitor product INSERT SQL generated on 2026-06-19
 -- Run scripts/create-monitor-data-table.sql first.
--- Manual-review seed generated without PA-API credentials; review prices before running in Supabase SQL Editor.
+-- Review candidates before running this in Supabase SQL Editor.
 BEGIN;
 
 INSERT INTO am_monitor_data (brand, name, size_inch, resolution, refresh_rate_hz, panel_type, has_usb_c, usb_c_power_delivery_w, price, real_price, url, af_url, img_url, fetched_at, is_active)
-SELECT 'Dell', 'Dell S2725QC-A 27-inch 4K USB-C Monitor 120Hz IPS 65W', 27, '3840x2160', 120, 'IPS', true, 65, 44646, 44646, 'https://www.amazon.co.jp/dp/B0F23FWBJL', 'https://www.amazon.co.jp/dp/B0F23FWBJL?tag=nmsuteado2-22&linkCode=osi&th=1&psc=1', NULL, '2026-06-19', true
-WHERE NOT EXISTS (SELECT 1 FROM am_monitor_data WHERE (url ILIKE '%B0F23FWBJL%' OR af_url ILIKE '%B0F23FWBJL%'));
-
+SELECT 'ASUS', 'ASUSモニター / VY249HGR Eye Care モニター / 23.8インチ FHD（1920 x 1080）/ IPS / 120Hz(OC) / SmoothMotion / 1ms（MPRT）/ Adaptive Sync/', 23.8, '1920x1080', 120, 'IPS', false, NULL, 12580, 12580, 'https://www.amazon.co.jp/dp/B0DNDXMLR7', 'https://www.amazon.co.jp/dp/B0DNDXMLR7?tag=nmsuteado2-22&linkCode=osi&th=1&psc=1', 'https://m.media-amazon.com/images/I/4110VbxETkL._SL160_.jpg', '2026-06-19', true
+WHERE NOT EXISTS (SELECT 1 FROM am_monitor_data WHERE (url ILIKE '%B0DNDXMLR7%' OR af_url ILIKE '%B0DNDXMLR7%'));
 INSERT INTO am_monitor_data (brand, name, size_inch, resolution, refresh_rate_hz, panel_type, has_usb_c, usb_c_power_delivery_w, price, real_price, url, af_url, img_url, fetched_at, is_active)
-SELECT 'Dell', 'Dell S2725DS-A 27-inch QHD Monitor 100Hz IPS', 27, '2560x1440', 100, 'IPS', false, NULL, 34800, 34800, 'https://www.amazon.co.jp/dp/B0CXXKGVYK', 'https://www.amazon.co.jp/dp/B0CXXKGVYK?tag=nmsuteado2-22&linkCode=osi&th=1&psc=1', NULL, '2026-06-19', true
-WHERE NOT EXISTS (SELECT 1 FROM am_monitor_data WHERE (url ILIKE '%B0CXXKGVYK%' OR af_url ILIKE '%B0CXXKGVYK%'));
-
+SELECT 'Dell', 'Dell SE2426H 23.8インチ モニター(3年保証/FHD/IPS,非光沢/HDMIx2/傾き調整/1ms,144Hz/AMD FreeSync™)', 23.8, '1920x1080', 144, 'IPS', false, NULL, 14980, 14980, 'https://www.amazon.co.jp/dp/B0G6JMQK17', 'https://www.amazon.co.jp/dp/B0G6JMQK17?tag=nmsuteado2-22&linkCode=osi&th=1&psc=1', 'https://m.media-amazon.com/images/I/41Rd2hTlvXL._SL160_.jpg', '2026-06-19', true
+WHERE NOT EXISTS (SELECT 1 FROM am_monitor_data WHERE (url ILIKE '%B0G6JMQK17%' OR af_url ILIKE '%B0G6JMQK17%'));
 INSERT INTO am_monitor_data (brand, name, size_inch, resolution, refresh_rate_hz, panel_type, has_usb_c, usb_c_power_delivery_w, price, real_price, url, af_url, img_url, fetched_at, is_active)
-SELECT 'JAPANNEXT', 'JAPANNEXT JN-IPS27Q-C6 27-inch WQHD USB-C Monitor 100Hz IPS 65W', 27, '2560x1440', 100, 'IPS', true, 65, 33980, 33980, 'https://www.amazon.co.jp/dp/B0FG2KB4D7', 'https://www.amazon.co.jp/dp/B0FG2KB4D7?tag=nmsuteado2-22&linkCode=osi&th=1&psc=1', NULL, '2026-06-19', true
-WHERE NOT EXISTS (SELECT 1 FROM am_monitor_data WHERE (url ILIKE '%B0FG2KB4D7%' OR af_url ILIKE '%B0FG2KB4D7%'));
-
+SELECT 'Acer', 'Acer モニター 24.5インチ フルHD 非光沢 IPS 120Hz 1ms(VRB) sRGB 99% AdaptiveSync HDMI 1.4 ミニD-Sub 15ピン スピーカー・ヘッドフォン端子非搭載 VESAマウント対応 ゼ', 24.5, '1920x1080', 120, 'IPS', false, NULL, 11990, 11990, 'https://www.amazon.co.jp/dp/B0DL5X394K', 'https://www.amazon.co.jp/dp/B0DL5X394K?tag=nmsuteado2-22&linkCode=osi&th=1&psc=1', 'https://m.media-amazon.com/images/I/41X-r-w8wsL._SL160_.jpg', '2026-06-19', true
+WHERE NOT EXISTS (SELECT 1 FROM am_monitor_data WHERE (url ILIKE '%B0DL5X394K%' OR af_url ILIKE '%B0DL5X394K%'));
 INSERT INTO am_monitor_data (brand, name, size_inch, resolution, refresh_rate_hz, panel_type, has_usb_c, usb_c_power_delivery_w, price, real_price, url, af_url, img_url, fetched_at, is_active)
-SELECT 'JAPANNEXT', 'JAPANNEXT JN-i245G144F 24.5-inch FHD Gaming Monitor 144Hz IPS', 24.5, '1920x1080', 144, 'IPS', false, NULL, 19980, 19980, 'https://www.amazon.co.jp/dp/B0F4X5M6CV', 'https://www.amazon.co.jp/dp/B0F4X5M6CV?tag=nmsuteado2-22&linkCode=osi&th=1&psc=1', NULL, '2026-06-19', true
-WHERE NOT EXISTS (SELECT 1 FROM am_monitor_data WHERE (url ILIKE '%B0F4X5M6CV%' OR af_url ILIKE '%B0F4X5M6CV%'));
-
+SELECT 'Dell', '【Amazon.co.jp限定】Dell SE2426HG 23.8インチ ゲーミングモニター(3年保証/FHD/IPS,非光沢/HDMIx2,DPx1/sRGB99%/傾き調整/0.5ms,240Hz/AMD FreeSync™ Prem', 23.8, '1920x1080', 240, 'IPS', false, NULL, 13980, 13980, 'https://www.amazon.co.jp/dp/B0G6JV85HG', 'https://www.amazon.co.jp/dp/B0G6JV85HG?tag=nmsuteado2-22&linkCode=osi&th=1&psc=1', 'https://m.media-amazon.com/images/I/51klJqM4PpL._SL160_.jpg', '2026-06-19', true
+WHERE NOT EXISTS (SELECT 1 FROM am_monitor_data WHERE (url ILIKE '%B0G6JV85HG%' OR af_url ILIKE '%B0G6JV85HG%'));
 INSERT INTO am_monitor_data (brand, name, size_inch, resolution, refresh_rate_hz, panel_type, has_usb_c, usb_c_power_delivery_w, price, real_price, url, af_url, img_url, fetched_at, is_active)
-SELECT 'PHILIPS', 'PHILIPS 24E1N2300AE 23.8-inch FHD USB-C Monitor 120Hz IPS 65W', 23.8, '1920x1080', 120, 'IPS', true, 65, 18300, 18300, 'https://www.amazon.co.jp/dp/B0FCQPC9FQ', 'https://www.amazon.co.jp/dp/B0FCQPC9FQ?tag=nmsuteado2-22&linkCode=osi&th=1&psc=1', NULL, '2026-06-19', true
-WHERE NOT EXISTS (SELECT 1 FROM am_monitor_data WHERE (url ILIKE '%B0FCQPC9FQ%' OR af_url ILIKE '%B0FCQPC9FQ%'));
-
+SELECT 'ベンキュージャパン', 'ベンキュージャパン BenQ GW2491 23.8インチ アイケアモニター Full HD/IPS/HDMI/DP/ブルーライト軽減プラス/フリッカーフリー/ティルト機能/23.8型 PCモニター スピーカー非搭載', 23.8, '1920x1080', 100, 'IPS', false, NULL, 13770, 13770, 'https://www.amazon.co.jp/dp/B0DWZQHF8G', 'https://www.amazon.co.jp/dp/B0DWZQHF8G?tag=nmsuteado2-22&linkCode=osi&th=1&psc=1', 'https://m.media-amazon.com/images/I/415dv8qBZjL._SL160_.jpg', '2026-06-19', true
+WHERE NOT EXISTS (SELECT 1 FROM am_monitor_data WHERE (url ILIKE '%B0DWZQHF8G%' OR af_url ILIKE '%B0DWZQHF8G%'));
 INSERT INTO am_monitor_data (brand, name, size_inch, resolution, refresh_rate_hz, panel_type, has_usb_c, usb_c_power_delivery_w, price, real_price, url, af_url, img_url, fetched_at, is_active)
-SELECT 'KOORUI', 'KOORUI N07 27-inch 4K Monitor 60Hz IPS', 27, '3840x2160', 60, 'IPS', false, NULL, 24800, 24800, 'https://www.amazon.co.jp/dp/B0CQ8RQBV8', 'https://www.amazon.co.jp/dp/B0CQ8RQBV8?tag=nmsuteado2-22&linkCode=osi&th=1&psc=1', NULL, '2026-06-19', true
-WHERE NOT EXISTS (SELECT 1 FROM am_monitor_data WHERE (url ILIKE '%B0CQ8RQBV8%' OR af_url ILIKE '%B0CQ8RQBV8%'));
+SELECT 'Dell', '【Amazon.co.jp限定】Dell S2425HSM-A 23.8インチ モニター(無輝点5年保証/FHD/IPS,非光沢/HDMIx2/sRGB 99%/縦横回転,高さ調整/1ms,144Hz/AMD FreeSync/内蔵スピーカ', 23.8, '1920x1080', 144, 'IPS', false, NULL, 17980, 17980, 'https://www.amazon.co.jp/dp/B0FPDZWJ7K', 'https://www.amazon.co.jp/dp/B0FPDZWJ7K?tag=nmsuteado2-22&linkCode=osi&th=1&psc=1', 'https://m.media-amazon.com/images/I/41tTdqA3qrL._SL160_.jpg', '2026-06-19', true
+WHERE NOT EXISTS (SELECT 1 FROM am_monitor_data WHERE (url ILIKE '%B0FPDZWJ7K%' OR af_url ILIKE '%B0FPDZWJ7K%'));
+INSERT INTO am_monitor_data (brand, name, size_inch, resolution, refresh_rate_hz, panel_type, has_usb_c, usb_c_power_delivery_w, price, real_price, url, af_url, img_url, fetched_at, is_active)
+SELECT 'PHILIPS', '【Amazon.co.jp 限定】PHILIPS EVNIA ゲーミングモニター (23.8インチ/180Hz/フルHD/Fast IPS/超高速0.5ms/HDR10/G-Sync Compatible対応/FPS向け/5年保証/チルト/', 23.8, '1920x1080', 180, 'IPS', false, NULL, 18198, 18198, 'https://www.amazon.co.jp/dp/B0DCNKQBN3', 'https://www.amazon.co.jp/dp/B0DCNKQBN3?tag=nmsuteado2-22&linkCode=osi&th=1&psc=1', 'https://m.media-amazon.com/images/I/51cE-mTw3zL._SL160_.jpg', '2026-06-19', true
+WHERE NOT EXISTS (SELECT 1 FROM am_monitor_data WHERE (url ILIKE '%B0DCNKQBN3%' OR af_url ILIKE '%B0DCNKQBN3%'));
+INSERT INTO am_monitor_data (brand, name, size_inch, resolution, refresh_rate_hz, panel_type, has_usb_c, usb_c_power_delivery_w, price, real_price, url, af_url, img_url, fetched_at, is_active)
+SELECT 'Dell', 'Dell S2425HSM 23.8インチ モニター(無輝点3年保証/FHD/IPS,非光沢/HDMIx2/sRGB 99%/縦横回転,高さ調整/1ms,144Hz/AMD FreeSync/内蔵スピーカー)', 23.8, '1920x1080', 144, 'IPS', false, NULL, 16980, 16980, 'https://www.amazon.co.jp/dp/B0GR4RLMKR', 'https://www.amazon.co.jp/dp/B0GR4RLMKR?tag=nmsuteado2-22&linkCode=osi&th=1&psc=1', 'https://m.media-amazon.com/images/I/41lv2J+G-2L._SL160_.jpg', '2026-06-19', true
+WHERE NOT EXISTS (SELECT 1 FROM am_monitor_data WHERE (url ILIKE '%B0GR4RLMKR%' OR af_url ILIKE '%B0GR4RLMKR%'));
+INSERT INTO am_monitor_data (brand, name, size_inch, resolution, refresh_rate_hz, panel_type, has_usb_c, usb_c_power_delivery_w, price, real_price, url, af_url, img_url, fetched_at, is_active)
+SELECT 'MSI', '【Amazon.co.jp限定】MSI ビジネスモニター PRO MP251W E2 24.5インチ/フルHD/IPSパネル/120Hz/HDMI/MSI Power Link/DisplayPort/D-sub/アンチフリッカー/ブルーラ', 24.5, '1920x1080', 120, 'IPS', false, NULL, 17800, 17800, 'https://www.amazon.co.jp/dp/B0DJNJN6PK', 'https://www.amazon.co.jp/dp/B0DJNJN6PK?tag=nmsuteado2-22&linkCode=osi&th=1&psc=1', 'https://m.media-amazon.com/images/I/41CCZTiKZlL._SL160_.jpg', '2026-06-19', true
+WHERE NOT EXISTS (SELECT 1 FROM am_monitor_data WHERE (url ILIKE '%B0DJNJN6PK%' OR af_url ILIKE '%B0DJNJN6PK%'));
+INSERT INTO am_monitor_data (brand, name, size_inch, resolution, refresh_rate_hz, panel_type, has_usb_c, usb_c_power_delivery_w, price, real_price, url, af_url, img_url, fetched_at, is_active)
+SELECT 'KTC', 'KTC 24インチ ゲーミングモニター WQHD(2560x1440) Fast IPS/185Hz/1ms sRGB127% DCI-P3 99% 400cd/㎡ HDR400 ΔE<3 低ブルーライト フリッカーフリー Adaptive', 24.0, '2560x1440', 185, 'IPS', false, NULL, 21979, 21979, 'https://www.amazon.co.jp/dp/B0DR7RNVQ3', 'https://www.amazon.co.jp/dp/B0DR7RNVQ3?tag=nmsuteado2-22&linkCode=osi&th=1&psc=1', 'https://m.media-amazon.com/images/I/51BGjiPZXKL._SL160_.jpg', '2026-06-19', true
+WHERE NOT EXISTS (SELECT 1 FROM am_monitor_data WHERE (url ILIKE '%B0DR7RNVQ3%' OR af_url ILIKE '%B0DR7RNVQ3%'));
+INSERT INTO am_monitor_data (brand, name, size_inch, resolution, refresh_rate_hz, panel_type, has_usb_c, usb_c_power_delivery_w, price, real_price, url, af_url, img_url, fetched_at, is_active)
+SELECT 'Pixio', 'Pixio PX248 Pro V2 ゲーミングモニター 23.8インチ 200Hz FHD Fast IPS 1ms スピーカー内蔵 高さ調整可能 縦置き可能 24インチ ピクシオ モニター pc', 23.8, '1920x1080', 200, 'IPS', false, NULL, 16980, 16980, 'https://www.amazon.co.jp/dp/B0F99BZ76P', 'https://www.amazon.co.jp/dp/B0F99BZ76P?tag=nmsuteado2-22&linkCode=osi&th=1&psc=1', 'https://m.media-amazon.com/images/I/51pUM5B0rcL._SL160_.jpg', '2026-06-19', true
+WHERE NOT EXISTS (SELECT 1 FROM am_monitor_data WHERE (url ILIKE '%B0F99BZ76P%' OR af_url ILIKE '%B0F99BZ76P%'));
+INSERT INTO am_monitor_data (brand, name, size_inch, resolution, refresh_rate_hz, panel_type, has_usb_c, usb_c_power_delivery_w, price, real_price, url, af_url, img_url, fetched_at, is_active)
+SELECT 'Pixio', 'Pixio ゲーミングモニター PX248Wave ホワイト 24インチ 200hz FHD Fast IPS ゲーミング モニター 白 ピクシオ', 24.0, '1920x1080', 200, 'IPS', false, NULL, 26980, 26980, 'https://www.amazon.co.jp/dp/B00CWXR15K', 'https://www.amazon.co.jp/dp/B00CWXR15K?tag=nmsuteado2-22&linkCode=osi&th=1&psc=1', 'https://m.media-amazon.com/images/I/41MKbvFwyTL._SL160_.jpg', '2026-06-19', true
+WHERE NOT EXISTS (SELECT 1 FROM am_monitor_data WHERE (url ILIKE '%B00CWXR15K%' OR af_url ILIKE '%B00CWXR15K%'));
+INSERT INTO am_monitor_data (brand, name, size_inch, resolution, refresh_rate_hz, panel_type, has_usb_c, usb_c_power_delivery_w, price, real_price, url, af_url, img_url, fetched_at, is_active)
+SELECT 'LG', 'LG モニター ディスプレイ LG UltraGear 24G411A-B 23.8インチ/1920×1080/120Hz（オーバークロック時 144Hz）/IPS/sRGB 99%/HDR/アンチグレア/HDMI/DisplayPort/', 23.8, '1920x1080', 144, 'IPS', false, NULL, 15175, 15175, 'https://www.amazon.co.jp/dp/B0FQ972ZVT', 'https://www.amazon.co.jp/dp/B0FQ972ZVT?tag=nmsuteado2-22&linkCode=osi&th=1&psc=1', 'https://m.media-amazon.com/images/I/41Oq5kBn67L._SL160_.jpg', '2026-06-19', true
+WHERE NOT EXISTS (SELECT 1 FROM am_monitor_data WHERE (url ILIKE '%B0FQ972ZVT%' OR af_url ILIKE '%B0FQ972ZVT%'));
+INSERT INTO am_monitor_data (brand, name, size_inch, resolution, refresh_rate_hz, panel_type, has_usb_c, usb_c_power_delivery_w, price, real_price, url, af_url, img_url, fetched_at, is_active)
+SELECT 'Pixio', 'Pixio PX246 Wave White ゲーミングモニター 23.8インチ FHD 120Hz IPS ピクシオ HDMI VGA 4ms ps5', 23.8, '1920x1080', 120, 'IPS', false, NULL, 18980, 18980, 'https://www.amazon.co.jp/dp/B0DT44Q57R', 'https://www.amazon.co.jp/dp/B0DT44Q57R?tag=nmsuteado2-22&linkCode=osi&th=1&psc=1', 'https://m.media-amazon.com/images/I/51HdOf7ddnL._SL160_.jpg', '2026-06-19', true
+WHERE NOT EXISTS (SELECT 1 FROM am_monitor_data WHERE (url ILIKE '%B0DT44Q57R%' OR af_url ILIKE '%B0DT44Q57R%'));
+INSERT INTO am_monitor_data (brand, name, size_inch, resolution, refresh_rate_hz, panel_type, has_usb_c, usb_c_power_delivery_w, price, real_price, url, af_url, img_url, fetched_at, is_active)
+SELECT 'PHILIPS', 'PHILIPS 液晶ディスプレイ PCモニター 27E1N5500B/11 (27インチ/5年保証/WQHD/IPS/HDMI,Display Port/高さ調整/チルト/ピボット/フレームレス/Adaptive Sync/ちらつき防止/ブ', 27.0, '2560x1440', 100, 'IPS', false, NULL, 21800, 21800, 'https://www.amazon.co.jp/dp/B0F1QY415D', 'https://www.amazon.co.jp/dp/B0F1QY415D?tag=nmsuteado2-22&linkCode=osi&th=1&psc=1', 'https://m.media-amazon.com/images/I/519hJ5PEMXL._SL160_.jpg', '2026-06-19', true
+WHERE NOT EXISTS (SELECT 1 FROM am_monitor_data WHERE (url ILIKE '%B0F1QY415D%' OR af_url ILIKE '%B0F1QY415D%'));
+INSERT INTO am_monitor_data (brand, name, size_inch, resolution, refresh_rate_hz, panel_type, has_usb_c, usb_c_power_delivery_w, price, real_price, url, af_url, img_url, fetched_at, is_active)
+SELECT 'PHILIPS', '【Amazon.co.jp 限定】PHILIPS EVNIA ゲーミングモニター (27インチ/180Hz/WQHD/VA/超高速0.5ms/HDR10/AMD FreeSync対応/5年保証/2560x1440/チルト/HDMI2.0×2', 27.0, '3840x2160', 180, 'VA', false, NULL, 21204, 21204, 'https://www.amazon.co.jp/dp/B0DCNN7G7V', 'https://www.amazon.co.jp/dp/B0DCNN7G7V?tag=nmsuteado2-22&linkCode=osi&th=1&psc=1', 'https://m.media-amazon.com/images/I/418M3l7eK8L._SL160_.jpg', '2026-06-19', true
+WHERE NOT EXISTS (SELECT 1 FROM am_monitor_data WHERE (url ILIKE '%B0DCNN7G7V%' OR af_url ILIKE '%B0DCNN7G7V%'));
+INSERT INTO am_monitor_data (brand, name, size_inch, resolution, refresh_rate_hz, panel_type, has_usb_c, usb_c_power_delivery_w, price, real_price, url, af_url, img_url, fetched_at, is_active)
+SELECT 'Dell', 'Dell S2725DC 27インチ モニター(無輝点3年保証/QHD/IPS,非光沢/USB-Cx1,HDMIx1,DP1.4x1/sRGB 99%/縦横回転,高さ調整/1ms,144Hz/AMD FreeSync/内蔵スピーカー)', 27.0, '2560x1440', 144, 'IPS', true, 65, 29980, 29980, 'https://www.amazon.co.jp/dp/B0FPF1HGT8', 'https://www.amazon.co.jp/dp/B0FPF1HGT8?tag=nmsuteado2-22&linkCode=osi&th=1&psc=1', 'https://m.media-amazon.com/images/I/41SYwYZYKfL._SL160_.jpg', '2026-06-19', true
+WHERE NOT EXISTS (SELECT 1 FROM am_monitor_data WHERE (url ILIKE '%B0FPF1HGT8%' OR af_url ILIKE '%B0FPF1HGT8%'));
+INSERT INTO am_monitor_data (brand, name, size_inch, resolution, refresh_rate_hz, panel_type, has_usb_c, usb_c_power_delivery_w, price, real_price, url, af_url, img_url, fetched_at, is_active)
+SELECT 'Dell', 'Dell SE2726D 27インチ モニター(3年保証/QHD/IPS,非光沢/DP1.4x1,HDMIx1/傾き調整/1ms,144Hz/AMD FreeSync)', 27.0, '2560x1440', 144, 'IPS', false, NULL, 24806, 24806, 'https://www.amazon.co.jp/dp/B0GR4S5RTW', 'https://www.amazon.co.jp/dp/B0GR4S5RTW?tag=nmsuteado2-22&linkCode=osi&th=1&psc=1', 'https://m.media-amazon.com/images/I/41lRB7aHB7L._SL160_.jpg', '2026-06-19', true
+WHERE NOT EXISTS (SELECT 1 FROM am_monitor_data WHERE (url ILIKE '%B0GR4S5RTW%' OR af_url ILIKE '%B0GR4S5RTW%'));
 
 COMMIT;

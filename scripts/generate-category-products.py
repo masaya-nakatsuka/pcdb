@@ -116,6 +116,8 @@ MINI_PC_WORDS = [
     "mini pc",
     "minipc",
     "小型pc",
+    "ミニパソコン",
+    "ミニコンピューター",
     "minisforum",
     "gmktec",
     "beelink",
@@ -124,6 +126,17 @@ MINI_PC_WORDS = [
     "aoostar",
     "nipogi",
     "trigkey",
+]
+
+MINI_PC_EXCLUDE_WORDS = [
+    "ノートパソコン",
+    "ノートpc",
+    "ラップトップ",
+    "タブレット",
+    "タブレットpc",
+    "2in1",
+    "2-in-1",
+    "2 in 1",
 ]
 
 DESKTOP_PC_WORDS = [
@@ -529,10 +542,10 @@ def is_valid_candidate(profile: str, candidate: Candidate) -> bool:
         return False
 
     if profile == "mini-pc":
-        return includes_any(lower, MINI_PC_WORDS)
+        return includes_any(lower, MINI_PC_WORDS) and not includes_any(title_lower, MINI_PC_EXCLUDE_WORDS)
 
     if profile == "desktop-pc":
-        return includes_any(lower, DESKTOP_PC_WORDS)
+        return includes_any(lower, DESKTOP_PC_WORDS) and not includes_any(title_lower, MINI_PC_WORDS)
 
     return False
 
