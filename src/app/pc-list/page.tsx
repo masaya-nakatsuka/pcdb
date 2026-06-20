@@ -7,14 +7,24 @@ import { ClientPcWithCpuSpec } from '../../components/types'
 import ClientPcList from './ClientPcList'
 import PcListHeader from './PcListHeader'
 
+function getBrowserSearchQuery(): string {
+  if (typeof window === 'undefined') {
+    return ''
+  }
+
+  const params = new URLSearchParams(window.location.search)
+  return (params.get('q') ?? params.get('query') ?? '').trim()
+}
+
 export default function PcListPage() {
+  const [searchQuery] = useState(getBrowserSearchQuery)
   const [pcs, setPcs] = useState<ClientPcWithCpuSpec[]>([])
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     setIsLoading(true)
-    fetchPcList('cafe')
+    fetchPcList('cafe', 'new', 'notebook_pc', searchQuery)
       .then((data) => {
         if (Array.isArray(data)) {
           setPcs(data)
@@ -28,7 +38,7 @@ export default function PcListPage() {
       .finally(() => {
         setIsLoading(false)
       })
-  }, [])
+  }, [searchQuery])
 
   return (
     <>
@@ -88,7 +98,7 @@ export default function PcListPage() {
                 color: '#1f2937'
               }}
             >
-              <ClientPcList pcs={pcs} initialUsage="cafe" urlBasedUsage />
+              <ClientPcList pcs={pcs} initialUsage="cafe" device="notebook_pc" urlBasedUsage />
             </div>
           )}
         </main>

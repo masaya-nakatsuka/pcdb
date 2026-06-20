@@ -7,6 +7,7 @@ import { sortPcs } from '../utils/pcSort'
 import { getBatteryLifeProfileRows } from '../utils/batteryLifeDisplay'
 import { fetchPcList } from '../../app/pc-list/fetchPcs'
 import { getPcListUsagePath } from '../../app/pc-list/usageConfig'
+import TrackableProductLink from '../analytics/TrackableProductLink'
 import ImageComponent from './ImageComponent'
 
 const podiumRankStyles = {
@@ -36,7 +37,17 @@ const podiumRankStyles = {
   },
 } as const
 
-function TopRankedPcPodium({ pcs }: { pcs: ClientPcWithCpuSpec[] }) {
+function TopRankedPcPodium({
+  pcs,
+  usage,
+  device,
+  listing,
+}: {
+  pcs: ClientPcWithCpuSpec[]
+  usage: ClientUsageCategory
+  device: string
+  listing: string
+}) {
   if (pcs.length === 0) {
     return null
   }
@@ -122,10 +133,18 @@ function TopRankedPcPodium({ pcs }: { pcs: ClientPcWithCpuSpec[] }) {
               >
                 {pc.img_url ? (
                   productLink ? (
-                    <a
+                    <TrackableProductLink
                       href={productLink}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                      productId={pc.id}
+                      productName={`${pc.brand ?? ''} / ${pc.name ?? ''}`}
+                      productType="pc"
+                      rank={rank}
+                      price={pc.price}
+                      usage={usage}
+                      device={device}
+                      listing={listing}
+                      linkPosition="pc_top_image"
+                      isAffiliate={Boolean(pc.af_url)}
                       style={{ display: 'block', width: '100%', height: '100%' }}
                     >
                       <ImageComponent
@@ -137,7 +156,7 @@ function TopRankedPcPodium({ pcs }: { pcs: ClientPcWithCpuSpec[] }) {
                           objectFit: 'contain',
                         }}
                       />
-                    </a>
+                    </TrackableProductLink>
                   ) : (
                     <ImageComponent
                       src={pc.img_url}
@@ -226,10 +245,18 @@ function TopRankedPcPodium({ pcs }: { pcs: ClientPcWithCpuSpec[] }) {
                   </div>
                 </div>
                 {productLink && (
-                  <a
+                  <TrackableProductLink
                     href={productLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    productId={pc.id}
+                    productName={`${pc.brand ?? ''} / ${pc.name ?? ''}`}
+                    productType="pc"
+                    rank={rank}
+                    price={pc.price}
+                    usage={usage}
+                    device={device}
+                    listing={listing}
+                    linkPosition="pc_top_button"
+                    isAffiliate={Boolean(pc.af_url)}
                     className="external-link-mark"
                     style={{
                       display: 'block',
@@ -245,7 +272,7 @@ function TopRankedPcPodium({ pcs }: { pcs: ClientPcWithCpuSpec[] }) {
                     }}
                   >
                     詳細を見る
-                  </a>
+                  </TrackableProductLink>
                 )}
               </div>
             </article>
@@ -256,7 +283,7 @@ function TopRankedPcPodium({ pcs }: { pcs: ClientPcWithCpuSpec[] }) {
   )
 }
 
-export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplaySize, initialUsage = 'cafe', listing = 'new', device = 'all', urlBasedUsage = false, embeddedInArticle = false }: PcTableProps) {
+export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplaySize, initialUsage = 'cafe', listing = 'new', device = 'notebook_pc', urlBasedUsage = false, embeddedInArticle = false }: PcTableProps) {
   const router = useRouter()
   const [pcs, setPcs] = useState(initialPcs)
   const [allPcs, setAllPcs] = useState(initialPcs)
@@ -750,7 +777,7 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
 
       {!loading && (
         <>
-          <TopRankedPcPodium pcs={pcs} />
+          <TopRankedPcPodium pcs={pcs} usage={selectedUsage} device={device} listing={listing} />
           <section
             style={{
               marginTop: '18px',
@@ -945,7 +972,7 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
                 </tr>
               </thead>
               <tbody>
-                {pcs.map((pc) => {
+                {pcs.map((pc, index) => {
                   const productLink = pc.af_url || pc.url
                   const batteryLifeRows = getBatteryLifeProfileRows(pc.batteryLifeProfiles)
 
@@ -961,10 +988,18 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
                       <td style={{border: '1px solid #ddd', padding: '8px', textAlign: 'center'}}>
                         {pc.img_url ? (
                           productLink ? (
-                            <a
+                            <TrackableProductLink
                               href={productLink}
-                              target="_blank"
-                              rel="noopener noreferrer"
+                              productId={pc.id}
+                              productName={`${pc.brand ?? ''} / ${pc.name ?? ''}`}
+                              productType="pc"
+                              rank={index + 1}
+                              price={pc.price}
+                              usage={selectedUsage}
+                              device={device}
+                              listing={listing}
+                              linkPosition="pc_table_image"
+                              isAffiliate={Boolean(pc.af_url)}
                               style={{ display: 'inline-block' }}
                             >
                               <ImageComponent
@@ -972,7 +1007,7 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
                                 alt={pc.name || 'PC Image'}
                                 style={{width: '180px', height: 'auto', borderRadius: '8px'}}
                               />
-                            </a>
+                            </TrackableProductLink>
                           ) : (
                             <ImageComponent
                               src={pc.img_url}
@@ -999,10 +1034,18 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
                       <td style={{border: '1px solid #ddd', padding: '8px', position: 'relative'}}>
                         <div style={{fontWeight: 'bold', fontSize: '14px'}}>
                           {productLink ? (
-                            <a
+                            <TrackableProductLink
                               href={productLink}
-                              target="_blank"
-                              rel="noopener noreferrer"
+                              productId={pc.id}
+                              productName={`${pc.brand ?? ''} / ${pc.name ?? ''}`}
+                              productType="pc"
+                              rank={index + 1}
+                              price={pc.price}
+                              usage={selectedUsage}
+                              device={device}
+                              listing={listing}
+                              linkPosition="pc_table_name"
+                              isAffiliate={Boolean(pc.af_url)}
                               className="external-link-mark"
                               style={{
                                 color: '#2563eb',
@@ -1011,7 +1054,7 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
                               }}
                             >
                               {pc.brand} / {pc.name || 'Unnamed PC'}
-                            </a>
+                            </TrackableProductLink>
                           ) : (
                             <span>{pc.brand} / {pc.name || 'Unnamed PC'}</span>
                           )}
@@ -1115,10 +1158,18 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
                       </td>
                       <td style={{border: '1px solid #ddd', padding: '8px', textAlign: 'center'}}>
                         {productLink && (
-                          <a
+                          <TrackableProductLink
                             href={productLink}
-                            target="_blank"
-                            rel="noopener noreferrer"
+                            productId={pc.id}
+                            productName={`${pc.brand ?? ''} / ${pc.name ?? ''}`}
+                            productType="pc"
+                            rank={index + 1}
+                            price={pc.price}
+                            usage={selectedUsage}
+                            device={device}
+                            listing={listing}
+                            linkPosition="pc_table_button"
+                            isAffiliate={Boolean(pc.af_url)}
                             className="external-link-mark"
                             style={{
                               display: 'inline-block',
@@ -1133,7 +1184,7 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
                             }}
                           >
                             詳細
-                          </a>
+                          </TrackableProductLink>
                         )}
                       </td>
                     </tr>

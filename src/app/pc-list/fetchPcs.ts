@@ -6,10 +6,17 @@ import { ClientPcDeviceCategory, ClientPcListing, ClientUsageCategory } from '..
 export async function fetchPcList(
   usageCategory: ClientUsageCategory = 'cafe',
   listing: ClientPcListing = 'new',
-  device: ClientPcDeviceCategory = 'all'
+  device: ClientPcDeviceCategory = 'notebook_pc',
+  searchQuery = ''
 ) {
   try {
     const params = new URLSearchParams({ category: usageCategory, listing, device })
+    const normalizedSearchQuery = searchQuery.trim()
+
+    if (normalizedSearchQuery) {
+      params.set('q', normalizedSearchQuery)
+    }
+
     const response = await fetch(`/api/pc-list?${params.toString()}`, {
       method: 'GET',
       headers: {

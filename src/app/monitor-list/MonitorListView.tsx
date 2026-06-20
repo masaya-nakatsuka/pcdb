@@ -8,6 +8,7 @@ import {
   rankMonitors,
 } from '../../lib/monitorRecommendation'
 import type { MonitorRecommendation, MonitorUsage } from '../../lib/monitorRecommendation'
+import TrackableProductLink from '../../components/analytics/TrackableProductLink'
 import PcListHeader from '../pc-list/PcListHeader'
 
 const monitorColumns = [
@@ -81,7 +82,13 @@ function formatUsbC(hasUsbC: boolean | null, powerDelivery: number | null): stri
   return powerDelivery ? `USB-C ${powerDelivery}W` : 'USB-C'
 }
 
-function TopRankedMonitorPodium({ monitors }: { monitors: MonitorRecommendation[] }) {
+function TopRankedMonitorPodium({
+  monitors,
+  usage,
+}: {
+  monitors: MonitorRecommendation[]
+  usage: MonitorUsage
+}) {
   if (monitors.length === 0) {
     return null
   }
@@ -158,10 +165,18 @@ function TopRankedMonitorPodium({ monitors }: { monitors: MonitorRecommendation[
               }}>
                 {monitor.img_url ? (
                   productUrl ? (
-                    <a
+                    <TrackableProductLink
                       href={productUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                      productId={monitor.id}
+                      productName={`${monitor.brand ?? ''} / ${monitor.name ?? ''}`}
+                      productType="monitor"
+                      rank={rank}
+                      price={monitor.real_price ?? monitor.price}
+                      usage={usage}
+                      device="monitor"
+                      listing="new"
+                      linkPosition="monitor_top_image"
+                      isAffiliate={Boolean(monitor.af_url)}
                       style={{ display: 'block', width: '100%', height: '100%' }}
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -170,7 +185,7 @@ function TopRankedMonitorPodium({ monitors }: { monitors: MonitorRecommendation[
                         alt={monitor.name ?? 'モニター画像'}
                         style={{ width: '100%', height: '100%', objectFit: 'contain' }}
                       />
-                    </a>
+                    </TrackableProductLink>
                   ) : (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
@@ -256,10 +271,18 @@ function TopRankedMonitorPodium({ monitors }: { monitors: MonitorRecommendation[
                   </div>
                 </div>
                 {productUrl && (
-                  <a
+                  <TrackableProductLink
                     href={productUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    productId={monitor.id}
+                    productName={`${monitor.brand ?? ''} / ${monitor.name ?? ''}`}
+                    productType="monitor"
+                    rank={rank}
+                    price={monitor.real_price ?? monitor.price}
+                    usage={usage}
+                    device="monitor"
+                    listing="new"
+                    linkPosition="monitor_top_button"
+                    isAffiliate={Boolean(monitor.af_url)}
                     className="external-link-mark"
                     style={{
                       display: 'block',
@@ -275,7 +298,7 @@ function TopRankedMonitorPodium({ monitors }: { monitors: MonitorRecommendation[
                     }}
                   >
                     詳細を見る
-                  </a>
+                  </TrackableProductLink>
                 )}
               </div>
             </article>
@@ -340,7 +363,7 @@ export default async function MonitorListView({ usage }: MonitorListViewProps) {
           margin: '28px auto 0',
           padding: '0 16px',
         }}>
-          <TopRankedMonitorPodium monitors={rankedMonitors} />
+          <TopRankedMonitorPodium monitors={rankedMonitors} usage={usage} />
 
           <section style={{
             marginBottom: '28px',
@@ -442,7 +465,7 @@ export default async function MonitorListView({ usage }: MonitorListViewProps) {
                       モニターDB接続後、ここに商品一覧を表示します。
                     </td>
                   </tr>
-                ) : rankedMonitors.map(({ monitor, score, highlights }) => {
+                ) : rankedMonitors.map(({ monitor, score, highlights }, index) => {
                   const productUrl = monitor.af_url || monitor.url
 
                   return (
@@ -495,7 +518,20 @@ export default async function MonitorListView({ usage }: MonitorListViewProps) {
                               {monitor.brand ?? 'Unknown'}
                             </div>
                             {productUrl ? (
-                              <a href={productUrl} target="_blank" rel="noopener noreferrer" className="external-link-mark" style={{
+                              <TrackableProductLink
+                                href={productUrl}
+                                productId={monitor.id}
+                                productName={`${monitor.brand ?? ''} / ${monitor.name ?? ''}`}
+                                productType="monitor"
+                                rank={index + 1}
+                                price={monitor.real_price ?? monitor.price}
+                                usage={usage}
+                                device="monitor"
+                                listing="new"
+                                linkPosition="monitor_table_name"
+                                isAffiliate={Boolean(monitor.af_url)}
+                                className="external-link-mark"
+                                style={{
                                 color: '#2563eb',
                                 fontWeight: 800,
                                 textDecoration: 'underline',
@@ -503,7 +539,7 @@ export default async function MonitorListView({ usage }: MonitorListViewProps) {
                                 lineHeight: 1.45,
                               }}>
                                 {monitor.name}
-                              </a>
+                              </TrackableProductLink>
                             ) : (
                               <span style={{
                                 color: '#0f172a',
@@ -569,10 +605,18 @@ export default async function MonitorListView({ usage }: MonitorListViewProps) {
                         whiteSpace: 'nowrap',
                       }}>
                         {productUrl ? (
-                          <a
+                          <TrackableProductLink
                             href={productUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
+                            productId={monitor.id}
+                            productName={`${monitor.brand ?? ''} / ${monitor.name ?? ''}`}
+                            productType="monitor"
+                            rank={index + 1}
+                            price={monitor.real_price ?? monitor.price}
+                            usage={usage}
+                            device="monitor"
+                            listing="new"
+                            linkPosition="monitor_table_button"
+                            isAffiliate={Boolean(monitor.af_url)}
                             className="external-link-mark"
                             style={{
                               display: 'inline-block',
@@ -586,7 +630,7 @@ export default async function MonitorListView({ usage }: MonitorListViewProps) {
                             }}
                           >
                             詳細を見る
-                          </a>
+                          </TrackableProductLink>
                         ) : (
                           <span style={{ color: '#94a3b8', fontSize: '12px' }}>-</span>
                         )}

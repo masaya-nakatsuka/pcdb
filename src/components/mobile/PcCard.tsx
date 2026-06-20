@@ -1,6 +1,7 @@
 'use client'
 
 import { PcCardProps } from '../types'
+import TrackableProductLink from '../analytics/TrackableProductLink'
 import { getBatteryLifeProfileRows } from '../utils/batteryLifeDisplay'
 import ImageComponent from './ImageComponent'
 
@@ -144,10 +145,14 @@ export default function PcCard({ pc }: PcCardProps) {
       {/* af_url/url遷移ボタン */}
       {(pc.af_url || pc.url) && (
         <div style={{ marginTop: '16px', textAlign: 'center' }}>
-          <a
+          <TrackableProductLink
             href={pc.af_url || pc.url || '#'}
-            target="_blank"
-            rel="noopener noreferrer"
+            productId={pc.id}
+            productName={`${pc.brand ?? ''} / ${pc.name ?? ''}`}
+            productType="pc"
+            price={pc.price}
+            linkPosition="pc_mobile_card_button"
+            isAffiliate={Boolean(pc.af_url)}
             className="external-link-mark"
             style={{
               display: 'inline-block',
@@ -163,7 +168,7 @@ export default function PcCard({ pc }: PcCardProps) {
             }}
           >
             詳細を見る
-          </a>
+          </TrackableProductLink>
         </div>
       )}
     </div>

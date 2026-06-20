@@ -18,8 +18,9 @@ export async function GET(request: NextRequest) {
     const category = (searchParams.get('category') as ServerUsageCategory) || 'cafe'
     const listing = parsePcListingType(searchParams.get('listing') ?? searchParams.get('condition'))
     const device = parsePcDeviceCategory(searchParams.get('device') ?? searchParams.get('form_factor'))
+    const query = (searchParams.get('q') ?? searchParams.get('query') ?? '').trim()
     
-    const pcs = await fetchPcList(category, listing, device)
+    const pcs = await fetchPcList(category, listing, device, query)
     
     const response = Response.json(pcs, {
       headers: {

@@ -12,9 +12,14 @@ import { filterPcsByDeviceCategory, type PcDeviceCategory } from '../../lib/pcDe
 export async function fetchPcList(
   usageCategory: UsageCategory = 'cafe',
   listing: PcListingType = 'new',
-  device: PcDeviceCategory = 'all'
+  device: PcDeviceCategory = 'notebook_pc',
+  searchQuery = ''
 ): Promise<PcWithCpuSpec[]> {
-  const supabasePcs = filterPcsByDeviceCategory(filterPcsByListing(await fetchAllPcs(), listing), device)
+  const basePcs = filterPcsBySearchQuery(
+    filterPcsByDeviceCategory(filterPcsByListing(await fetchAllPcs(), listing), device),
+    searchQuery
+  )
+  const supabasePcs = applyUsageIntentFilter(basePcs, usageCategory)
   
   const pcsWithCalculations = supabasePcs.map((pc) => {
     const cpuSpec = resolveCpuSpec(pc.cpu)
@@ -79,4 +84,74 @@ export async function fetchPcList(
     if (b.pcScore === null) return -1
     return b.pcScore - a.pcScore
   })
+}
+
+function normalizeSearchQuery(value: string): string[] {
+  return value
+    .toLowerCase()
+    .replace(/[Ａ-Ｚａ-ｚ０-９]/g, (char) => String.fromCharCode(char.charCodeAt(0) - 0xfee0))
+    .split(/[\s,、　]+/)
+    .map((token) => token.trim())
+    .filter(Boolean)
+}
+
+function pcSearchText(pc: Awaited<ReturnType<typeof fetchAllPcs>>[number]): string {
+  return [
+    pc.brand,
+    pc.name,
+    pc.cpu,
+    pc.gpu,
+    pc.form_factor,
+    pc.display_size ? `${pc.display_size}インチ` : null,
+    pc.ram ? `${pc.ram}gb ${pc.ram}GB メモリ` : null,
+    pc.rom ? `${pc.rom}gb ${pc.rom}GB ssd` : null,
+  ]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase()
+}
+
+function filterPcsBySearchQuery<T extends Awaited<ReturnType<typeof fetchAllPcs>>[number]>(pcs: T[], searchQuery: string): T[] {
+  const tokens = normalizeSearchQuery(searchQuery)
+
+  if (tokens.length === 0) {
+    return pcs
+  }
+
+  return pcs.filter((pc) => {
+    const text = pcSearchText(pc)
+    return tokens.every((token) => text.includes(token))
+  })
+}
+
+function applyUsageIntentFilter<T extends Awaited<ReturnType<typeof fetchAllPcs>>[number]>(pcs: T[], usageCategory: UsageCategory): T[] {
+  if (usageCategory === 'gaming') {
+    const gamingCandidates = pcs.filter((pc) => {
+      const gpuScore = pc.gpu_score ?? 0
+      return Boolean(pc.has_dgpu) || gpuScore >= 5
+    })
+
+    return gamingCandidates.length >= 3 ? gamingCandidates : pcs
+  }
+
+  if (usageCategory === 'video_editing') {
+    const videoEditingCandidates = pcs.filter((pc) => {
+      const gpuScore = pc.gpu_score ?? 0
+      const ram = pc.ram ?? 0
+      const rom = pc.rom ?? 0
+      const cpu = (pc.cpu ?? '').toLowerCase()
+      const hasMainstreamCpu =
+        cpu.includes('core i5') ||
+        cpu.includes('core i7') ||
+        cpu.includes('core ultra') ||
+        cpu.includes('ryzen 5') ||
+        cpu.includes('ryzen 7')
+
+      return ram >= 16 && rom >= 512 && (Boolean(pc.has_dgpu) || gpuScore >= 4 || hasMainstreamCpu)
+    })
+
+    return videoEditingCandidates.length >= 3 ? videoEditingCandidates : pcs
+  }
+
+  return pcs
 }

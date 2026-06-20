@@ -15,7 +15,7 @@ interface UsagePcListPageClientProps {
 }
 
 function DeviceEmptyState({ device }: { device: ClientPcDeviceCategory }) {
-  const label = device === 'mini_pc' ? 'Mini PC' : 'デスクトップPC'
+  const label = device === 'mini_pc' ? 'Mini PC' : device === 'desktop_pc' ? 'デスクトップPC' : 'ノートPC'
 
   return (
     <section style={{
@@ -51,7 +51,17 @@ function DeviceEmptyState({ device }: { device: ClientPcDeviceCategory }) {
   )
 }
 
-export default function UsagePcListPageClient({ usage, heading, description, listing = 'new', device = 'all' }: UsagePcListPageClientProps) {
+function getBrowserSearchQuery(): string {
+  if (typeof window === 'undefined') {
+    return ''
+  }
+
+  const params = new URLSearchParams(window.location.search)
+  return (params.get('q') ?? params.get('query') ?? '').trim()
+}
+
+export default function UsagePcListPageClient({ usage, heading, description, listing = 'new', device = 'notebook_pc' }: UsagePcListPageClientProps) {
+  const [searchQuery] = useState(getBrowserSearchQuery)
   const [pcs, setPcs] = useState<ClientPcWithCpuSpec[]>([])
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -60,7 +70,7 @@ export default function UsagePcListPageClient({ usage, heading, description, lis
     setIsLoading(true)
     setError(null)
 
-    fetchPcList(usage, listing, device)
+    fetchPcList(usage, listing, device, searchQuery)
       .then((data) => {
         if (Array.isArray(data)) {
           setPcs(data)
@@ -74,7 +84,7 @@ export default function UsagePcListPageClient({ usage, heading, description, lis
       .finally(() => {
         setIsLoading(false)
       })
-  }, [usage, listing, device])
+  }, [usage, listing, device, searchQuery])
 
   return (
     <div
