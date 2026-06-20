@@ -12,6 +12,7 @@ export default function GamingPcListPage() {
   return (
     <UsagePcListPageClient
       usage="gaming"
+      device="all"
       heading={page.heading}
       description={page.description}
     />
