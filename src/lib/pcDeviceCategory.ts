@@ -1,4 +1,4 @@
-export type PcDeviceCategory = 'all' | 'mini_pc' | 'desktop_pc'
+export type PcDeviceCategory = 'notebook_pc' | 'all' | 'mini_pc' | 'desktop_pc'
 
 export interface PcDeviceLike {
   form_factor?: string | null
@@ -71,6 +71,10 @@ export function isDesktopPc(pc: PcDeviceLike): boolean {
   return includesAnyKeyword(productTextOf(pc), desktopKeywords)
 }
 
+export function isNotebookPc(pc: PcDeviceLike): boolean {
+  return !isMiniPc(pc) && !isDesktopPc(pc)
+}
+
 export function filterPcsByDeviceCategory<T extends PcDeviceLike>(
   pcs: T[],
   device: PcDeviceCategory = 'all'
@@ -79,17 +83,38 @@ export function filterPcsByDeviceCategory<T extends PcDeviceLike>(
     return pcs
   }
 
+  if (device === 'notebook_pc') {
+    return pcs.filter(isNotebookPc)
+  }
+
   return pcs.filter((pc) => (device === 'mini_pc' ? isMiniPc(pc) : isDesktopPc(pc)))
 }
 
-export function parsePcDeviceCategory(value: string | null | undefined): PcDeviceCategory {
-  if (value === 'mini_pc' || value === 'mini-pc' || value === 'minipc') {
+export function parsePcDeviceCategory(
+  value: string | null | undefined,
+  fallback: PcDeviceCategory = 'notebook_pc'
+): PcDeviceCategory {
+  const normalized = normalizedText(value)
+
+  if (!normalized) {
+    return fallback
+  }
+
+  if (normalized === 'notebook_pc' || normalized === 'notebook-pc' || normalized === 'notebook' || normalized === 'laptop') {
+    return 'notebook_pc'
+  }
+
+  if (normalized === 'all') {
+    return 'all'
+  }
+
+  if (normalized === 'mini_pc' || normalized === 'mini-pc' || normalized === 'minipc') {
     return 'mini_pc'
   }
 
-  if (value === 'desktop_pc' || value === 'desktop-pc' || value === 'desktop') {
+  if (normalized === 'desktop_pc' || normalized === 'desktop-pc' || normalized === 'desktop') {
     return 'desktop_pc'
   }
 
-  return 'all'
+  return fallback
 }
