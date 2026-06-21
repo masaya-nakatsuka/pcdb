@@ -18,13 +18,13 @@ export const monitorUsageOptions: Array<{
     value: 'gaming',
     slug: 'gaming',
     label: 'ゲーム用',
-    description: '高リフレッシュレート、見やすさ、応答速度、価格のバランスから、ゲーム用モニターを比較します。',
+    description: '高リフレッシュレート、見やすさ、応答速度、価格、接続端子のバランスから、ゲーム用モニターを比較します。',
   },
   {
     value: 'creative',
     slug: 'creative',
     label: '制作向け',
-    description: '解像度、パネル方式、画面サイズ、色の見やすさを重視して、制作向けモニターを比較します。',
+    description: '解像度、パネル方式、画面サイズ、色の見やすさ、作業領域、価格を重視して、制作向けモニターを比較します。',
   },
   {
     value: 'usb_c',
