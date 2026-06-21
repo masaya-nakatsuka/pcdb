@@ -15,6 +15,7 @@ function blogRedirects(ids, destination) {
 }
 
 const nextConfig = {
+  outputFileTracingRoot: __dirname,
   async redirects() {
     return [
       ...blogRedirects(legacyCostPerformanceArticles, '/blog/article33'),

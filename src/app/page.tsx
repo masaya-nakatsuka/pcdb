@@ -182,6 +182,38 @@ export default function HomePage() {
         </Link>
 
         <Link
+          href="/tablet-list"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '16px 32px',
+            fontSize: '18px',
+            fontWeight: '600',
+            color: 'white',
+            background: 'linear-gradient(135deg, #0f766e 0%, #2563eb 100%)',
+            borderRadius: '16px',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.1)',
+            textDecoration: 'none',
+            transition: 'all 0.3s ease',
+            position: 'relative',
+            overflow: 'hidden'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'scale(1.05)'
+            e.currentTarget.style.background = 'linear-gradient(135deg, #0f5f59 0%, #1d4ed8 100%)'
+            e.currentTarget.style.boxShadow = '0 32px 64px -12px rgba(15, 118, 110, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1)'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'scale(1)'
+            e.currentTarget.style.background = 'linear-gradient(135deg, #0f766e 0%, #2563eb 100%)'
+            e.currentTarget.style.boxShadow = '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.1)'
+          }}
+        >
+          タブレットを見る
+        </Link>
+
+        <Link
           href="/todo/lp"
           style={{
             display: 'inline-flex',

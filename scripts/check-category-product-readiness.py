@@ -25,16 +25,19 @@ SQL_FILES = {
     "mini-pc": Path("scripts/insert_mini_pc_products.sql"),
     "desktop-pc": Path("scripts/insert_desktop_pc_products.sql"),
     "monitor": Path("scripts/insert_monitor_products.sql"),
+    "tablet": Path("scripts/insert_tablet_products.sql"),
 }
 REVIEW_FILES = {
     "mini-pc": Path("scripts/review_mini_pc_products.csv"),
     "desktop-pc": Path("scripts/review_desktop_pc_products.csv"),
     "monitor": Path("scripts/review_monitor_products.csv"),
+    "tablet": Path("scripts/review_tablet_products.csv"),
 }
 API_CHECKS = {
     "mini-pc": "/api/pc-list?device=mini_pc",
     "desktop-pc": "/api/pc-list?device=desktop_pc",
     "monitor": "/api/monitor-list",
+    "tablet": "/api/tablet-list",
 }
 
 
@@ -257,6 +260,11 @@ def main() -> int:
     print(f"MIGRATION monitor table SQL: {'found' if monitor_table_sql.exists() else 'missing'} {monitor_table_sql}")
     if not monitor_table_sql.exists():
         blockers.append(f"Restore {monitor_table_sql}")
+
+    tablet_table_sql = Path("scripts/create-tablet-data-table.sql")
+    print(f"MIGRATION tablet table SQL: {'found' if tablet_table_sql.exists() else 'missing'} {tablet_table_sql}")
+    if not tablet_table_sql.exists():
+        blockers.append(f"Restore {tablet_table_sql}")
 
     blockers.extend(check_sql_files())
     blockers.extend(check_review_files(strict_review=args.strict_review))

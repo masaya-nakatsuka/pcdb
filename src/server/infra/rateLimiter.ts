@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server'
-import { upstashRedis } from './upstashRedis'
+import { getUpstashRedis } from './upstashRedis'
 
 /**
  * レート制限設定
@@ -44,11 +44,15 @@ export async function checkRateLimit(request: NextRequest): Promise<RateLimitRes
   const now = Date.now()
 
   try {
+    const upstashRedis = getUpstashRedis()
+
     // Redis操作: カウンター増加とTTL取得
-    const [count, ttl] = await upstashRedis.pipeline([
+    const [countResult, ttlResult] = await upstashRedis.pipeline([
       ['INCR', key],
       ['TTL', key]
     ])
+    const count = Number(countResult)
+    const ttl = Number(ttlResult)
 
     // 新規キーの場合はTTL設定
     if (ttl === -1) {

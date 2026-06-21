@@ -1,8 +1,8 @@
 import { Monitor } from '../domain/models/monitor'
-import { supabase } from './supabaseClient'
+import { getSupabase } from './supabaseClient'
 
 export async function fetchActiveMonitors(): Promise<Monitor[]> {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from('am_monitor_data')
     .select('*')
     .eq('is_active', true)
@@ -15,5 +15,5 @@ export async function fetchActiveMonitors(): Promise<Monitor[]> {
     throw new Error(`Failed to fetch monitors: ${error.message}`)
   }
 
-  return data ?? []
+  return (data ?? []) as unknown as Monitor[]
 }

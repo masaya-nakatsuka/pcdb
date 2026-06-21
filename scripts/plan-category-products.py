@@ -16,16 +16,18 @@ from pathlib import Path
 from types import ModuleType
 
 GENERATOR_PATH = Path(__file__).resolve().parent / "generate-category-products.py"
-DEFAULT_ORDER = ["monitor", "mini-pc", "desktop-pc"]
+DEFAULT_ORDER = ["monitor", "tablet", "mini-pc", "desktop-pc"]
 
 CATEGORY_LABELS = {
     "monitor": "モニター",
+    "tablet": "タブレット",
     "mini-pc": "Mini PC",
     "desktop-pc": "デスクトップPC",
 }
 
 CATEGORY_PAGES = {
     "monitor": "/monitor-list",
+    "tablet": "/tablet-list",
     "mini-pc": "/pc-list/mini-pc",
     "desktop-pc": "/pc-list/desktop",
 }

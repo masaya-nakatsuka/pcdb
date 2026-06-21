@@ -38,6 +38,18 @@ interface FocusTarget {
   itemId?: string
 }
 
+type ParsedBlockValue = {
+  id?: unknown
+  type?: unknown
+  text?: unknown
+  items?: unknown
+}
+
+type ParsedBulletItemValue = {
+  id?: unknown
+  text?: unknown
+}
+
 interface PageContentPanelProps {
   book: NoteBook | null
   page: NotePage | null
@@ -334,18 +346,25 @@ function serialiseBulletItems(items: BulletItem[]): BulletItem[] {
   return items.map((item) => ({ id: item.id ?? makeId(), text: item.text ?? '' }))
 }
 
-function normaliseParsedBlock(raw: any): Block | null {
+function normaliseParsedBlock(raw: unknown): Block | null {
   if (!raw || typeof raw !== 'object') return null
-  if (raw.type === 'paragraph') {
-    return createParagraphBlock(typeof raw.text === 'string' ? raw.text : '', raw.id)
+  const block = raw as ParsedBlockValue
+  const id = typeof block.id === 'string' ? block.id : undefined
+  if (block.type === 'paragraph') {
+    return createParagraphBlock(typeof block.text === 'string' ? block.text : '', id)
   }
-  if (raw.type === 'bullet' && Array.isArray(raw.items)) {
-    const items = raw.items
-      .map((item: any) => ({
-        id: typeof item?.id === 'string' ? item.id : makeId(),
-        text: typeof item?.text === 'string' ? item.text : ''
-      }))
-    return createBulletBlock(items, raw.id)
+  if (block.type === 'bullet' && Array.isArray(block.items)) {
+    const items = block.items
+      .map((rawItem: unknown) => {
+        const item = rawItem && typeof rawItem === 'object'
+          ? rawItem as ParsedBulletItemValue
+          : {}
+        return {
+          id: typeof item.id === 'string' ? item.id : makeId(),
+          text: typeof item.text === 'string' ? item.text : ''
+        }
+      })
+    return createBulletBlock(items, id)
   }
   return null
 }

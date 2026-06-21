@@ -15,6 +15,8 @@ export default function GamingPcListPage() {
       device="all"
       heading={page.heading}
       description={page.description}
+      decisionPoints={page.decisionPoints}
+      relatedLinks={page.relatedLinks}
     />
   )
 }

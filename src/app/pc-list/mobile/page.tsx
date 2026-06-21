@@ -14,6 +14,8 @@ export default function MobilePcListPage() {
       usage="mobile"
       heading={page.heading}
       description={page.description}
+      decisionPoints={page.decisionPoints}
+      relatedLinks={page.relatedLinks}
     />
   )
 }

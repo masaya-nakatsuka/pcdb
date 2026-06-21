@@ -1,8 +1,8 @@
-import { supabase } from './supabaseClient'
+import { getSupabase } from './supabaseClient'
 import { Pc } from '../domain/models/pc'
 
 export async function fetchAllPcs(): Promise<Pc[]> {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from('am_pc_data')
     .select('*')
 
@@ -14,5 +14,5 @@ export async function fetchAllPcs(): Promise<Pc[]> {
     throw new Error('No PCs found')
   }
 
-  return data
+  return data as unknown as Pc[]
 }

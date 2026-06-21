@@ -141,6 +141,18 @@ export default function PcDbArticle({
       },
     ],
   }
+  const faqJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faq.map((item) => ({
+      '@type': 'Question',
+      name: item.question,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: item.answer,
+      },
+    })),
+  }
 
   return (
     <BlogLayout>
@@ -152,6 +164,12 @@ export default function PcDbArticle({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
+      {faq.length > 0 && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+        />
+      )}
       <BlogArticle title={title} date={date} variant="wide">
         <BlogContent variant="wide">
           <BlogParagraph>{lead}</BlogParagraph>

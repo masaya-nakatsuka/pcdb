@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import { fetchPcList } from './fetchPcs'
 import { ClientPcDeviceCategory, ClientPcListing, ClientPcWithCpuSpec, ClientUsageCategory } from '../../components/types'
 import ClientPcList from './ClientPcList'
@@ -12,10 +13,19 @@ interface UsagePcListPageClientProps {
   description: string
   listing?: ClientPcListing
   device?: ClientPcDeviceCategory
+  decisionPoints?: string[]
+  relatedLinks?: Array<{
+    href: string
+    label: string
+  }>
 }
 
 function DeviceEmptyState({ device }: { device: ClientPcDeviceCategory }) {
-  const label = device === 'mini_pc' ? 'Mini PC' : device === 'desktop_pc' ? 'デスクトップPC' : 'ノートPC'
+  const label = device === 'mini_pc'
+    ? 'Mini PC'
+    : device === 'desktop_pc'
+      ? 'デスクトップPC'
+      : 'ノートPC'
 
   return (
     <section style={{
@@ -60,7 +70,15 @@ function getBrowserSearchQuery(): string {
   return (params.get('q') ?? params.get('query') ?? '').trim()
 }
 
-export default function UsagePcListPageClient({ usage, heading, description, listing = 'new', device = 'notebook_pc' }: UsagePcListPageClientProps) {
+export default function UsagePcListPageClient({
+  usage,
+  heading,
+  description,
+  listing = 'new',
+  device = 'notebook_pc',
+  decisionPoints = [],
+  relatedLinks = [],
+}: UsagePcListPageClientProps) {
   const [searchQuery] = useState(getBrowserSearchQuery)
   const [pcs, setPcs] = useState<ClientPcWithCpuSpec[]>([])
   const [error, setError] = useState<string | null>(null)
@@ -121,6 +139,85 @@ export default function UsagePcListPageClient({ usage, heading, description, lis
           }}>
             {description}
           </p>
+
+          {(decisionPoints.length > 0 || relatedLinks.length > 0) && (
+            <div style={{
+              maxWidth: '820px',
+              margin: '18px auto 0',
+              display: 'grid',
+              gap: '12px',
+            }}>
+              {decisionPoints.length > 0 && (
+                <div
+                  aria-label="比較時の判断軸"
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+                    gap: '8px',
+                  }}
+                >
+                  {decisionPoints.map((point) => (
+                    <span
+                      key={point}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        minHeight: '32px',
+                        padding: '6px 10px',
+                        border: '1px solid #dbeafe',
+                        borderRadius: '8px',
+                        background: '#eff6ff',
+                        color: '#1e3a8a',
+                        fontSize: '12px',
+                        fontWeight: 800,
+                        lineHeight: 1.35,
+                      }}
+                    >
+                      {point}
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              {relatedLinks.length > 0 && (
+                <nav
+                  aria-label="関連するPC一覧"
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    flexWrap: 'wrap',
+                    gap: '8px',
+                  }}
+                >
+                  {relatedLinks.map((link) => (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        minHeight: '34px',
+                        padding: '7px 11px',
+                        border: '1px solid #e2e8f0',
+                        borderRadius: '8px',
+                        background: '#ffffff',
+                        color: '#0f172a',
+                        fontSize: '13px',
+                        fontWeight: 800,
+                        lineHeight: 1.35,
+                        textDecoration: 'none',
+                        boxShadow: '0 1px 2px rgba(15, 23, 42, 0.06)',
+                      }}
+                    >
+                      {link.label}
+                    </Link>
+                  ))}
+                </nav>
+              )}
+            </div>
+          )}
         </section>
 
         {isLoading ? (

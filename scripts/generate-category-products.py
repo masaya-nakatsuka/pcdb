@@ -71,6 +71,15 @@ DEFAULT_QUERIES = {
         "ゲーミングモニター 144Hz",
         "ウルトラワイドモニター USB-C",
     ],
+    "tablet": [
+        "iPad 11インチ 128GB",
+        "iPad Air 11インチ",
+        "iPad mini 128GB",
+        "Android タブレット 11インチ 128GB",
+        "Lenovo Tab Android 128GB",
+        "Galaxy Tab Android 128GB",
+        "Xiaomi Pad Android 128GB",
+    ],
 }
 
 PC_EXCLUDE_WORDS = [
@@ -154,6 +163,58 @@ MONITOR_WORDS = [
     "ディスプレイ",
     "monitor",
     "display",
+]
+
+TABLET_EXCLUDE_WORDS = [
+    "ケース",
+    "カバー",
+    "保護フィルム",
+    "フィルム",
+    "キーボード",
+    "ペン",
+    "タッチペン",
+    "スタイラス",
+    "スタンド",
+    "ホルダー",
+    "ケーブル",
+    "充電器",
+    "アダプタ",
+    "中古",
+    "整備済",
+    "整備済み",
+    "再生品",
+    "refurbished",
+    "renewed",
+    "used",
+    "windows",
+    "ノートパソコン",
+    "ノートpc",
+    "タブレットpc",
+    "2in1",
+    "2-in-1",
+    "surface",
+    "fire hd",
+    "fire max",
+    "applecare",
+    "セット買い",
+]
+
+ANDROID_TABLET_BRANDS = [
+    "lenovo",
+    "samsung",
+    "galaxy",
+    "xiaomi",
+    "redmi",
+    "oppo",
+    "oneplus",
+    "nec",
+    "aiwa",
+    "doogee",
+    "teclast",
+    "blackview",
+    "headwolf",
+    "iplay",
+    "alldocube",
 ]
 
 
@@ -382,10 +443,11 @@ def includes_any(text: str, words: list[str]) -> bool:
 def infer_cpu(text: str) -> str:
     text = canonical_text(text)
     patterns = [
-        (r"(?:Core\s*)?Ultra\s*([975])\s*(\d{3}[A-Z]{0,2})", "Core Ultra {0} {1}"),
-        (r"(?:Core\s*)?i([9753])[-\s]?(\d{4,5}[A-Z]{0,2})", "Core i{0}-{1}"),
-        (r"Ryzen\s*([9753])\s*(\d{4,5}[A-Z]{0,2})", "Ryzen {0} {1}"),
-        (r"Ryzen\s*([9753])\s*(40|150|170|250)", "Ryzen {0} {1}"),
+        (r"Core\s*Ultra\s*([975])\s*(\d{3}[A-Z]{0,2})", "Core Ultra {0} {1}"),
+        (r"(?:Core\s*)?i([9753])[-\s]?(\d{4,5}(?:X3D|[A-Z]{1,3})?)", "Core i{0}-{1}"),
+        (r"Ryzen\s+Embedded\s+(R\d{4})", "Ryzen Embedded {0}"),
+        (r"Ryzen\s*([9753])\s*(PRO\s*)?(\d{3,5}(?:X3D|[A-Z]{1,3})?)", "Ryzen {0} {1} {2}"),
+        (r"Ryzen\s*([9753])\s*(PRO\s*)?(40|150|170|220|250|255)", "Ryzen {0} {1} {2}"),
         (r"\bN150\b", "N150"),
         (r"\bN100\b", "N100"),
         (r"\bN95\b", "N95"),
@@ -396,8 +458,8 @@ def infer_cpu(text: str) -> str:
         match = re.search(pattern, text, re.I)
         if match:
             if "{" in label:
-                groups = tuple(group.upper() for group in match.groups())
-                return label.format(*groups).strip()
+                groups = tuple((group or "").upper().strip() for group in match.groups())
+                return re.sub(r"\s+", " ", label.format(*groups)).strip()
             return label
     if re.search(r"Core\s*i5", text, re.I):
         return "Core i5"
@@ -408,6 +470,25 @@ def infer_cpu(text: str) -> str:
     if re.search(r"Ryzen\s*7", text, re.I):
         return "Ryzen 7"
     return ""
+
+
+GENERIC_CPU_LABELS = {
+    "Core i3",
+    "Core i5",
+    "Core i7",
+    "Core i9",
+    "Core Ultra 5",
+    "Core Ultra 7",
+    "Core Ultra 9",
+    "Ryzen 3",
+    "Ryzen 5",
+    "Ryzen 7",
+    "Ryzen 9",
+}
+
+
+def is_specific_cpu(cpu: str) -> bool:
+    return bool(cpu and cpu not in GENERIC_CPU_LABELS)
 
 
 def infer_gpu(text: str) -> tuple[str, str, int, bool]:
@@ -503,6 +584,201 @@ def infer_refresh_rate(text: str) -> int | None:
     return max(rates) if rates else None
 
 
+def infer_tablet_os_family(candidate: Candidate) -> str | None:
+    lower = normalized(f"{candidate.brand} {candidate.title} {candidate.text}")
+    if "ipad" in lower or "apple" in lower:
+        return "ipad"
+    if "android" in lower:
+        return "android"
+    if "タブレット" in lower and any(brand in lower for brand in ANDROID_TABLET_BRANDS):
+        return "android"
+    return None
+
+
+def infer_tablet_os_version(text: str, os_family: str | None) -> str | None:
+    text = canonical_text(text)
+    if os_family == "android":
+        match = re.search(r"Android\s*(\d{1,2}(?:\.\d+)?)", text, re.I)
+        return match.group(1) if match else None
+    if os_family == "ipad":
+        match = re.search(r"iPadOS\s*(\d{1,2}(?:\.\d+)?)", text, re.I)
+        return match.group(1) if match else None
+    return None
+
+
+def infer_tablet_soc(text: str, os_family: str | None = None) -> tuple[str | None, int | None]:
+    text = canonical_text(text)
+    lower = normalized(text)
+    apple_patterns = [
+        (r"\bApple\s*M4\b|\bM4チップ\b|\bM4\b", "Apple M4", 35),
+        (r"\bApple\s*M3\b|\bM3チップ\b|\bM3\b", "Apple M3", 33),
+        (r"\bApple\s*M2\b|\bM2チップ\b|\bM2\b", "Apple M2", 30),
+        (r"\bA17\s*Pro\b", "Apple A17 Pro", 29),
+        (r"\bA16\b|A16\s*Bionic", "Apple A16", 25),
+        (r"\bA15\b|A15\s*Bionic", "Apple A15", 22),
+    ]
+    if os_family == "ipad" or "ipad" in lower or "apple" in lower:
+        for pattern, label, score in apple_patterns:
+            if re.search(pattern, text, re.I):
+                return label, score
+
+    patterns = [
+        (r"Snapdragon\s*8\s*Elite", "Snapdragon 8 Elite", 35),
+        (r"Snapdragon\s*8\s*Gen\s*3", "Snapdragon 8 Gen 3", 33),
+        (r"Snapdragon\s*8s\s*Gen\s*3", "Snapdragon 8s Gen 3", 29),
+        (r"Snapdragon\s*8\s*Gen\s*2", "Snapdragon 8 Gen 2", 30),
+        (r"Snapdragon\s*7\+\s*Gen\s*3", "Snapdragon 7+ Gen 3", 27),
+        (r"Snapdragon\s*7\s*Gen\s*3", "Snapdragon 7 Gen 3", 23),
+        (r"Snapdragon\s*680", "Snapdragon 680", 12),
+        (r"Dimensity\s*9300", "Dimensity 9300", 32),
+        (r"Dimensity\s*8400", "Dimensity 8400", 29),
+        (r"Dimensity\s*8300", "Dimensity 8300", 27),
+        (r"Dimensity\s*7300", "Dimensity 7300", 22),
+        (r"Dimensity\s*7050", "Dimensity 7050", 20),
+        (r"Helio\s*G100", "Helio G100", 16),
+        (r"Helio\s*G99", "Helio G99", 15),
+        (r"Helio\s*G88", "Helio G88", 11),
+        (r"Unisoc\s*T820", "Unisoc T820", 14),
+        (r"Unisoc\s*T616", "Unisoc T616", 9),
+        (r"Unisoc\s*T615", "Unisoc T615", 9),
+        (r"Unisoc\s*T606", "Unisoc T606", 8),
+        (r"\bT606\b", "Unisoc T606", 8),
+        (r"\bT616\b", "Unisoc T616", 9),
+        (r"\bT615\b", "Unisoc T615", 9),
+        (r"MT8781", "MediaTek MT8781", 15),
+        (r"MT8183", "MediaTek MT8183", 8),
+        (r"Exynos\s*1380", "Exynos 1380", 18),
+    ]
+    for pattern, label, score in patterns:
+        if re.search(pattern, text, re.I):
+            return label, score
+    return None, None
+
+
+def infer_tablet_ram(text: str) -> int | None:
+    text = canonical_text(text)
+
+    for pattern in [
+        r"(\d{1,2})\s*(?:GB|ＧＢ)\s*(?:RAM|メモリ|LPDDR|DDR)",
+        r"(?:RAM|メモリ|LPDDR|DDR)[^\d]{0,12}(\d{1,2})\s*(?:GB|ＧＢ)",
+    ]:
+        match = re.search(pattern, text, re.I)
+        if match:
+            value = int(match.group(1))
+            if 1 <= value <= 32:
+                return value
+
+    match = re.search(r"\b(\d{1,2})\s*(?:GB|ＧＢ)?\s*\(\s*(\d{1,2})\s*\+\s*(\d{1,2})\s*(?:拡張|仮想)?\s*\)\s*(?:GB|ＧＢ)?", text, re.I)
+    if match:
+        value = int(match.group(2))
+        if 1 <= value <= 32:
+            return value
+
+    match = re.search(r"\b(\d{1,2})\s*(?:GB|ＧＢ)\s*(?:\+|,|、)\s*(\d{2,4})\s*(?:GB|ＧＢ|TB|ＴＢ)\b", text, re.I)
+    if match:
+        value = int(match.group(1))
+        if 1 <= value <= 12:
+            return value
+
+    match = re.search(r"\b(\d{1,2})\s*(?:GB|ＧＢ)\s*(?:Wi[-\s]?Fi|wifi)\b", text, re.I)
+    if match:
+        value = int(match.group(1))
+        if 1 <= value <= 12:
+            return value
+
+    return None
+
+
+def infer_tablet_storage(text: str) -> int | None:
+    text = canonical_text(text)
+    cleaned = re.sub(
+        r"\+?\s*\d+(?:\.\d+)?\s*(?:TB|GB|T|G|ＴＢ|ＧＢ)\s*(?:まで)?\s*(?:microSD|MicroSD|sd|SD|拡張|拡張可能|増設)",
+        " ",
+        text,
+        flags=re.I,
+    )
+    cleaned = re.sub(r"\d{2,4}\s*g\b", " ", cleaned, flags=re.I)
+
+    for pattern in [
+        r"(\d+(?:\.\d+)?)\s*(TB|GB|ＴＢ|ＧＢ)\s*(?:ROM|ストレージ|容量|eMMC|UFS)",
+        r"(?:ROM|ストレージ|容量|eMMC|UFS)[^\d]{0,16}(\d+(?:\.\d+)?)\s*(TB|GB|ＴＢ|ＧＢ)",
+    ]:
+        match = re.search(pattern, cleaned, re.I)
+        if not match:
+            continue
+        amount = float(match.group(1))
+        unit = match.group(2).upper().replace("Ｔ", "T").replace("Ｇ", "G")
+        value = int(round(amount * 1024)) if unit == "TB" else int(round(amount))
+        if 32 <= value <= 2048:
+            return value
+
+    candidates = []
+    for match in re.finditer(r"(\d{2,4})\s*(?:GB|ＧＢ)\b", cleaned, re.I):
+        value = int(match.group(1))
+        if 32 <= value <= 2048:
+            candidates.append(value)
+    if not candidates:
+        return None
+    return max(candidates)
+
+
+def infer_candidate_tablet_storage(candidate: Candidate) -> int | None:
+    return infer_tablet_storage(candidate.title) or infer_tablet_storage(candidate.text)
+
+
+def infer_tablet_size(text: str) -> float | None:
+    for match in re.finditer(r"(\d{1,2}(?:\.\d{1,2})?)\s*(?:インチ|型|inch|inches|\"|”)", text, re.I):
+        value = float(match.group(1))
+        if 7 <= value <= 15:
+            return value
+    return None
+
+
+def infer_tablet_resolution(text: str) -> str | None:
+    match = re.search(r"(\d{3,4})\s*[x×]\s*(\d{3,4})", text, re.I)
+    if match:
+        width = int(match.group(1))
+        height = int(match.group(2))
+        if 1024 <= width <= 4000 and 720 <= height <= 3000:
+            return f"{width}x{height}"
+    return None
+
+
+def infer_battery_life_hours(text: str) -> int | None:
+    values = []
+    for match in re.finditer(r"(?:最大|約)?\s*(\d{1,2})\s*(?:時間|hours|hrs)", text, re.I):
+        value = int(match.group(1))
+        if 3 <= value <= 24:
+            values.append(value)
+    return max(values) if values else None
+
+
+def infer_battery_capacity_mah(text: str) -> int | None:
+    values = []
+    for match in re.finditer(r"(\d{4,5})\s*mAh", text, re.I):
+        value = int(match.group(1))
+        if 2500 <= value <= 20000:
+            values.append(value)
+    return max(values) if values else None
+
+
+def infer_weight_g(text: str) -> int | None:
+    text = canonical_text(text)
+    for match in re.finditer(r"(\d{2,4})\s*g\b", text, re.I):
+        value = int(match.group(1))
+        if 200 <= value <= 1200:
+            return value
+    for match in re.finditer(r"(\d(?:\.\d{1,3})?)\s*kg\b", text, re.I):
+        value = int(float(match.group(1)) * 1000)
+        if 200 <= value <= 1200:
+            return value
+    return None
+
+
+def infer_has_cellular(text: str) -> bool:
+    return bool(re.search(r"Cellular|セルラー|LTE|SIMフリー|SIM対応|4G\s*LTE|4GLTE|5G\s*(?:モバイル|携帯|通信)", text, re.I))
+
+
 def infer_panel_type(text: str) -> str | None:
     for label in ("QD-OLED", "OLED", "IPS", "VA", "TN"):
         if re.search(rf"\b{re.escape(label)}\b", text, re.I):
@@ -532,13 +808,25 @@ def is_valid_candidate(profile: str, candidate: Candidate) -> bool:
             return False
         return includes_any(lower, MONITOR_WORDS) and infer_monitor_size(candidate.text) is not None
 
+    if profile == "tablet":
+        if includes_any(title_lower, TABLET_EXCLUDE_WORDS):
+            return False
+        os_family = infer_tablet_os_family(candidate)
+        soc, _soc_score = infer_tablet_soc(candidate.text, os_family)
+        return (
+            os_family in {"android", "ipad"} and
+            soc is not None and
+            infer_candidate_tablet_storage(candidate) is not None and
+            infer_tablet_size(candidate.text) is not None
+        )
+
     if includes_any(title_lower, PC_EXCLUDE_WORDS):
         return False
 
     cpu = infer_cpu(candidate.text)
     ram = infer_ram(candidate.text)
     rom = infer_rom(candidate.text)
-    if not cpu or not ram or not rom:
+    if not is_specific_cpu(cpu) or not ram or not rom:
         return False
 
     if profile == "mini-pc":
@@ -567,7 +855,7 @@ def pc_name(candidate: Candidate, cpu: str) -> str:
     cleaned = re.sub(r"【[^】]{1,50}】", "", cleaned).strip()
     if len(cleaned) > 100:
         cleaned = cleaned[:100].rstrip()
-    if cpu and cpu not in cleaned:
+    if cpu and cpu.lower() not in canonical_text(cleaned).lower():
         cleaned = f"{cleaned} {cpu}"
     if candidate.brand and not cleaned.lower().startswith(candidate.brand.lower()):
         cleaned = f"{candidate.brand} {cleaned}"
@@ -728,7 +1016,132 @@ def monitor_insert_sql(candidates: list[Candidate]) -> str:
     return "\n".join(lines)
 
 
+def tablet_insert_sql(candidates: list[Candidate]) -> str:
+    cols = [
+        "asin",
+        "brand",
+        "name",
+        "series",
+        "os_family",
+        "os_version",
+        "soc",
+        "soc_score",
+        "ram_gb",
+        "rom_gb",
+        "display_size_inch",
+        "resolution",
+        "refresh_rate_hz",
+        "battery_life_hours",
+        "battery_capacity_mah",
+        "weight_g",
+        "has_cellular",
+        "price",
+        "real_price",
+        "url",
+        "af_url",
+        "img_url",
+        "fetched_at",
+        "is_active",
+    ]
+    lines = [
+        f"-- Specsy tablet product INSERT SQL generated on {TODAY}",
+        "-- Run scripts/create-tablet-data-table.sql first.",
+        "-- Review candidates before running this in Supabase SQL Editor.",
+        "BEGIN;",
+        "",
+    ]
+    for candidate in candidates:
+        os_family = infer_tablet_os_family(candidate)
+        soc, soc_score = infer_tablet_soc(candidate.text, os_family)
+        row = {
+            "asin": candidate.asin,
+            "brand": candidate.brand,
+            "name": re.sub(r"\s+", " ", candidate.title).strip()[:140],
+            "series": None,
+            "os_family": os_family,
+            "os_version": infer_tablet_os_version(candidate.text, os_family),
+            "soc": soc,
+            "soc_score": soc_score,
+            "ram_gb": infer_tablet_ram(candidate.text),
+            "rom_gb": infer_candidate_tablet_storage(candidate),
+            "display_size_inch": infer_tablet_size(candidate.text),
+            "resolution": infer_tablet_resolution(candidate.text),
+            "refresh_rate_hz": infer_refresh_rate(candidate.text),
+            "battery_life_hours": infer_battery_life_hours(candidate.text),
+            "battery_capacity_mah": infer_battery_capacity_mah(candidate.text),
+            "weight_g": infer_weight_g(candidate.text),
+            "has_cellular": infer_has_cellular(candidate.text),
+            "price": candidate.price,
+            "real_price": candidate.price,
+            "url": f"https://www.amazon.co.jp/dp/{candidate.asin}",
+            "af_url": candidate.detail_url,
+            "img_url": candidate.image_url,
+            "fetched_at": TODAY,
+            "is_active": True,
+        }
+        values = []
+        for col in cols:
+            values.append(sql_value(
+                row[col],
+                numeric=col in {
+                    "soc_score",
+                    "ram_gb",
+                    "rom_gb",
+                    "display_size_inch",
+                    "refresh_rate_hz",
+                    "battery_life_hours",
+                    "battery_capacity_mah",
+                    "weight_g",
+                    "price",
+                    "real_price",
+                },
+                boolean=col in {"has_cellular", "is_active"},
+            ))
+        lines.append(f"INSERT INTO am_tablet_data ({', '.join(cols)})")
+        lines.append(f"SELECT {', '.join(values)}")
+        lines.append(
+            "WHERE NOT EXISTS "
+            f"(SELECT 1 FROM am_tablet_data WHERE asin = '{candidate.asin}' OR {asin_exists_condition('am_tablet_data', candidate.asin)});"
+        )
+    lines.extend(["", "COMMIT;", ""])
+    return "\n".join(lines)
+
+
 def candidate_review_row(profile: str, candidate: Candidate) -> dict[str, str | int | float | bool | None]:
+    if profile == "tablet":
+        os_family = infer_tablet_os_family(candidate)
+        soc, soc_score = infer_tablet_soc(candidate.text, os_family)
+        return {
+            "profile": profile,
+            "asin": candidate.asin,
+            "brand": candidate.brand,
+            "title": re.sub(r"\s+", " ", candidate.title).strip()[:140],
+            "price": candidate.price,
+            "availability": candidate.availability,
+            "cpu": "",
+            "ram_gb": infer_tablet_ram(candidate.text),
+            "rom_gb": infer_candidate_tablet_storage(candidate),
+            "gpu": "",
+            "gpu_class": "",
+            "has_dgpu": "",
+            "size_inch": "",
+            "resolution": infer_tablet_resolution(candidate.text),
+            "refresh_rate_hz": infer_refresh_rate(candidate.text),
+            "panel_type": "",
+            "has_usb_c": "",
+            "usb_c_power_delivery_w": "",
+            "os_family": os_family,
+            "os_version": infer_tablet_os_version(candidate.text, os_family),
+            "soc": soc,
+            "soc_score": soc_score,
+            "display_size_inch": infer_tablet_size(candidate.text),
+            "battery_life_hours": infer_battery_life_hours(candidate.text),
+            "battery_capacity_mah": infer_battery_capacity_mah(candidate.text),
+            "weight_g": infer_weight_g(candidate.text),
+            "has_cellular": infer_has_cellular(candidate.text),
+            "detail_url": candidate.detail_url,
+        }
+
     if profile == "monitor":
         has_usb_c, usb_c_power = infer_usb_c(candidate.text)
         return {
@@ -750,6 +1163,15 @@ def candidate_review_row(profile: str, candidate: Candidate) -> dict[str, str | 
             "panel_type": infer_panel_type(candidate.text),
             "has_usb_c": has_usb_c,
             "usb_c_power_delivery_w": usb_c_power,
+            "os_family": "",
+            "os_version": "",
+            "soc": "",
+            "soc_score": "",
+            "display_size_inch": "",
+            "battery_life_hours": "",
+            "battery_capacity_mah": "",
+            "weight_g": "",
+            "has_cellular": "",
             "detail_url": candidate.detail_url,
         }
 
@@ -773,6 +1195,15 @@ def candidate_review_row(profile: str, candidate: Candidate) -> dict[str, str | 
         "panel_type": "",
         "has_usb_c": "",
         "usb_c_power_delivery_w": "",
+        "os_family": "",
+        "os_version": "",
+        "soc": "",
+        "soc_score": "",
+        "display_size_inch": "",
+        "battery_life_hours": "",
+        "battery_capacity_mah": "",
+        "weight_g": "",
+        "has_cellular": "",
         "detail_url": candidate.detail_url,
     }
 
@@ -797,11 +1228,20 @@ def write_review_csv(profile: str, candidates: list[Candidate], output_path: Pat
         "panel_type",
         "has_usb_c",
         "usb_c_power_delivery_w",
+        "os_family",
+        "os_version",
+        "soc",
+        "soc_score",
+        "display_size_inch",
+        "battery_life_hours",
+        "battery_capacity_mah",
+        "weight_g",
+        "has_cellular",
         "detail_url",
     ]
     output_path.parent.mkdir(parents=True, exist_ok=True)
     with output_path.open("w", encoding="utf-8", newline="") as file:
-        writer = csv.DictWriter(file, fieldnames=fieldnames)
+        writer = csv.DictWriter(file, fieldnames=fieldnames, lineterminator="\n")
         writer.writeheader()
         for candidate in candidates:
             writer.writerow(candidate_review_row(profile, candidate))
@@ -972,7 +1412,12 @@ def main() -> int:
 
     output_path = args.output or default_output_path(args.profile)
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    sql = monitor_insert_sql(candidates) if args.profile == "monitor" else pc_insert_sql(args.profile, candidates)
+    if args.profile == "monitor":
+        sql = monitor_insert_sql(candidates)
+    elif args.profile == "tablet":
+        sql = tablet_insert_sql(candidates)
+    else:
+        sql = pc_insert_sql(args.profile, candidates)
     output_path.write_text(sql, encoding="utf-8")
     if auto_review_output and review_output_path is not None:
         write_review_csv(args.profile, candidates, review_output_path)

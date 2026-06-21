@@ -14,12 +14,27 @@ export const pcListUsagePages: Record<ClientUsageCategory, {
   title: string
   heading: string
   description: string
+  decisionPoints?: string[]
+  relatedLinks?: Array<{
+    href: string
+    label: string
+  }>
 }> = {
   mobile: {
     path: '/pc-list/mobile',
-    title: 'モバイルPCランキング - スペクシーハブ',
-    heading: 'モバイルPCランキング',
-    description: '外出先で使いやすいPCを、軽さ・電池持ち・基本性能のバランスで比較します。'
+    title: '軽量モバイルノートPCランキング - スペクシーハブ',
+    heading: '軽量モバイルノートPCランキング',
+    description: '持ち運びやすい小型ノートPCを、重量、画面サイズ、バッテリー、CPU、価格のバランスで比較します。13〜14インチ前後の軽量モデルやミニノート選びの入口に使えます。',
+    decisionPoints: [
+      '毎日持ち運ぶなら重量とバッテリーを優先',
+      '作業量が多いなら13〜14インチ前後も候補',
+      '長く使うならメモリ16GBとSSD512GB以上を確認',
+    ],
+    relatedLinks: [
+      { href: '/pc-list/cafe', label: 'カフェ作業向けも見る' },
+      { href: '/pc-list/cost-performance', label: 'コスパ重視で見る' },
+      { href: '/tablet-list', label: 'タブレットも比較' },
+    ],
   },
   cafe: {
     path: '/pc-list/cafe',
@@ -41,9 +56,19 @@ export const pcListUsagePages: Record<ClientUsageCategory, {
   },
   gaming: {
     path: '/pc-list/gaming',
-    title: 'ゲーム向けPCランキング - スペクシーハブ',
-    heading: 'ゲーム向けPCランキング',
-    description: 'ゲーム用途のPCを、GPU・CPU・メモリ・ストレージを中心に比較します。'
+    title: 'ゲーミングPCランキング - スペクシーハブ',
+    heading: 'ゲーミングPCランキング',
+    description: 'ゲーミングノート、デスクトップ、ミニPCをまとめて、GPU、CPU、メモリ、SSD、価格のバランスで比較します。内蔵GPUで軽めに遊ぶか、専用GPU搭載モデルを選ぶかの切り分けにも使えます。',
+    decisionPoints: [
+      '3DゲームはGPU名とGPUスコアを最優先',
+      '軽めのゲームやクラウドゲームはCPUとメモリも重視',
+      'ミニPCは発熱、騒音、拡張性も価格とセットで確認',
+    ],
+    relatedLinks: [
+      { href: '/pc-list/mini-pc?usage=gaming', label: 'ゲーミングミニPCを見る' },
+      { href: '/pc-list/desktop?usage=gaming', label: 'デスクトップで見る' },
+      { href: '/pc-list/video-editing', label: '動画編集向けも比較' },
+    ],
   },
   video_editing: {
     path: '/pc-list/video-editing',
@@ -56,7 +81,7 @@ export const pcListUsagePages: Record<ClientUsageCategory, {
 export function getPcListUsagePath(
   usage: ClientUsageCategory,
   listing: ClientPcListing = 'new',
-  device: ClientPcDeviceCategory = 'all'
+  device: ClientPcDeviceCategory = 'notebook_pc'
 ): string {
   if (listing === 'used') {
     const params = new URLSearchParams({ usage })

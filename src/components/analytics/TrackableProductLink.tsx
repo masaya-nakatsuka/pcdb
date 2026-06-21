@@ -2,7 +2,7 @@
 
 import type { CSSProperties, MouseEvent, ReactNode } from 'react'
 
-type ProductType = 'pc' | 'monitor'
+type ProductType = 'pc' | 'monitor' | 'tablet'
 
 interface TrackableProductLinkProps {
   href: string

@@ -16,7 +16,7 @@ interface ClientPcListProps {
   embeddedInArticle?: boolean
 }
 
-export default function ClientPcList({ pcs, defaultCpu, defaultMaxDisplaySize, initialUsage = 'cafe', listing = 'new', device = 'all', urlBasedUsage = false, embeddedInArticle = false }: ClientPcListProps) {
+export default function ClientPcList({ pcs, defaultCpu, defaultMaxDisplaySize, initialUsage = 'cafe', listing = 'new', device = 'notebook_pc', urlBasedUsage = false, embeddedInArticle = false }: ClientPcListProps) {
   const { isMobile, isTablet } = useDeviceDetection()
 
   if (isMobile || isTablet) {

@@ -24,6 +24,7 @@ DEFAULT_BASE_URL = "https://specsy-hub.com"
 PAGE_MARKERS = [
     ("/", "Specsy"),
     ("/pc-list/cafe", "PCランキング"),
+    ("/tablet-list", "タブレット比較"),
     ("/pc-list/mini-pc", "Mini PCランキング"),
     ("/pc-list/desktop", "デスクトップPCランキング"),
     ("/monitor-list", "モニター比較"),
@@ -34,7 +35,8 @@ PAGE_MARKERS = [
 ]
 
 API_CHECKS = [
-    ("cafe", "/api/pc-list?category=cafe", True),
+    ("cafe", "/api/pc-list?category=cafe&device=notebook_pc", True),
+    ("tablet", "/api/tablet-list", False),
     ("mini_pc", "/api/pc-list?device=mini_pc", False),
     ("desktop_pc", "/api/pc-list?device=desktop_pc", False),
     ("monitor", "/api/monitor-list", False),

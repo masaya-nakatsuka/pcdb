@@ -145,6 +145,34 @@ class CategoryProductGenerationTest(unittest.TestCase):
             generator.infer_cpu("Wzbookl ノートパソコン AMD Ryzen 5 3500u 4コア"),
             "Ryzen 5 3500U",
         )
+        self.assertEqual(
+            generator.infer_cpu("Getorli ミニPC AMD Ryzen™ 7 PRO 8845HS 搭載"),
+            "Ryzen 7 PRO 8845HS",
+        )
+        self.assertEqual(
+            generator.infer_cpu("MINISFORUM AI X1 ミニPC AMD Ryzen 7 255"),
+            "Ryzen 7 255",
+        )
+        self.assertEqual(
+            generator.infer_cpu("ASUS TUF Gaming AMD Ryzen 5 220"),
+            "Ryzen 5 220",
+        )
+        self.assertEqual(
+            generator.infer_cpu("GMKtec G11 AMD Ryzen Embedded R2514搭載"),
+            "Ryzen Embedded R2514",
+        )
+        self.assertEqual(
+            generator.infer_cpu("GMKtec M6 Ultra AMD Ryzen 5 7640HS"),
+            "Ryzen 5 7640HS",
+        )
+        self.assertEqual(
+            generator.infer_cpu("Ryzen 7 9800X3D ゲーミングPC"),
+            "Ryzen 7 9800X3D",
+        )
+        self.assertEqual(
+            generator.infer_cpu("GMKtec M6 Ultra だけでCPU表記なし"),
+            "",
+        )
 
     def test_monitor_candidate_generates_valid_sql(self) -> None:
         item = amazon_item(
@@ -176,6 +204,38 @@ class CategoryProductGenerationTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp_dir:
             review_path = Path(tmp_dir) / "monitor_review.csv"
             generator.write_review_csv("monitor", [candidate], review_path)
+            self.assertEqual(review_validator.validate_csv(review_path), [])
+
+    def test_tablet_candidate_generates_valid_sql(self) -> None:
+        item = amazon_item(
+            asin="B0TABLET01",
+            title="Lenovo Tab Android タブレット 10.95インチ Helio G99 8GB RAM 128GB",
+            brand="Lenovo",
+            price=34800,
+            features=["Android 15", "2000x1200", "90Hz", "最大10時間", "7040mAh"],
+        )
+        candidate = self.candidate_from_item(item)
+
+        self.assertTrue(generator.is_valid_candidate("tablet", candidate))
+        self.assertEqual(generator.infer_tablet_os_family(candidate), "android")
+        self.assertEqual(generator.infer_tablet_os_version(candidate.text, "android"), "15")
+        self.assertEqual(generator.infer_tablet_soc(candidate.text), ("Helio G99", 15))
+        self.assertEqual(generator.infer_ram(candidate.text), 8)
+        self.assertEqual(generator.infer_tablet_storage(candidate.text), 128)
+        self.assertEqual(generator.infer_tablet_size(candidate.text), 10.95)
+        self.assertEqual(generator.infer_tablet_resolution(candidate.text), "2000x1200")
+        self.assertEqual(generator.infer_battery_life_hours(candidate.text), 10)
+        self.assertEqual(generator.infer_battery_capacity_mah(candidate.text), 7040)
+
+        sql = generator.tablet_insert_sql([candidate])
+        self.assertIn("INSERT INTO am_tablet_data", sql)
+        self.assertIn("'android'", sql)
+        self.assertIn("'Helio G99'", sql)
+        self.assert_sql_valid(sql)
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            review_path = Path(tmp_dir) / "tablet_review.csv"
+            generator.write_review_csv("tablet", [candidate], review_path)
             self.assertEqual(review_validator.validate_csv(review_path), [])
 
     def test_rejects_used_pc_and_monitor_accessory(self) -> None:

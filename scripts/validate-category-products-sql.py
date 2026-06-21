@@ -18,6 +18,7 @@ DEFAULT_FILES = [
     Path("scripts/insert_mini_pc_products.sql"),
     Path("scripts/insert_desktop_pc_products.sql"),
     Path("scripts/insert_monitor_products.sql"),
+    Path("scripts/insert_tablet_products.sql"),
 ]
 
 ASIN_RE = re.compile(r"(?:/dp/|%)([A-Z0-9]{10})(?:[?%'&]|$)", re.I)
@@ -35,7 +36,7 @@ def extract_guard_asins(sql: str) -> list[str]:
 def validate_sql(path: Path) -> list[str]:
     errors: list[str] = []
     sql = path.read_text(encoding="utf-8")
-    inserts = re.findall(r"INSERT INTO\s+(am_pc_data|am_monitor_data)\s*\(([^)]*)\)", sql, flags=re.I)
+    inserts = re.findall(r"INSERT INTO\s+(am_pc_data|am_monitor_data|am_tablet_data)\s*\(([^)]*)\)", sql, flags=re.I)
 
     if not inserts:
         return [f"{path}: INSERT statement not found"]
@@ -62,6 +63,13 @@ def validate_sql(path: Path) -> list[str]:
             for required in ("brand", "name", "size_inch", "price", "url", "af_url"):
                 if required not in col_names:
                     errors.append(f"{path}: am_monitor_data INSERT missing column `{required}`")
+                    break
+    elif target == "am_tablet_data":
+        for _table, cols in inserts:
+            col_names = [col.strip().lower() for col in cols.split(",")]
+            for required in ("asin", "brand", "name", "os_family", "soc", "rom_gb", "display_size_inch", "price", "url", "af_url"):
+                if required not in col_names:
+                    errors.append(f"{path}: am_tablet_data INSERT missing column `{required}`")
                     break
     else:
         errors.append(f"{path}: unsupported table `{target}`")

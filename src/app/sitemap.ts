@@ -22,6 +22,10 @@ const monitorRoutes = [
   '/monitor-list/usb-c',
 ]
 
+const tabletRoutes = [
+  '/tablet-list',
+]
+
 const staticRoutes = [
   '/',
   '/about',
@@ -29,6 +33,7 @@ const staticRoutes = [
   '/privacy',
   ...pcListRoutes,
   ...monitorRoutes,
+  ...tabletRoutes,
 ]
 
 export default function sitemap(): MetadataRoute.Sitemap {

@@ -21,6 +21,7 @@ export default async function UsedPcListPage({ searchParams }: UsedPcListPagePro
     <UsagePcListPageClient
       usage={usage}
       listing="used"
+      device="notebook_pc"
       heading={`中古PCランキング（${usageLabel}）`}
       description={`中古・整備済みPCだけを対象に、${usageLabel}の見方で価格・性能・メモリ・SSD・重量を比較します。${usagePage.description}`}
     />

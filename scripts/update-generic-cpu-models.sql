@@ -1,10 +1,13 @@
--- Specsy generic CPU model UPDATE SQL generated on 2026-06-19
--- Purpose: replace broad CPU labels such as `Ryzen 5` with the specific model found in the current product listing.
--- Review candidates before running this in Supabase SQL Editor.
--- Guarded by id + current broad cpu label + ASIN in url/af_url.
+-- Specsy generic CPU model UPDATE SQL generated on 2026-06-20
+-- Purpose:
+--   1. Replace broad CPU labels such as `Core i7` / `Ryzen 7` with exact models.
+--   2. Deactivate rows whose product text exposes only a CPU generation/family,
+--      because their benchmark score cannot be measured reliably.
+-- Guarded by id/current cpu label and ASIN in url/af_url where available.
 
 BEGIN;
 
+-- Exact CPU model fixes.
 UPDATE am_pc_data
 SET cpu = 'Core i3-6100U'
 WHERE id = 66
@@ -12,10 +15,28 @@ WHERE id = 66
   AND (url ILIKE '%B0H11LDFRX%' OR af_url ILIKE '%B0H11LDFRX%');
 
 UPDATE am_pc_data
+SET cpu = 'Core Ultra 5 125H'
+WHERE id = 67
+  AND cpu = 'Core Ultra 5'
+  AND (url ILIKE '%B0FQ6PCF9R%' OR af_url ILIKE '%B0FQ6PCF9R%');
+
+UPDATE am_pc_data
 SET cpu = 'Ryzen 7 170'
 WHERE id = 68
   AND cpu = 'Ryzen 7'
   AND (url ILIKE '%B0G6CFC2Z2%' OR af_url ILIKE '%B0G6CFC2Z2%');
+
+UPDATE am_pc_data
+SET cpu = 'Core i3-6100U'
+WHERE id = 69
+  AND cpu = 'Core i3'
+  AND (url ILIKE '%B0GZKJMMDR%' OR af_url ILIKE '%B0GZKJMMDR%');
+
+UPDATE am_pc_data
+SET cpu = 'Core i5-1335U'
+WHERE id = 70
+  AND cpu = 'Core i5'
+  AND (url ILIKE '%B0FW4DV6V4%' OR af_url ILIKE '%B0FW4DV6V4%');
 
 UPDATE am_pc_data
 SET cpu = 'Core i5-1334U'
@@ -34,6 +55,12 @@ SET cpu = 'Core i7-5500U'
 WHERE id = 73
   AND cpu = 'Core i7'
   AND (url ILIKE '%B0G3NRDBK6%' OR af_url ILIKE '%B0G3NRDBK6%');
+
+UPDATE am_pc_data
+SET cpu = 'Core i7-6600U'
+WHERE id = 74
+  AND cpu = 'Core i7'
+  AND (url ILIKE '%B0H2PG6QHC%' OR af_url ILIKE '%B0H2PG6QHC%');
 
 UPDATE am_pc_data
 SET cpu = 'Ryzen 5 3550H'
@@ -95,9 +122,53 @@ WHERE id = 84
   AND cpu = 'Ryzen 7'
   AND (url ILIKE '%B0G6CY1J9Z%' OR af_url ILIKE '%B0G6CY1J9Z%');
 
--- Not updated: the current product text does not expose a reliable detailed CPU model.
--- id=69 ASIN=B0GZKJMMDR cpu=Core i3
--- id=70 ASIN=B0FW4DV6V4 cpu=Core i5
--- id=74 ASIN=B0H2PG6QHC cpu=Core i7
+UPDATE am_pc_data
+SET cpu = 'Core i5-5300U'
+WHERE id = 94
+  AND cpu = 'Core i5'
+  AND (url ILIKE '%B0G3WJXJ7B%' OR af_url ILIKE '%B0G3WJXJ7B%');
+
+UPDATE am_pc_data
+SET cpu = 'Core i5-7200U'
+WHERE id = 100
+  AND cpu = 'Core i5'
+  AND (url ILIKE '%B0H2YLBCPK%' OR af_url ILIKE '%B0H2YLBCPK%');
+
+UPDATE am_pc_data
+SET cpu = 'Ryzen 7 PRO 8845HS'
+WHERE id = 132
+  AND cpu = 'Ryzen 7'
+  AND (url ILIKE '%B0H23V52NQ%' OR af_url ILIKE '%B0H23V52NQ%');
+
+-- Rows to keep out of scoring until the exact CPU model is confirmed.
+UPDATE am_pc_data
+SET is_active = false
+WHERE id = 98
+  AND cpu = 'Core i5'
+  AND (url ILIKE '%B0GZPTS1HQ%' OR af_url ILIKE '%B0GZPTS1HQ%');
+
+UPDATE am_pc_data
+SET is_active = false
+WHERE id = 134
+  AND cpu = 'Core i5'
+  AND (url ILIKE '%B0C2PYPLCR%' OR af_url ILIKE '%B0C2PYPLCR%');
+
+UPDATE am_pc_data
+SET is_active = false
+WHERE id = 136
+  AND cpu = 'Core i7'
+  AND (url ILIKE '%B0GZVT8ZB2%' OR af_url ILIKE '%B0GZVT8ZB2%');
+
+UPDATE am_pc_data
+SET is_active = false
+WHERE id = 138
+  AND cpu = 'Core i5'
+  AND (url ILIKE '%B0G18PFV8V%' OR af_url ILIKE '%B0G18PFV8V%');
+
+UPDATE am_pc_data
+SET is_active = false
+WHERE id = 139
+  AND cpu = 'Core i5'
+  AND (url ILIKE '%B0H3V947MT%' OR af_url ILIKE '%B0H3V947MT%');
 
 COMMIT;

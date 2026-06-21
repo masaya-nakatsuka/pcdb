@@ -20,6 +20,7 @@ import urllib.request
 DEFAULT_BASE_URL = "https://specsy-hub.com"
 
 PAGE_CHECKS = [
+    ("/tablet-list", "タブレット比較"),
     ("/pc-list/mini-pc", "Mini PCランキング"),
     ("/pc-list/desktop", "デスクトップPCランキング"),
     ("/monitor-list", "モニター比較"),
@@ -30,6 +31,7 @@ PAGE_CHECKS = [
 ]
 
 API_CHECKS = [
+    ("tablet", "/api/tablet-list"),
     ("mini_pc", "/api/pc-list?device=mini_pc"),
     ("desktop_pc", "/api/pc-list?device=desktop_pc"),
     ("monitor", "/api/monitor-list"),

@@ -18,6 +18,7 @@ DEFAULT_FILES = [
     Path("scripts/review_mini_pc_products.csv"),
     Path("scripts/review_desktop_pc_products.csv"),
     Path("scripts/review_monitor_products.csv"),
+    Path("scripts/review_tablet_products.csv"),
 ]
 
 REQUIRED_COLUMNS = {
@@ -42,7 +43,7 @@ REQUIRED_COLUMNS = {
     "detail_url",
 }
 
-VALID_PROFILES = {"mini-pc", "desktop-pc", "monitor"}
+VALID_PROFILES = {"mini-pc", "desktop-pc", "monitor", "tablet"}
 ASIN_RE = re.compile(r"^[A-Z0-9]{10}$")
 
 PC_SUSPICIOUS_WORDS = [
@@ -74,6 +75,34 @@ MONITOR_SUSPICIOUS_WORDS = [
     "デスクトップpc",
     "ミニpc",
     "mini pc",
+]
+
+TABLET_SUSPICIOUS_WORDS = [
+    "ケース",
+    "カバー",
+    "保護フィルム",
+    "フィルム",
+    "キーボード",
+    "タッチペン",
+    "スタイラス",
+    "スタンド",
+    "ケーブル",
+    "充電器",
+    "アダプタ",
+    "中古",
+    "整備済",
+    "整備済み",
+    "再生品",
+    "refurbished",
+    "renewed",
+    "used",
+    "windows",
+    "タブレットpc",
+    "2in1",
+    "2-in-1",
+    "surface",
+    "fire hd",
+    "セット買い",
 ]
 
 
@@ -140,6 +169,25 @@ def validate_row(row: dict[str, str], row_number: int) -> list[str]:
         if size is not None and not 18 <= size <= 57:
             errors.append(f"{row_label}: size_inch out of expected range: {size:g}")
 
+    if profile == "tablet":
+        for word in TABLET_SUSPICIOUS_WORDS:
+            if word in title_lower:
+                errors.append(f"{row_label}: suspicious tablet title word `{word}`")
+                break
+        if row.get("os_family") not in {"android", "ipad"}:
+            errors.append(f"{row_label}: os_family must be android or ipad")
+        if not row.get("soc"):
+            errors.append(f"{row_label}: missing soc")
+        soc_score = parse_number(row.get("soc_score", ""), "soc_score", row_label, errors)
+        if soc_score is not None and not 0 <= soc_score <= 35:
+            errors.append(f"{row_label}: soc_score out of expected range: {soc_score:g}")
+        rom = parse_number(row.get("rom_gb", ""), "rom_gb", row_label, errors)
+        if rom is not None and not 32 <= rom <= 2048:
+            errors.append(f"{row_label}: rom_gb out of expected range: {rom:g}")
+        size = parse_number(row.get("display_size_inch", ""), "display_size_inch", row_label, errors)
+        if size is not None and not 7 <= size <= 15:
+            errors.append(f"{row_label}: display_size_inch out of expected range: {size:g}")
+
     return errors
 
 
@@ -154,6 +202,13 @@ def quality_warnings(row: dict[str, str], row_number: int) -> list[str]:
                 warnings.append(f"{row_label}: monitor is missing comparison field {field}")
         if normalized(row.get("has_usb_c", "")) == "true" and not row.get("usb_c_power_delivery_w"):
             warnings.append(f"{row_label}: monitor has USB-C but missing usb_c_power_delivery_w")
+
+    if profile == "tablet":
+        for field in ("os_version", "ram_gb"):
+            if not row.get(field):
+                warnings.append(f"{row_label}: tablet is missing comparison field {field}")
+        if not row.get("battery_life_hours") and not row.get("battery_capacity_mah"):
+            warnings.append(f"{row_label}: tablet is missing battery comparison fields")
 
     return warnings
 

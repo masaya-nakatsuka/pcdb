@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation'
 const navItems = [
   { href: '/pc-list/cafe', label: 'ノートPC（新品）' },
   { href: '/pc-list/used', label: 'ノートPC（中古）' },
+  { href: '/tablet-list', label: 'タブレット' },
   { href: '/pc-list/desktop', label: 'デスクトップ' },
   { href: '/pc-list/mini-pc', label: 'ミニPC' },
   { href: '/monitor-list', label: 'モニター' },
@@ -29,6 +30,10 @@ export default function PcListHeader() {
 
     if (href === '/monitor-list') {
       return pathname === '/monitor-list' || pathname.startsWith('/monitor-list/')
+    }
+
+    if (href === '/tablet-list') {
+      return pathname === '/tablet-list' || pathname.startsWith('/tablet-list/')
     }
 
     return pathname === href

@@ -12,8 +12,8 @@ export interface ArticleMetadata {
 export const blogArticles: ArticleMetadata[] = [
   {
     id: 33,
-    title: 'Amazon PCはいくら出せばいい？2026｜PC-DB価格分布メモ',
-    description: 'SpecsyのPC-DBにあるAmazon PCの価格分布を集計し、5万円以下・6万円以下・7万円以下・10万円以上の割合から予算感をメモする記事。',
+    title: 'AmazonコスパPCの予算目安 2026｜いくら出せばいいかPC-DB比較',
+    description: 'Amazonでコスパの良いPCを選ぶために、SpecsyのPC-DBで5万円以下・6万円以下・7万円以下・10万円以上の価格分布と実用構成を比較する記事。',
     date: '2026-06-18',
   },
   {
@@ -48,8 +48,8 @@ export const blogArticles: ArticleMetadata[] = [
   },
   {
     id: 36,
-    title: 'CPU型番で選ぶAmazon PC 2026｜Core i5/Ryzen 5の世代差をPC-DB比較',
-    description: 'Core i5やRyzen 5の名前だけで判断せず、詳細CPU型番・価格・メモリ・SSDをSpecsyのPC-DBで比較する記事。',
+    title: 'PassMarkスコア目安で選ぶAmazon PC 2026｜CPU型番をPC-DB比較',
+    description: 'PassMarkスコアの目安を、Core i5/Ryzen 5などのCPU型番、価格、メモリ、SSDと合わせてSpecsyのPC-DBで比較する記事。',
     date: '2026-06-17',
   },
   {
@@ -180,8 +180,8 @@ export const blogArticles: ArticleMetadata[] = [
   },
   {
     id: 28,
-    title: '軽量モバイルノートおすすめ 2026｜PC-DBで持ち運びやすさを比較',
-    description: '軽量モバイルノートを重量、CPU型番、メモリ、SSD、推定駆動時間、価格からPC-DBで比較。',
+    title: '小型・軽量モバイルノートおすすめ 2026｜ミニノートをPC-DB比較',
+    description: '小型ノートPCや軽量モバイルノートを、重量、画面サイズ、CPU型番、メモリ、SSD、推定駆動時間、価格からPC-DBで比較。',
     date: '2026-06-17',
   },
   {

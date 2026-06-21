@@ -8,7 +8,7 @@ import { getPcListUsagePath } from '../../app/pc-list/usageConfig'
 import { sortPcs } from '../utils/pcSort'
 import PcCard from './PcCard'
 
-export default function PcList({ pcs: initialPcs, defaultCpu, defaultMaxDisplaySize, initialUsage = 'cafe', listing = 'new', device = 'all', urlBasedUsage = false }: PcListProps) {
+export default function PcList({ pcs: initialPcs, defaultCpu, defaultMaxDisplaySize, initialUsage = 'cafe', listing = 'new', device = 'notebook_pc', urlBasedUsage = false }: PcListProps) {
   const router = useRouter()
   const [selectedUsage, setSelectedUsage] = useState<ClientUsageCategory>(initialUsage)
   const [pcs, setPcs] = useState<ClientPcWithCpuSpec[]>(initialPcs)

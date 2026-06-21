@@ -2,7 +2,7 @@
  * Upstash Redis REST API クライアント
  */
 
-interface UpstashRedisResponse<T = any> {
+interface UpstashRedisResponse<T = unknown> {
   result: T
   error?: string
 }
@@ -20,7 +20,7 @@ class UpstashRedisClient {
     }
   }
 
-  private async request<T = any>(command: string[]): Promise<T> {
+  private async request<T = unknown>(command: string[]): Promise<T> {
     try {
       const response = await fetch(`${this.restUrl}/${command.join('/')}`, {
         method: 'POST',
@@ -85,7 +85,7 @@ class UpstashRedisClient {
   /**
    * 複数のコマンドを一度に実行（Pipeline）
    */
-  async pipeline(commands: string[][]): Promise<any[]> {
+  async pipeline(commands: string[][]): Promise<unknown[]> {
     try {
       const response = await fetch(`${this.restUrl}/pipeline`, {
         method: 'POST',
@@ -125,7 +125,9 @@ class UpstashRedisClient {
       ['TTL', key]
     ]
 
-    const [count, currentTtl] = await this.pipeline(commands)
+    const [countResult, currentTtlResult] = await this.pipeline(commands)
+    const count = Number(countResult)
+    const currentTtl = Number(currentTtlResult)
 
     // TTLが設定されていない場合（新規キーまたは永続キー）は TTL を設定
     if (currentTtl === -1) {
@@ -137,5 +139,12 @@ class UpstashRedisClient {
   }
 }
 
-// シングルトンインスタンス
-export const upstashRedis = new UpstashRedisClient()
+let upstashRedisClient: UpstashRedisClient | null = null
+
+export function getUpstashRedis(): UpstashRedisClient {
+  if (!upstashRedisClient) {
+    upstashRedisClient = new UpstashRedisClient()
+  }
+
+  return upstashRedisClient
+}
