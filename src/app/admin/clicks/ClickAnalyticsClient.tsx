@@ -21,6 +21,9 @@ interface StoredProductClick {
   link_position?: string
   is_affiliate?: boolean
   destination_url?: string
+  entry_page_url?: string
+  entry_referrer?: string
+  first_seen_at?: string
   utm_source?: string
   utm_medium?: string
   utm_campaign?: string
@@ -102,6 +105,19 @@ function shortText(value: string, maxLength: number): string {
   }
 
   return `${value.slice(0, maxLength)}...`
+}
+
+function compactUrl(value?: string): string {
+  if (!value) {
+    return '-'
+  }
+
+  try {
+    const url = new URL(value)
+    return `${url.pathname}${url.search}`
+  } catch {
+    return value
+  }
 }
 
 function ChartPanel({
@@ -493,10 +509,13 @@ export default function ClickAnalyticsClient() {
                       <td>
                         <div>{click.source_page || '-'}</div>
                         <div className="subText">{click.usage || click.device || click.listing || '-'}</div>
+                        <div className="subText">入口: {shortText(compactUrl(click.entry_page_url), 52)}</div>
                       </td>
                       <td>
                         <div>{click.utm_campaign || '-'}</div>
                         <div className="subText">{shortText(`${click.utm_source || ''} ${click.utm_medium || ''}`.trim() || '-', 40)}</div>
+                        <div className="subText">参照: {shortText(compactUrl(click.entry_referrer), 44)}</div>
+                        <div className="subText">初回: {formatTime(click.first_seen_at)}</div>
                       </td>
                       <td>
                         <div>{click.outbound_domain || '-'}</div>
