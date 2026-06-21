@@ -51,6 +51,17 @@ interface ClickAnalyticsSnapshot {
   day_series: Array<{ day: string; count: number }>
 }
 
+interface CampaignClickStats {
+  key: string
+  source: string
+  medium: string
+  campaign: string
+  count: number
+  affiliate_count: number
+  latest_click_at: string
+  top_source_page: string
+}
+
 type DeleteAction =
   | { action: 'delete_all' }
   | { action: 'delete_click'; click_id: string }
@@ -118,6 +129,53 @@ function compactUrl(value?: string): string {
   } catch {
     return value
   }
+}
+
+function campaignKey(click: StoredProductClick): string {
+  return [
+    click.utm_source || 'direct',
+    click.utm_medium || 'none',
+    click.utm_campaign || 'no_campaign',
+  ].join(' / ')
+}
+
+function buildCampaignStats(clicks: StoredProductClick[]): CampaignClickStats[] {
+  const stats = new Map<string, CampaignClickStats>()
+  const pageCounts = new Map<string, Map<string, number>>()
+
+  for (const click of clicks) {
+    const key = campaignKey(click)
+    const current = stats.get(key) ?? {
+      key,
+      source: click.utm_source || 'direct',
+      medium: click.utm_medium || 'none',
+      campaign: click.utm_campaign || 'no_campaign',
+      count: 0,
+      affiliate_count: 0,
+      latest_click_at: '',
+      top_source_page: '',
+    }
+
+    current.count += 1
+    current.affiliate_count += click.is_affiliate ? 1 : 0
+    if (!current.latest_click_at || click.clicked_at > current.latest_click_at) {
+      current.latest_click_at = click.clicked_at
+    }
+
+    const pageKey = click.source_page || '-'
+    const groupPageCounts = pageCounts.get(key) ?? new Map<string, number>()
+    groupPageCounts.set(pageKey, (groupPageCounts.get(pageKey) ?? 0) + 1)
+    pageCounts.set(key, groupPageCounts)
+    stats.set(key, current)
+  }
+
+  for (const item of Array.from(stats.values())) {
+    const groupPageCounts = pageCounts.get(item.key)
+    item.top_source_page = Array.from(groupPageCounts?.entries() ?? [])
+      .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0]?.[0] ?? '-'
+  }
+
+  return Array.from(stats.values()).sort((a, b) => b.count - a.count || a.key.localeCompare(b.key))
 }
 
 function ChartPanel({
@@ -357,6 +415,10 @@ export default function ClickAnalyticsClient() {
     label: item.day,
     count: item.count,
   })) ?? []
+  const campaignStats = useMemo(
+    () => buildCampaignStats(snapshot?.recent_clicks ?? []),
+    [snapshot?.recent_clicks]
+  )
 
   return (
     <main className="clickAnalyticsPage">
@@ -434,6 +496,47 @@ export default function ClickAnalyticsClient() {
           </div>
 
           <ProductRankBars products={snapshot.product_stats} />
+
+          <section className="analyticsPanel">
+            <div className="panelHeader">
+              <div>
+                <h2>流入別クリック</h2>
+                <p className="panelCaption">最近250件のUTM別商品クリック。入口改善の優先順位を見るための集計です。</p>
+              </div>
+              <span>{campaignStats.length.toLocaleString('ja-JP')}流入</span>
+            </div>
+            <div className="tableWrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>クリック</th>
+                    <th>流入</th>
+                    <th>主なクリックページ</th>
+                    <th>Affiliate</th>
+                    <th>最終クリック</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {campaignStats.length > 0 ? campaignStats.map((campaign) => (
+                    <tr key={campaign.key}>
+                      <td className="numberCell">{campaign.count.toLocaleString('ja-JP')}</td>
+                      <td>
+                        <div className="productName">{campaign.campaign}</div>
+                        <div className="subText">{campaign.source} / {campaign.medium}</div>
+                      </td>
+                      <td>{campaign.top_source_page}</td>
+                      <td>{campaign.affiliate_count.toLocaleString('ja-JP')}</td>
+                      <td>{formatTime(campaign.latest_click_at)}</td>
+                    </tr>
+                  )) : (
+                    <tr>
+                      <td colSpan={5} className="emptyCell">まだ流入別クリックはありません。</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </section>
 
           <section className="analyticsPanel">
             <div className="panelHeader">
