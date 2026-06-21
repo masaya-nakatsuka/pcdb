@@ -191,6 +191,8 @@ function ChartPanel({
 }) {
   const max = Math.max(1, ...series.map((item) => item.count))
   const total = series.reduce((sum, item) => sum + item.count, 0)
+  const hasData = total > 0
+  const yMax = Math.max(4, Math.ceil(max * 1.25))
   const chartWidth = 640
   const chartHeight = 190
   const paddingX = 18
@@ -200,10 +202,12 @@ function ChartPanel({
   const usableHeight = chartHeight - paddingY * 2
   const points = series.map((item, index) => {
     const x = paddingX + (usableWidth * index) / Math.max(1, series.length - 1)
-    const y = baseline - (item.count / max) * usableHeight
+    const y = baseline - (item.count / yMax) * usableHeight
     return { ...item, x, y }
   })
-  const linePath = points.map((point, index) => `${index === 0 ? 'M' : 'L'} ${point.x} ${point.y}`).join(' ')
+  const linePath = hasData
+    ? points.map((point, index) => `${index === 0 ? 'M' : 'L'} ${point.x} ${point.y}`).join(' ')
+    : ''
   const gridLines = [0.25, 0.5, 0.75].map((ratio) => paddingY + usableHeight * ratio)
 
   return (
@@ -230,14 +234,19 @@ function ChartPanel({
           <line x1={paddingX} y1={baseline} x2={chartWidth - paddingX} y2={baseline} className="chartAxis" />
           <line x1={paddingX} y1={paddingY} x2={paddingX} y2={baseline} className="chartAxis" />
           {linePath ? <path d={linePath} className="chartLine" /> : null}
-          {points.map((point) => (
-            point.count > 0 ? (
+          {points.map((point) => {
+            if (point.count === 0) {
+              return null
+            }
+
+            return (
               <circle key={point.label} cx={point.x} cy={point.y} r="4" className="chartPoint">
                 <title>{`${formatLabel(point.label)}: ${point.count}クリック`}</title>
               </circle>
-            ) : null
-          ))}
+            )
+          })}
         </svg>
+        {!hasData ? <div className="chartEmptyText">まだクリックがありません</div> : null}
       </div>
       <div className="axisLabels">
         <span>{series[0]?.label ? formatLabel(series[0].label) : '-'}</span>
@@ -787,6 +796,7 @@ export default function ClickAnalyticsClient() {
         }
 
         .lineChartWrap {
+          position: relative;
           height: 210px;
           border: 1px solid #edf0f5;
           border-radius: 8px;
@@ -803,11 +813,13 @@ export default function ClickAnalyticsClient() {
         .chartAxis {
           stroke: #d9dee8;
           stroke-width: 1;
+          vector-effect: non-scaling-stroke;
         }
 
         .chartGridLine {
           stroke: #edf0f5;
           stroke-width: 1;
+          vector-effect: non-scaling-stroke;
         }
 
         .chartLine {
@@ -816,12 +828,25 @@ export default function ClickAnalyticsClient() {
           stroke-width: 3;
           stroke-linecap: round;
           stroke-linejoin: round;
+          vector-effect: non-scaling-stroke;
         }
 
         .chartPoint {
           fill: #2f6fed;
           stroke: #ffffff;
           stroke-width: 2;
+          vector-effect: non-scaling-stroke;
+        }
+
+        .chartEmptyText {
+          position: absolute;
+          inset: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #607089;
+          font-size: 13px;
+          pointer-events: none;
         }
 
         .axisLabels {
