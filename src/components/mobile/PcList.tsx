@@ -164,17 +164,18 @@ export default function PcList({ pcs: initialPcs, defaultCpu, defaultMaxDisplayS
 
   return (
     <>
-      <h1 style={{ paddingLeft: '16px', fontSize: '24px', color: '#333', margin: '16px 0' }}>Amazon販売 PC 一覧スコア比較</h1>
+      <h1 className="pc-mobile-list__title" style={{ paddingLeft: '16px', fontSize: '24px', color: '#333', margin: '16px 0' }}>Amazon販売 PC 一覧スコア比較</h1>
       
       {/* 用途選択ボタン */}
-      <div style={{ padding: '0 16px 16px 16px' }}>
-        <h2 style={{ fontSize: '16px', color: '#333', marginBottom: '12px', textAlign: 'center' }}>用途を選択</h2>
-        <div style={{ 
-          display: 'flex', 
-          flexDirection: 'column', 
+      <div className="pc-mobile-list__usage" style={{ padding: '0 16px 16px 16px' }}>
+        <h2 className="pc-mobile-list__section-title" style={{ fontSize: '16px', color: '#333', marginBottom: '12px', textAlign: 'center' }}>用途を選択</h2>
+        <div className="pc-mobile-list__usage-grid" style={{
+          display: 'flex',
+          flexDirection: 'column',
           gap: '12px',
         }}>
           <button 
+            className="pc-mobile-list__usage-button"
             onClick={() => handleUsageChange('mobile')}
             disabled={loading}
             style={{
@@ -222,6 +223,7 @@ export default function PcList({ pcs: initialPcs, defaultCpu, defaultMaxDisplayS
           </button>
           
           <button 
+            className="pc-mobile-list__usage-button"
             onClick={() => handleUsageChange('cafe')}
             disabled={loading}
             style={{
@@ -269,6 +271,7 @@ export default function PcList({ pcs: initialPcs, defaultCpu, defaultMaxDisplayS
           </button>
           
           <button 
+            className="pc-mobile-list__usage-button"
             onClick={() => handleUsageChange('home')}
             disabled={loading}
             style={{
@@ -316,6 +319,7 @@ export default function PcList({ pcs: initialPcs, defaultCpu, defaultMaxDisplayS
           </button>
 
           <button
+            className="pc-mobile-list__usage-button"
             onClick={() => handleUsageChange('cost_performance')}
             disabled={loading}
             style={{
@@ -363,6 +367,7 @@ export default function PcList({ pcs: initialPcs, defaultCpu, defaultMaxDisplayS
           </button>
 
           <button
+            className="pc-mobile-list__usage-button"
             onClick={() => handleUsageChange('gaming')}
             disabled={loading}
             style={{
@@ -410,6 +415,7 @@ export default function PcList({ pcs: initialPcs, defaultCpu, defaultMaxDisplayS
           </button>
 
           <button
+            className="pc-mobile-list__usage-button"
             onClick={() => handleUsageChange('video_editing')}
             disabled={loading}
             style={{
@@ -459,8 +465,9 @@ export default function PcList({ pcs: initialPcs, defaultCpu, defaultMaxDisplayS
     </div>
 
       {/* フィルター */}
-      <div style={{ padding: '0 16px 12px 16px' }}>
+      <div className="pc-mobile-list__filters" style={{ padding: '0 16px 12px 16px' }}>
         <div
+          className="pc-mobile-list__filter-grid"
           style={{
             display: 'flex',
             flexWrap: 'wrap',
@@ -469,6 +476,7 @@ export default function PcList({ pcs: initialPcs, defaultCpu, defaultMaxDisplayS
           }}
         >
           <div
+            className="pc-mobile-list__filter-control"
             style={{
               flex: '1 1 160px',
               maxWidth: '240px',
@@ -477,10 +485,11 @@ export default function PcList({ pcs: initialPcs, defaultCpu, defaultMaxDisplayS
               gap: '6px'
             }}
           >
-            <label htmlFor="cpuFilter" style={{ fontSize: '14px', color: '#333' }}>
+            <label className="pc-mobile-list__label" htmlFor="cpuFilter" style={{ fontSize: '14px', color: '#333' }}>
               CPUで絞り込み
             </label>
             <select
+              className="pc-mobile-list__select"
               id="cpuFilter"
               value={selectedCpu}
               onChange={(event) => handleCpuFilterChange(event.target.value)}
@@ -504,6 +513,7 @@ export default function PcList({ pcs: initialPcs, defaultCpu, defaultMaxDisplayS
           </div>
 
           <div
+            className="pc-mobile-list__filter-control"
             style={{
               flex: '1 1 140px',
               maxWidth: '200px',
@@ -512,10 +522,11 @@ export default function PcList({ pcs: initialPcs, defaultCpu, defaultMaxDisplayS
               gap: '6px'
             }}
           >
-            <label htmlFor="displaySizeFilter" style={{ fontSize: '14px', color: '#333' }}>
+            <label className="pc-mobile-list__label" htmlFor="displaySizeFilter" style={{ fontSize: '14px', color: '#333' }}>
               画面サイズで絞り込み
             </label>
             <select
+              className="pc-mobile-list__select"
               id="displaySizeFilter"
               value={selectedDisplaySize}
               onChange={(event) => handleDisplaySizeChange(event.target.value)}
@@ -546,9 +557,9 @@ export default function PcList({ pcs: initialPcs, defaultCpu, defaultMaxDisplayS
       </div>
 
       {/* ソート機能 */}
-      <div style={{ padding: '0 16px 16px 16px' }}>
-        <h3 style={{ fontSize: '16px', color: '#333', marginBottom: '12px', textAlign: 'center' }}>並び替え</h3>
-        <div style={{
+      <div className="pc-mobile-list__sort" style={{ padding: '0 16px 16px 16px' }}>
+        <h3 className="pc-mobile-list__section-title" style={{ fontSize: '16px', color: '#333', marginBottom: '12px', textAlign: 'center' }}>並び替え</h3>
+        <div className="pc-mobile-list__sort-grid" style={{
           display: 'flex',
           flexWrap: 'wrap',
           gap: '8px',
@@ -571,6 +582,7 @@ export default function PcList({ pcs: initialPcs, defaultCpu, defaultMaxDisplayS
             return (
               <button
                 key={field}
+                className="pc-mobile-list__sort-button"
                 onClick={() => handleSortChange(field)}
                 style={{
                   padding: '8px 12px',
@@ -614,6 +626,92 @@ export default function PcList({ pcs: initialPcs, defaultCpu, defaultMaxDisplayS
           <PcCard key={pc.id} pc={pc} />
         ))}
       </div>
+
+      <style jsx>{`
+        @media (max-width: 767px) {
+          .pc-mobile-list__title {
+            padding-left: 12px !important;
+            padding-right: 12px !important;
+            margin: 10px 0 12px !important;
+            font-size: 18px !important;
+            line-height: 1.3 !important;
+          }
+
+          .pc-mobile-list__usage,
+          .pc-mobile-list__filters,
+          .pc-mobile-list__sort {
+            padding-left: 12px !important;
+            padding-right: 12px !important;
+          }
+
+          .pc-mobile-list__usage {
+            padding-bottom: 10px !important;
+          }
+
+          .pc-mobile-list__filters {
+            padding-bottom: 8px !important;
+          }
+
+          .pc-mobile-list__sort {
+            padding-bottom: 10px !important;
+          }
+
+          .pc-mobile-list__section-title {
+            margin-bottom: 8px !important;
+            font-size: 13px !important;
+            line-height: 1.2 !important;
+          }
+
+          .pc-mobile-list__usage-grid {
+            display: grid !important;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px !important;
+          }
+
+          .pc-mobile-list__usage-button {
+            min-height: 38px;
+            padding: 8px 8px !important;
+            border-radius: 12px !important;
+            font-size: 12px !important;
+            line-height: 1.25 !important;
+            box-shadow: none !important;
+          }
+
+          .pc-mobile-list__filter-grid {
+            gap: 8px !important;
+          }
+
+          .pc-mobile-list__filter-control {
+            flex-basis: calc(50% - 4px) !important;
+            max-width: none !important;
+            gap: 4px !important;
+          }
+
+          .pc-mobile-list__label {
+            font-size: 11px !important;
+            line-height: 1.2 !important;
+          }
+
+          .pc-mobile-list__select {
+            padding: 7px 8px !important;
+            border-radius: 8px !important;
+            font-size: 12px !important;
+          }
+
+          .pc-mobile-list__sort-grid {
+            gap: 6px !important;
+            justify-content: flex-start !important;
+          }
+
+          .pc-mobile-list__sort-button {
+            padding: 6px 8px !important;
+            border-radius: 9px !important;
+            font-size: 11px !important;
+            line-height: 1.2 !important;
+            gap: 2px !important;
+          }
+        }
+      `}</style>
     </>
   )
 }

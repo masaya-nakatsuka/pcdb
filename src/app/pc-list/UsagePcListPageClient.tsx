@@ -116,6 +116,7 @@ export default function UsagePcListPageClient({
 
       <main id="pc-list-results">
         <section
+          className="pc-list-page-intro"
           style={{
             maxWidth: '960px',
             margin: '0 auto',
@@ -123,7 +124,7 @@ export default function UsagePcListPageClient({
             textAlign: 'center'
           }}
         >
-          <h1 style={{
+          <h1 className="pc-list-page-intro__title" style={{
             margin: '0 0 8px 0',
             fontSize: '28px',
             color: '#0f172a',
@@ -131,7 +132,7 @@ export default function UsagePcListPageClient({
           }}>
             {heading}
           </h1>
-          <p style={{
+          <p className="pc-list-page-intro__description" style={{
             margin: 0,
             color: '#475569',
             fontSize: '14px',

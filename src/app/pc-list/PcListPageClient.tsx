@@ -50,13 +50,13 @@ export default function PcListPage() {
     >
         <PcListHeader />
         <main id="pc-list-results">
-          <section style={{
+          <section className="pc-list-page-intro" style={{
             maxWidth: '960px',
             margin: '0 auto',
             padding: '28px 16px 4px',
             textAlign: 'center',
           }}>
-            <h1 style={{
+            <h1 className="pc-list-page-intro__title" style={{
               margin: '0 0 8px',
               color: '#0f172a',
               fontSize: '28px',
@@ -64,7 +64,7 @@ export default function PcListPage() {
             }}>
               Amazon PC一覧スコア比較
             </h1>
-            <p style={{
+            <p className="pc-list-page-intro__description" style={{
               maxWidth: '820px',
               margin: '0 auto',
               color: '#475569',
