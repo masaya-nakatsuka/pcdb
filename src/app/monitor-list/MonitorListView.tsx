@@ -102,7 +102,7 @@ function TopRankedMonitorPodium({
     : rankedItems
 
   return (
-    <section style={{ marginBottom: '24px' }}>
+    <section className="monitor-list__podium" style={{ marginBottom: '24px' }}>
       <h3 style={{
         margin: '0 0 14px',
         color: '#111827',
@@ -309,6 +309,96 @@ function TopRankedMonitorPodium({
   )
 }
 
+function MonitorMobileCards({
+  monitors,
+  usage,
+}: {
+  monitors: MonitorRecommendation[]
+  usage: MonitorUsage
+}) {
+  if (monitors.length === 0) {
+    return (
+      <div className="monitor-list__mobile-empty">
+        モニターDB接続後、ここに商品一覧を表示します。
+      </div>
+    )
+  }
+
+  return (
+    <div className="monitor-list__mobile-cards" aria-label="モニター一覧">
+      {monitors.map(({ monitor, score }, index) => {
+        const productUrl = monitor.af_url || monitor.url
+
+        return (
+          <article key={monitor.id} className="specsy-mobile-product-card">
+            <h3 className="specsy-mobile-product-card__title">
+              {monitor.brand ?? 'Unknown'} / {monitor.name ?? 'Unnamed Monitor'}
+            </h3>
+
+            <div className="specsy-mobile-product-card__body">
+              <div className="specsy-mobile-product-card__image-wrap">
+                {monitor.img_url ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={monitor.img_url}
+                    alt={monitor.name ?? 'モニター画像'}
+                    className="specsy-mobile-product-card__image"
+                  />
+                ) : (
+                  <div className="specsy-mobile-product-card__no-image">No Image</div>
+                )}
+              </div>
+
+              <div className="specsy-mobile-product-card__info">
+                <div className="specsy-mobile-product-card__specs">
+                  <div>🔴 サイズ：{formatSize(monitor.size_inch)}</div>
+                  <div>🔴 解像度：{monitor.resolution ?? '-'}</div>
+                  <div>🔴 Hz：{formatRefreshRate(monitor.refresh_rate_hz)}</div>
+                  <div>🔴 パネル：{monitor.panel_type ?? '-'}</div>
+                  <div>USB-C：{formatUsbC(monitor.has_usb_c, monitor.usb_c_power_delivery_w)}</div>
+                </div>
+
+                <div className="specsy-mobile-product-card__price">
+                  {formatPrice(monitor.real_price ?? monitor.price)}
+                </div>
+                <div className="specsy-mobile-product-card__score">
+                  <strong>おすすめ:</strong> {score}点
+                </div>
+                {monitor.fetched_at && (
+                  <div className="specsy-mobile-product-card__date">
+                    データ取得: {monitor.fetched_at}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {productUrl && (
+              <div className="specsy-mobile-product-card__cta-wrap">
+                <TrackableProductLink
+                  href={productUrl}
+                  productId={monitor.id}
+                  productName={`${monitor.brand ?? ''} / ${monitor.name ?? ''}`}
+                  productType="monitor"
+                  rank={index + 1}
+                  price={monitor.real_price ?? monitor.price}
+                  usage={usage}
+                  device="monitor"
+                  listing="new"
+                  linkPosition="monitor_mobile_card_button"
+                  isAffiliate={Boolean(monitor.af_url)}
+                  className="specsy-mobile-product-card__cta external-link-mark"
+                >
+                  詳細を見る
+                </TrackableProductLink>
+              </div>
+            )}
+          </article>
+        )
+      })}
+    </div>
+  )
+}
+
 interface MonitorListViewProps {
   usage: MonitorUsage
 }
@@ -334,13 +424,13 @@ export default async function MonitorListView({ usage }: MonitorListViewProps) {
       <PcListHeader />
 
       <main id="monitor-list-results">
-        <section style={{
+        <section className="pc-list-page-intro" style={{
           maxWidth: '960px',
           margin: '0 auto',
           padding: '28px 16px 0',
           textAlign: 'center',
         }}>
-          <h1 style={{
+          <h1 className="pc-list-page-intro__title" style={{
             margin: '0 0 8px',
             fontSize: '28px',
             color: '#0f172a',
@@ -348,7 +438,7 @@ export default async function MonitorListView({ usage }: MonitorListViewProps) {
           }}>
             モニター比較
           </h1>
-          <p style={{
+          <p className="pc-list-page-intro__description" style={{
             margin: 0,
             color: '#475569',
             fontSize: '14px',
@@ -358,14 +448,14 @@ export default async function MonitorListView({ usage }: MonitorListViewProps) {
           </p>
         </section>
 
-        <section style={{
+        <section className="monitor-list__content" style={{
           maxWidth: '1200px',
           margin: '28px auto 0',
           padding: '0 16px',
         }}>
           <TopRankedMonitorPodium monitors={rankedMonitors} usage={usage} />
 
-          <section style={{
+          <section className="monitor-list__conditions" style={{
             marginBottom: '28px',
             padding: '18px',
             border: '1px solid #dbe4ef',
@@ -374,15 +464,15 @@ export default async function MonitorListView({ usage }: MonitorListViewProps) {
             boxShadow: '0 1px 3px rgba(15, 23, 42, 0.06)',
           }}>
             <div style={{ marginBottom: '18px', textAlign: 'center' }}>
-              <h2 style={{ fontSize: '18px', color: '#0f172a', margin: 0, fontWeight: 800 }}>
+              <h2 className="monitor-list__conditions-title" style={{ fontSize: '18px', color: '#0f172a', margin: 0, fontWeight: 800 }}>
                 ランキング条件
               </h2>
             </div>
             <div>
-              <h3 style={{ fontSize: '14px', color: '#334155', margin: '0 0 12px', textAlign: 'left' }}>
+              <h3 className="monitor-list__usage-title" style={{ fontSize: '14px', color: '#334155', margin: '0 0 12px', textAlign: 'left' }}>
                 用途を選択
               </h3>
-              <nav aria-label="モニター用途" style={{
+              <nav className="monitor-list__usage-grid" aria-label="モニター用途" style={{
                 display: 'flex',
                 gap: '12px',
                 justifyContent: 'flex-start',
@@ -395,6 +485,7 @@ export default async function MonitorListView({ usage }: MonitorListViewProps) {
                     <Link
                       key={option.value}
                       href={getMonitorUsagePath(option.value)}
+                      className="monitor-list__usage-link"
                       style={{
                         display: 'inline-flex',
                         alignItems: 'center',
@@ -422,7 +513,9 @@ export default async function MonitorListView({ usage }: MonitorListViewProps) {
             </div>
           </section>
 
-          <div style={{
+          <MonitorMobileCards monitors={rankedMonitors} usage={usage} />
+
+          <div className="monitor-list__table-wrap" style={{
             overflowX: 'auto',
             border: '1px solid #e2e8f0',
             borderRadius: '8px',

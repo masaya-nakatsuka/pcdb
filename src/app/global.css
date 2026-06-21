@@ -41,4 +41,174 @@
     font-size: 13px !important;
     line-height: 1.7 !important;
   }
+
+  .monitor-list__content {
+    padding: 18px 12px 0 !important;
+    margin-top: 18px !important;
+  }
+
+  .monitor-list__podium,
+  .monitor-list__table-wrap {
+    display: none !important;
+  }
+
+  .monitor-list__conditions {
+    margin-bottom: 12px !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  .monitor-list__conditions-title {
+    margin-bottom: 8px !important;
+    font-size: 13px !important;
+    line-height: 1.2 !important;
+  }
+
+  .monitor-list__usage-title {
+    margin-bottom: 8px !important;
+    font-size: 13px !important;
+    line-height: 1.2 !important;
+    text-align: center !important;
+  }
+
+  .monitor-list__usage-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px !important;
+  }
+
+  .monitor-list__usage-link {
+    min-height: 38px !important;
+    padding: 8px !important;
+    border-radius: 12px !important;
+    font-size: 12px !important;
+    line-height: 1.25 !important;
+    box-shadow: none !important;
+  }
+
+  .monitor-list__mobile-cards {
+    display: block !important;
+  }
+
+  .monitor-list__mobile-empty {
+    display: block !important;
+    padding: 28px 16px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    color: #64748b;
+    text-align: center;
+    font-size: 13px;
+    line-height: 1.7;
+  }
+
+  .specsy-mobile-product-card {
+    margin-bottom: 10px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 7px;
+    background: #ffffff;
+  }
+
+  .specsy-mobile-product-card__title {
+    margin: 0 0 8px;
+    color: #1f2937;
+    font-size: 13px;
+    font-weight: 800;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+  }
+
+  .specsy-mobile-product-card__body {
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 10px;
+  }
+
+  .specsy-mobile-product-card__image-wrap {
+    flex: 0 0 auto;
+    width: 92px;
+  }
+
+  .specsy-mobile-product-card__image {
+    width: 92px;
+    max-height: 92px;
+    object-fit: contain;
+    border-radius: 4px;
+  }
+
+  .specsy-mobile-product-card__no-image {
+    width: 92px;
+    height: 62px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    background: #f0f0f0;
+    color: #666;
+    font-size: 10px;
+  }
+
+  .specsy-mobile-product-card__info {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .specsy-mobile-product-card__specs {
+    color: #1f2937;
+    font-size: 12px;
+    line-height: 1.38;
+    overflow-wrap: anywhere;
+  }
+
+  .specsy-mobile-product-card__price {
+    margin-top: 8px;
+    color: #d32f2f;
+    font-size: 15px;
+    font-weight: 800;
+    line-height: 1.25;
+  }
+
+  .specsy-mobile-product-card__score {
+    margin-top: 5px;
+    color: #1f2937;
+    font-size: 12px;
+    font-weight: 800;
+    line-height: 1.35;
+  }
+
+  .specsy-mobile-product-card__date {
+    margin-top: 2px;
+    color: #666;
+    font-size: 9px;
+    line-height: 1.3;
+  }
+
+  .specsy-mobile-product-card__cta-wrap {
+    margin-top: 10px;
+    text-align: center;
+  }
+
+  .specsy-mobile-product-card__cta {
+    box-sizing: border-box;
+    width: 100%;
+    display: inline-block;
+    margin: 0;
+    padding: 9px 16px;
+    border-radius: 12px;
+    background: #ee5a24;
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 800;
+    line-height: 1.2;
+    text-align: center;
+    text-decoration: none;
+  }
+}
+
+.monitor-list__mobile-cards,
+.monitor-list__mobile-empty {
+  display: none;
 }

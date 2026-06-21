@@ -338,6 +338,90 @@ function TabletTable({ rankedTablets }: { rankedTablets: TabletRecommendation[] 
   )
 }
 
+function TabletMobileCards({ rankedTablets }: { rankedTablets: TabletRecommendation[] }) {
+  if (rankedTablets.length === 0) {
+    return (
+      <div className="tablet-list__mobile-empty">
+        タブレットDB接続後、ここにAndroidタブレットとiPadの商品一覧を表示します。
+      </div>
+    )
+  }
+
+  return (
+    <div className="tablet-list__mobile-cards" aria-label="タブレット一覧">
+      {rankedTablets.map(({ tablet, score }, index) => {
+        const productUrl = tablet.af_url || tablet.url
+
+        return (
+          <article key={tablet.id} className="specsy-mobile-product-card">
+            <h3 className="specsy-mobile-product-card__title">
+              {tablet.brand ?? '-'} / {tablet.name ?? '名称不明'}
+            </h3>
+
+            <div className="specsy-mobile-product-card__body">
+              <div className="specsy-mobile-product-card__image-wrap">
+                {tablet.img_url ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={tablet.img_url}
+                    alt={tablet.name ?? 'タブレット画像'}
+                    className="specsy-mobile-product-card__image"
+                  />
+                ) : (
+                  <div className="specsy-mobile-product-card__no-image">No Image</div>
+                )}
+              </div>
+
+              <div className="specsy-mobile-product-card__info">
+                <div className="specsy-mobile-product-card__specs">
+                  <div>🔴 OS：{formatOs(tablet)}</div>
+                  <div>🔴 SoC：{tablet.soc ?? '-'}</div>
+                  <div>🔴 メモリ：{formatNumber(tablet.ram_gb, 'GB')}</div>
+                  <div>🔴 ストレージ：{formatNumber(tablet.rom_gb, 'GB')}</div>
+                  <div>画面：{formatDisplay(tablet)}</div>
+                  <div>駆動時間：{formatBattery(tablet)}</div>
+                </div>
+
+                <div className="specsy-mobile-product-card__price">
+                  {formatPrice(tablet.real_price ?? tablet.price)}
+                </div>
+                <div className="specsy-mobile-product-card__score">
+                  <strong>おすすめ:</strong> {score}点
+                </div>
+                {tablet.fetched_at && (
+                  <div className="specsy-mobile-product-card__date">
+                    データ取得: {tablet.fetched_at}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {productUrl && (
+              <div className="specsy-mobile-product-card__cta-wrap">
+                <TrackableProductLink
+                  href={productUrl}
+                  productId={tablet.id}
+                  productName={`${tablet.brand ?? ''} / ${tablet.name ?? ''}`}
+                  productType="tablet"
+                  rank={index + 1}
+                  price={tablet.real_price ?? tablet.price}
+                  device="tablet"
+                  listing="new"
+                  linkPosition="tablet_mobile_card_button"
+                  isAffiliate={Boolean(tablet.af_url)}
+                  className="specsy-mobile-product-card__cta external-link-mark"
+                >
+                  詳細を見る
+                </TrackableProductLink>
+              </div>
+            )}
+          </article>
+        )
+      })}
+    </div>
+  )
+}
+
 export default function TabletListView() {
   const [tablets, setTablets] = useState<Tablet[]>([])
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
@@ -376,8 +460,8 @@ export default function TabletListView() {
       <main>
         <section className="tablet-list__hero">
           <div className="tablet-list__hero-inner">
-            <h1>タブレット比較</h1>
-            <p>
+            <h1 className="pc-list-page-intro__title">タブレット比較</h1>
+            <p className="pc-list-page-intro__description">
               AndroidタブレットとiPadだけを対象に、OS、SoC、RAM、ROM、画面、駆動時間、価格を比較します。
             </p>
           </div>
@@ -397,6 +481,7 @@ export default function TabletListView() {
 
             <div className="tablet-list__content">
               <TopRankedTabletPodium tablets={rankedTablets} />
+              <TabletMobileCards rankedTablets={rankedTablets} />
               <TabletTable rankedTablets={rankedTablets} />
             </div>
           </>
@@ -449,6 +534,11 @@ export default function TabletListView() {
           max-width: 1240px;
           margin: 0 auto;
           padding: 28px 16px 0;
+        }
+
+        .tablet-list__mobile-cards,
+        .tablet-list__mobile-empty {
+          display: none;
         }
 
         .tablet-list__section-title {
@@ -773,9 +863,9 @@ export default function TabletListView() {
           margin-bottom: 0;
         }
 
-        @media (max-width: 720px) {
+        @media (max-width: 767px) {
           .tablet-list__hero-inner {
-            padding: 24px 16px 20px;
+            padding: 20px 16px 0;
           }
 
           .tablet-list__hero h1 {
@@ -783,15 +873,27 @@ export default function TabletListView() {
           }
 
           .tablet-list__content {
-            padding: 24px 12px 0;
+            padding: 18px 12px 0;
           }
 
-          .tablet-list__podium-grid {
-            grid-template-columns: 1fr;
+          .tablet-list__podium,
+          .tablet-list__table-section {
+            display: none;
           }
 
-          .tablet-list__mini-specs {
-            grid-template-columns: 1fr;
+          .tablet-list__mobile-cards {
+            display: block;
+          }
+
+          .tablet-list__mobile-empty {
+            display: block;
+            padding: 28px 16px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            color: #64748b;
+            text-align: center;
+            font-size: 13px;
+            line-height: 1.7;
           }
         }
       `}</style>
