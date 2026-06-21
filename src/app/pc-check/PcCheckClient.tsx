@@ -484,7 +484,7 @@ export default function PcCheckClient() {
           width: 100%;
           height: 100%;
           display: flex;
-          align-items: baseline;
+          align-items: center;
           justify-content: center;
           gap: 2px;
           border-radius: 999px;
@@ -502,6 +502,7 @@ export default function PcCheckClient() {
           color: #475569;
           font-size: 12px;
           font-weight: 800;
+          transform: translateY(5px);
         }
 
         .pc-check-hero__panel h2,
