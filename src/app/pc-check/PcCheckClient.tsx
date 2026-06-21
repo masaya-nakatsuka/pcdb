@@ -10,10 +10,10 @@ type Mobility = 'daily' | 'sometimes' | 'home'
 type PurchasePlace = 'amazon' | 'retail' | 'maker' | 'used'
 
 interface CheckState {
-  usage: Usage
-  budget: Budget
-  mobility: Mobility
-  purchasePlace: PurchasePlace
+  usage: Usage | null
+  budget: Budget | null
+  mobility: Mobility | null
+  purchasePlace: PurchasePlace | null
   office: boolean
   webMeeting: boolean
   gaming: boolean
@@ -29,10 +29,10 @@ interface Choice<T extends string> {
 }
 
 interface Result {
-  score: number
+  score: number | null
   title: string
   summary: string
-  primaryHref: string
+  primaryHref: string | null
   primaryLabel: string
   specLine: string
   buyConditions: string[]
@@ -87,23 +87,59 @@ const featureChoices: Array<{
 ]
 
 const initialState: CheckState = {
-  usage: 'office',
-  budget: 'standard',
-  mobility: 'sometimes',
-  purchasePlace: 'amazon',
-  office: true,
-  webMeeting: true,
+  usage: null,
+  budget: null,
+  mobility: null,
+  purchasePlace: null,
+  office: false,
+  webMeeting: false,
   gaming: false,
   creative: false,
   programming: false,
   accounting: false,
 }
 
+type AnsweredCheckState = CheckState & {
+  usage: Usage
+  budget: Budget
+  mobility: Mobility
+  purchasePlace: PurchasePlace
+}
+
 function clampScore(score: number) {
   return Math.max(38, Math.min(96, score))
 }
 
+function hasRequiredAnswers(state: CheckState): state is AnsweredCheckState {
+  return state.usage !== null
+    && state.budget !== null
+    && state.mobility !== null
+    && state.purchasePlace !== null
+}
+
 function buildResult(state: CheckState): Result {
+  if (!hasRequiredAnswers(state)) {
+    return {
+      score: null,
+      title: '条件を選ぶと診断できます',
+      summary: 'まずは用途、予算、持ち運び、買う場所を選んでください。',
+      primaryHref: null,
+      primaryLabel: '条件を選ぶと候補へ進めます',
+      specLine: '未回答',
+      buyConditions: [
+        '主な用途を選ぶ',
+        '予算感を選ぶ',
+        '持ち運び方を選ぶ',
+      ],
+      avoidConditions: [
+        '用途未定のまま価格だけで決める',
+        '必要な作業を後回しにする',
+        '条件なしで候補を絞り込む',
+      ],
+      nextLinks: [],
+    }
+  }
+
   const heavyWork = state.usage === 'gaming' || state.usage === 'creative' || state.gaming || state.creative
   const lowBudgetHeavy = state.budget === 'low' && heavyWork
   const dailyCarry = state.mobility === 'daily'
@@ -195,8 +231,27 @@ function buildResult(state: CheckState): Result {
 export default function PcCheckClient() {
   const [state, setState] = useState<CheckState>(initialState)
   const result = useMemo(() => buildResult(state), [state])
-  const scoreTone = result.score >= 82 ? 'good' : result.score >= 65 ? 'middle' : 'risk'
-  const scoreColor = result.score >= 82 ? '#0f766e' : result.score >= 65 ? '#2563eb' : '#b45309'
+  const score = result.score
+  const isPending = score === null
+  const scoreTone = (() => {
+    if (score === null) return 'pending'
+    if (score >= 82) return 'good'
+    if (score >= 65) return 'middle'
+    return 'risk'
+  })()
+  const scoreColor = (() => {
+    if (score === null) return '#94a3b8'
+    if (score >= 82) return '#0f766e'
+    if (score >= 65) return '#2563eb'
+    return '#b45309'
+  })()
+  const scoreStatusLabel = (() => {
+    if (score === null) return 'Start'
+    if (score >= 82) return 'Ready'
+    if (score >= 65) return 'Review'
+    return 'Careful'
+  })()
+  const scoreProgress = score ?? 0
 
   const setField = <K extends keyof CheckState>(key: K, value: CheckState[K]) => {
     setState((current) => ({ ...current, [key]: value }))
@@ -221,19 +276,19 @@ export default function PcCheckClient() {
           <div className={`pc-check-hero__panel pc-check-hero__panel--${scoreTone}`} aria-label="診断結果サマリー">
             <div className="pc-check-panel__eyebrow">
               <span>Live diagnosis</span>
-              <strong>{result.score >= 82 ? 'Ready' : result.score >= 65 ? 'Review' : 'Careful'}</strong>
+              <strong>{scoreStatusLabel}</strong>
             </div>
             <div className="pc-check-score-card">
               <div
-                className="pc-check-score-ring"
+                className={`pc-check-score-ring${isPending ? ' pc-check-score-ring--pending' : ''}`}
                 style={{
-                  background: `conic-gradient(${scoreColor} ${result.score * 3.6}deg, #e2e8f0 0deg)`,
+                  background: `conic-gradient(${scoreColor} ${scoreProgress * 3.6}deg, #e2e8f0 0deg)`,
                 }}
                 aria-hidden="true"
               >
                 <div className="pc-check-score-ring__inner">
-                  <span>{result.score}</span>
-                  <small>/100</small>
+                  <span>{isPending ? '未' : score}</span>
+                  <small>{isPending ? '回答' : '/100'}</small>
                 </div>
               </div>
               <div>
@@ -241,9 +296,15 @@ export default function PcCheckClient() {
                 <p>{result.summary}</p>
               </div>
             </div>
-            <Link href={result.primaryHref} className="pc-check-primary-link">
-              {result.primaryLabel}
-            </Link>
+            {result.primaryHref ? (
+              <Link href={result.primaryHref} className="pc-check-primary-link">
+                {result.primaryLabel}
+              </Link>
+            ) : (
+              <span className="pc-check-primary-link pc-check-primary-link--disabled" aria-disabled="true">
+                {result.primaryLabel}
+              </span>
+            )}
           </div>
         </section>
 
@@ -329,12 +390,18 @@ export default function PcCheckClient() {
             <div className="pc-check-next">
               <h2>次に見るページ</h2>
               <div className="pc-check-next__list">
-                {result.nextLinks.map((link) => (
-                  <Link key={link.href} href={link.href} className="pc-check-next__link">
-                    <strong>{link.label}</strong>
-                    <span>{link.note}</span>
-                  </Link>
-                ))}
+                {result.nextLinks.length > 0 ? (
+                  result.nextLinks.map((link) => (
+                    <Link key={link.href} href={link.href} className="pc-check-next__link">
+                      <strong>{link.label}</strong>
+                      <span>{link.note}</span>
+                    </Link>
+                  ))
+                ) : (
+                  <div className="pc-check-next__empty">
+                    条件を選ぶと候補ページを表示します。
+                  </div>
+                )}
               </div>
             </div>
           </aside>
@@ -420,6 +487,10 @@ export default function PcCheckClient() {
           border-top-color: #b45309;
         }
 
+        .pc-check-hero__panel--pending {
+          border-top-color: #94a3b8;
+        }
+
         .pc-check-panel__eyebrow {
           display: flex;
           align-items: center;
@@ -474,6 +545,15 @@ export default function PcCheckClient() {
           transform: translateY(5px);
         }
 
+        .pc-check-score-ring--pending .pc-check-score-ring__inner span {
+          color: #475569;
+          font-size: 30px;
+        }
+
+        .pc-check-score-ring--pending .pc-check-score-ring__inner small {
+          transform: translateY(4px);
+        }
+
         .pc-check-hero__panel h2,
         .pc-check-next h2,
         .pc-check-section h2,
@@ -504,6 +584,13 @@ export default function PcCheckClient() {
           font-weight: 900;
           text-decoration: none;
           box-shadow: 0 12px 22px rgba(15, 23, 42, 0.18);
+        }
+
+        .pc-check-primary-link--disabled {
+          background: #e2e8f0;
+          color: #64748b;
+          box-shadow: none;
+          cursor: default;
         }
 
         .pc-check-grid {
@@ -792,6 +879,17 @@ export default function PcCheckClient() {
           font-weight: 700;
         }
 
+        .pc-check-next__empty {
+          padding: 12px;
+          border: 1px dashed #cbd5e1;
+          border-radius: 8px;
+          background: #f8fafc;
+          color: #64748b;
+          font-size: 13px;
+          line-height: 1.6;
+          font-weight: 700;
+        }
+
         @media (max-width: 900px) {
           .pc-check-hero,
           .pc-check-grid {
@@ -854,7 +952,7 @@ function ChoiceGroup<T extends string>({
   step: string
   title: string
   choices: Array<Choice<T>>
-  value: T
+  value: T | null
   onChange: (value: T) => void
 }) {
   return (
