@@ -48,6 +48,10 @@ interface ClickAnalyticsSnapshot {
   day_series: Array<{ day: string; count: number }>
 }
 
+type DeleteAction =
+  | { action: 'delete_all' }
+  | { action: 'delete_click'; click_id: string }
+
 function formatTime(value?: string): string {
   if (!value) {
     return '-'
@@ -70,41 +74,141 @@ function formatPrice(value?: number): string {
   return `¥${value.toLocaleString('ja-JP')}`
 }
 
-function shortLabel(value: string): string {
-  return value.replace(/^\d{4}-/, '').replace('T', ' ')
+function formatProductType(value: string): string {
+  if (value === 'pc') {
+    return 'PC'
+  }
+  if (value === 'monitor') {
+    return 'モニター'
+  }
+  if (value === 'tablet') {
+    return 'タブレット'
+  }
+  return value || '-'
 }
 
-function GraphBars({
+function formatMinuteLabel(value: string): string {
+  const parts = value.split('T')
+  return parts[1] ?? value
+}
+
+function formatDayLabel(value: string): string {
+  return value.replace(/^\d{4}-/, '').replace('-', '/')
+}
+
+function shortText(value: string, maxLength: number): string {
+  if (value.length <= maxLength) {
+    return value
+  }
+
+  return `${value.slice(0, maxLength)}...`
+}
+
+function ChartPanel({
   title,
+  caption,
   series,
-  compact = false,
+  formatLabel,
 }: {
   title: string
+  caption: string
   series: Array<{ label: string; count: number }>
-  compact?: boolean
+  formatLabel: (value: string) => string
 }) {
   const max = Math.max(1, ...series.map((item) => item.count))
+  const total = series.reduce((sum, item) => sum + item.count, 0)
+  const chartWidth = 640
+  const chartHeight = 190
+  const paddingX = 18
+  const paddingY = 16
+  const baseline = chartHeight - paddingY
+  const usableWidth = chartWidth - paddingX * 2
+  const usableHeight = chartHeight - paddingY * 2
+  const points = series.map((item, index) => {
+    const x = paddingX + (usableWidth * index) / Math.max(1, series.length - 1)
+    const y = baseline - (item.count / max) * usableHeight
+    return { ...item, x, y }
+  })
+  const linePath = points.map((point, index) => `${index === 0 ? 'M' : 'L'} ${point.x} ${point.y}`).join(' ')
+  const areaPath = points.length > 0
+    ? `${linePath} L ${points[points.length - 1].x} ${baseline} L ${points[0].x} ${baseline} Z`
+    : ''
+  const barWidth = Math.max(3, Math.min(18, usableWidth / Math.max(1, series.length) - 2))
 
   return (
     <section className="analyticsPanel">
       <div className="panelHeader">
-        <h2>{title}</h2>
-        <span>{series.reduce((sum, item) => sum + item.count, 0)} clicks</span>
+        <div>
+          <h2>{title}</h2>
+          <p className="panelCaption">{caption}</p>
+        </div>
+        <span>{total.toLocaleString('ja-JP')}クリック</span>
       </div>
-      <div className={`barChart ${compact ? 'compactBars' : ''}`}>
-        {series.map((item) => (
-          <div className="barItem" key={item.label} title={`${item.label}: ${item.count}`}>
-            <div
-              className="barFill"
-              style={{ height: `${Math.max(4, (item.count / max) * 100)}%` }}
-            />
-            <span>{item.count || ''}</span>
-          </div>
-        ))}
+      <div className="lineChartWrap">
+        <svg className="lineChart" viewBox={`0 0 ${chartWidth} ${chartHeight}`} preserveAspectRatio="none">
+          <line x1={paddingX} y1={baseline} x2={chartWidth - paddingX} y2={baseline} className="chartAxis" />
+          <line x1={paddingX} y1={paddingY} x2={paddingX} y2={baseline} className="chartAxis" />
+          {areaPath ? <path d={areaPath} className="chartArea" /> : null}
+          {points.map((point) => {
+            const height = Math.max(2, baseline - point.y)
+            return (
+              <rect
+                key={point.label}
+                className="chartBar"
+                x={point.x - barWidth / 2}
+                y={baseline - height}
+                width={barWidth}
+                height={height}
+              />
+            )
+          })}
+          {linePath ? <path d={linePath} className="chartLine" /> : null}
+          {points.map((point) => (
+            point.count > 0 ? (
+              <circle key={point.label} cx={point.x} cy={point.y} r="4" className="chartPoint">
+                <title>{`${formatLabel(point.label)}: ${point.count}クリック`}</title>
+              </circle>
+            ) : null
+          ))}
+        </svg>
       </div>
       <div className="axisLabels">
-        <span>{series[0]?.label ? shortLabel(series[0].label) : '-'}</span>
-        <span>{series[series.length - 1]?.label ? shortLabel(series[series.length - 1].label) : '-'}</span>
+        <span>{series[0]?.label ? formatLabel(series[0].label) : '-'}</span>
+        <span>最大 {max.toLocaleString('ja-JP')}</span>
+        <span>{series[series.length - 1]?.label ? formatLabel(series[series.length - 1].label) : '-'}</span>
+      </div>
+    </section>
+  )
+}
+
+function ProductRankBars({ products }: { products: ProductClickStats[] }) {
+  const topProducts = products.slice(0, 10)
+  const max = Math.max(1, ...topProducts.map((product) => product.count))
+
+  return (
+    <section className="analyticsPanel">
+      <div className="panelHeader">
+        <div>
+          <h2>商品別クリック数</h2>
+          <p className="panelCaption">クリックが多い商品トップ10</p>
+        </div>
+        <span>{products.length.toLocaleString('ja-JP')}商品</span>
+      </div>
+      <div className="rankBars">
+        {topProducts.length > 0 ? topProducts.map((product) => (
+          <div className="rankRow" key={product.product_key}>
+            <div className="rankLabel">
+              <strong>{product.product_name || product.product_id}</strong>
+              <span>{formatProductType(product.product_type)} / {product.outbound_domain || '-'}</span>
+            </div>
+            <div className="rankTrack">
+              <div className="rankFill" style={{ width: `${Math.max(6, (product.count / max) * 100)}%` }} />
+            </div>
+            <div className="rankCount">{product.count.toLocaleString('ja-JP')}</div>
+          </div>
+        )) : (
+          <p className="emptyText">まだ商品クリックがありません。</p>
+        )}
       </div>
     </section>
   )
@@ -115,6 +219,7 @@ export default function ClickAnalyticsClient() {
   const [snapshot, setSnapshot] = useState<ClickAnalyticsSnapshot | null>(null)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [deletingId, setDeletingId] = useState('')
 
   const loadSnapshot = async (passwordValue: string) => {
     setLoading(true)
@@ -132,16 +237,52 @@ export default function ClickAnalyticsClient() {
 
       if (!response.ok) {
         const body = await response.json().catch(() => ({})) as { error?: string }
-        throw new Error(body.error || 'failed to load')
+        throw new Error(body.error || 'データを読み込めませんでした')
       }
 
       const nextSnapshot = await response.json() as ClickAnalyticsSnapshot
       setSnapshot(nextSnapshot)
       setActivePassword(passwordValue)
     } catch (loadError) {
-      setError(loadError instanceof Error ? loadError.message : 'failed to load')
+      setError(loadError instanceof Error ? loadError.message : 'データを読み込めませんでした')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const deleteAnalytics = async (deleteAction: DeleteAction) => {
+    if (!activePassword) {
+      setError('先にパスワードを入力してください')
+      return
+    }
+
+    setDeletingId(deleteAction.action === 'delete_all' ? 'all' : deleteAction.click_id)
+    setError('')
+
+    try {
+      const response = await fetch('/api/admin/click-analytics', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          password: activePassword,
+          ...deleteAction,
+        }),
+        cache: 'no-store',
+      })
+
+      if (!response.ok) {
+        const body = await response.json().catch(() => ({})) as { error?: string }
+        throw new Error(body.error || '削除できませんでした')
+      }
+
+      const nextSnapshot = await response.json() as ClickAnalyticsSnapshot
+      setSnapshot(nextSnapshot)
+    } catch (deleteError) {
+      setError(deleteError instanceof Error ? deleteError.message : '削除できませんでした')
+    } finally {
+      setDeletingId('')
     }
   }
 
@@ -152,20 +293,43 @@ export default function ClickAnalyticsClient() {
     void loadSnapshot(passwordValue)
   }
 
+  const handleDeleteClick = (click: StoredProductClick) => {
+    const productName = click.product_name || click.product_id
+    if (!window.confirm(`このクリック履歴を削除しますか？\n${productName}\n${formatTime(click.clicked_at)}`)) {
+      return
+    }
+
+    void deleteAnalytics({ action: 'delete_click', click_id: click.id })
+  }
+
+  const handleDeleteAll = () => {
+    if (!window.confirm('すべてのクリック分析データを削除します。元に戻せません。実行しますか？')) {
+      return
+    }
+
+    void deleteAnalytics({ action: 'delete_all' })
+  }
+
   useEffect(() => {
     if (!activePassword) {
       return
     }
 
     const timer = window.setInterval(() => {
-      void loadSnapshot(activePassword)
+      if (!deletingId) {
+        void loadSnapshot(activePassword)
+      }
     }, 15000)
 
     return () => window.clearInterval(timer)
-  }, [activePassword])
+  }, [activePassword, deletingId])
 
   const last60Clicks = useMemo(() => {
     return snapshot?.minute_series.reduce((sum, item) => sum + item.count, 0) ?? 0
+  }, [snapshot])
+
+  const last30DayClicks = useMemo(() => {
+    return snapshot?.day_series.reduce((sum, item) => sum + item.count, 0) ?? 0
   }, [snapshot])
 
   const minuteSeries = snapshot?.minute_series.map((item) => ({
@@ -182,20 +346,20 @@ export default function ClickAnalyticsClient() {
     <main className="clickAnalyticsPage">
       <section className="loginBlock">
         <div>
-          <p className="eyebrow">Specsy internal</p>
-          <h1>Click Analytics</h1>
-          <p className="lead">商品クリック、Amazon遷移、日別推移を確認する直打ち専用ページです。</p>
+          <p className="eyebrow">Specsy 管理用</p>
+          <h1>クリック分析</h1>
+          <p className="lead">商品リンクが、いつ・どこから・どの商品で押されたかを確認します。</p>
         </div>
         <form className="passwordForm" onSubmit={handleSubmit}>
           <input
             name="password"
             type="password"
-            placeholder="Password"
+            placeholder="管理パスワード"
             autoComplete="current-password"
             required
           />
           <button type="submit" disabled={loading}>
-            {loading ? 'Loading' : 'Open'}
+            {loading ? '読み込み中' : '開く'}
           </button>
         </form>
       </section>
@@ -204,59 +368,93 @@ export default function ClickAnalyticsClient() {
 
       {snapshot ? (
         <>
+          <section className="toolbar">
+            <div>
+              <strong>最終更新: {formatTime(snapshot.last_updated_at)}</strong>
+              <span>15秒ごとに自動更新</span>
+            </div>
+            <button
+              type="button"
+              className="dangerButton"
+              onClick={handleDeleteAll}
+              disabled={Boolean(deletingId) || snapshot.total_clicks === 0}
+            >
+              {deletingId === 'all' ? '削除中' : 'すべて削除'}
+            </button>
+          </section>
+
           <section className="metricsGrid">
             <div className="metricBox">
-              <span>Total clicks</span>
+              <span>総クリック数</span>
               <strong>{snapshot.total_clicks.toLocaleString('ja-JP')}</strong>
             </div>
             <div className="metricBox">
-              <span>Last 60 min</span>
+              <span>直近60分</span>
               <strong>{last60Clicks.toLocaleString('ja-JP')}</strong>
             </div>
             <div className="metricBox">
-              <span>Products</span>
-              <strong>{snapshot.product_stats.length.toLocaleString('ja-JP')}</strong>
+              <span>過去30日</span>
+              <strong>{last30DayClicks.toLocaleString('ja-JP')}</strong>
             </div>
             <div className="metricBox">
-              <span>Updated</span>
-              <strong>{formatTime(snapshot.last_updated_at)}</strong>
+              <span>クリック商品数</span>
+              <strong>{snapshot.product_stats.length.toLocaleString('ja-JP')}</strong>
             </div>
           </section>
 
           <div className="chartsGrid">
-            <GraphBars title="Realtime clicks by minute" series={minuteSeries} compact />
-            <GraphBars title="Daily clicks" series={daySeries} />
+            <ChartPanel
+              title="リアルタイム推移"
+              caption="直近60分の分単位クリック"
+              series={minuteSeries}
+              formatLabel={formatMinuteLabel}
+            />
+            <ChartPanel
+              title="日別クリック推移"
+              caption="過去30日の日別クリック"
+              series={daySeries}
+              formatLabel={formatDayLabel}
+            />
           </div>
+
+          <ProductRankBars products={snapshot.product_stats} />
 
           <section className="analyticsPanel">
             <div className="panelHeader">
-              <h2>Product clicks</h2>
-              <span>all time</span>
+              <div>
+                <h2>商品別集計</h2>
+                <p className="panelCaption">クリック数が多い順</p>
+              </div>
+              <span>全期間</span>
             </div>
             <div className="tableWrap">
               <table>
                 <thead>
                   <tr>
-                    <th>Clicks</th>
-                    <th>Product</th>
-                    <th>Type</th>
-                    <th>Price</th>
-                    <th>Last seen</th>
+                    <th>クリック</th>
+                    <th>商品</th>
+                    <th>種別</th>
+                    <th>価格</th>
+                    <th>最終クリック</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {snapshot.product_stats.map((product) => (
+                  {snapshot.product_stats.length > 0 ? snapshot.product_stats.map((product) => (
                     <tr key={product.product_key}>
-                      <td className="numberCell">{product.count}</td>
+                      <td className="numberCell">{product.count.toLocaleString('ja-JP')}</td>
                       <td>
                         <div className="productName">{product.product_name || product.product_id}</div>
                         <div className="subText">{product.outbound_domain || product.product_id}</div>
                       </td>
-                      <td>{product.product_type}</td>
+                      <td>{formatProductType(product.product_type)}</td>
                       <td>{formatPrice(product.price)}</td>
                       <td>{formatTime(product.last_seen_at)}</td>
                     </tr>
-                  ))}
+                  )) : (
+                    <tr>
+                      <td colSpan={5} className="emptyCell">まだ商品クリックがありません。</td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
@@ -264,28 +462,32 @@ export default function ClickAnalyticsClient() {
 
           <section className="analyticsPanel">
             <div className="panelHeader">
-              <h2>Recent clicks</h2>
-              <span>{snapshot.recent_clicks.length} rows</span>
+              <div>
+                <h2>最近のクリック</h2>
+                <p className="panelCaption">最大250件。不要なテストクリックは個別に削除できます。</p>
+              </div>
+              <span>{snapshot.recent_clicks.length.toLocaleString('ja-JP')}件</span>
             </div>
             <div className="tableWrap">
               <table>
                 <thead>
                   <tr>
-                    <th>Time</th>
-                    <th>Product</th>
-                    <th>Page</th>
-                    <th>Campaign</th>
-                    <th>Link</th>
+                    <th>時刻</th>
+                    <th>商品</th>
+                    <th>ページ</th>
+                    <th>流入</th>
+                    <th>リンク</th>
+                    <th>操作</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {snapshot.recent_clicks.map((click) => (
+                  {snapshot.recent_clicks.length > 0 ? snapshot.recent_clicks.map((click) => (
                     <tr key={click.id}>
                       <td>{formatTime(click.clicked_at)}</td>
                       <td>
                         <div className="productName">{click.product_name || click.product_id}</div>
                         <div className="subText">
-                          {click.product_type} / {formatPrice(click.price)}
+                          {formatProductType(click.product_type)} / {formatPrice(click.price)}
                         </div>
                       </td>
                       <td>
@@ -294,14 +496,28 @@ export default function ClickAnalyticsClient() {
                       </td>
                       <td>
                         <div>{click.utm_campaign || '-'}</div>
-                        <div className="subText">{click.utm_source || ''} {click.utm_medium || ''}</div>
+                        <div className="subText">{shortText(`${click.utm_source || ''} ${click.utm_medium || ''}`.trim() || '-', 40)}</div>
                       </td>
                       <td>
                         <div>{click.outbound_domain || '-'}</div>
                         <div className="subText">{click.link_position || '-'}</div>
                       </td>
+                      <td>
+                        <button
+                          type="button"
+                          className="rowDeleteButton"
+                          onClick={() => handleDeleteClick(click)}
+                          disabled={Boolean(deletingId)}
+                        >
+                          {deletingId === click.id ? '削除中' : '削除'}
+                        </button>
+                      </td>
                     </tr>
-                  ))}
+                  )) : (
+                    <tr>
+                      <td colSpan={6} className="emptyCell">最近のクリックはありません。</td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
@@ -324,7 +540,8 @@ export default function ClickAnalyticsClient() {
         .loginBlock,
         .analyticsPanel,
         .metricBox,
-        .emptyState {
+        .emptyState,
+        .toolbar {
           background: #ffffff;
           border: 1px solid #d9dee8;
           border-radius: 8px;
@@ -362,10 +579,12 @@ export default function ClickAnalyticsClient() {
           font-size: 16px;
         }
 
-        .lead {
-          margin-top: 8px;
+        .lead,
+        .panelCaption {
+          margin-top: 6px;
           color: #607089;
-          font-size: 14px;
+          font-size: 13px;
+          line-height: 1.5;
         }
 
         .passwordForm {
@@ -402,10 +621,43 @@ export default function ClickAnalyticsClient() {
           cursor: not-allowed;
         }
 
+        .dangerButton {
+          background: #b42318;
+        }
+
+        .rowDeleteButton {
+          height: 32px;
+          background: #fff2f0;
+          border: 1px solid #f3b8b2;
+          color: #b42318;
+          padding: 0 10px;
+        }
+
         .errorText {
           margin: 0 0 16px;
           color: #b42318;
           font-size: 14px;
+        }
+
+        .toolbar {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 16px;
+          padding: 14px 18px;
+          margin-bottom: 16px;
+        }
+
+        .toolbar strong {
+          display: block;
+          font-size: 14px;
+        }
+
+        .toolbar span {
+          display: block;
+          margin-top: 4px;
+          color: #607089;
+          font-size: 12px;
         }
 
         .metricsGrid,
@@ -448,46 +700,51 @@ export default function ClickAnalyticsClient() {
 
         .panelHeader {
           display: flex;
-          align-items: center;
+          align-items: flex-start;
           justify-content: space-between;
           gap: 12px;
           margin-bottom: 14px;
         }
 
-        .barChart {
-          display: flex;
-          align-items: end;
-          gap: 3px;
-          height: 180px;
-          border-bottom: 1px solid #d9dee8;
+        .lineChartWrap {
+          height: 210px;
+          border: 1px solid #edf0f5;
+          border-radius: 8px;
+          background: linear-gradient(180deg, #ffffff 0%, #f9fbff 100%);
+          padding: 10px;
         }
 
-        .compactBars {
-          gap: 2px;
-        }
-
-        .barItem {
-          position: relative;
-          flex: 1;
-          min-width: 3px;
-          height: 100%;
-          display: flex;
-          align-items: end;
-          justify-content: center;
-        }
-
-        .barFill {
+        .lineChart {
+          display: block;
           width: 100%;
-          background: #2f6fed;
-          border-radius: 3px 3px 0 0;
+          height: 100%;
         }
 
-        .barItem span {
-          position: absolute;
-          bottom: 100%;
-          color: #607089;
-          font-size: 10px;
-          line-height: 1.2;
+        .chartAxis {
+          stroke: #d9dee8;
+          stroke-width: 1;
+        }
+
+        .chartArea {
+          fill: rgba(47, 111, 237, 0.12);
+        }
+
+        .chartLine {
+          fill: none;
+          stroke: #2f6fed;
+          stroke-width: 3;
+          stroke-linecap: round;
+          stroke-linejoin: round;
+        }
+
+        .chartBar {
+          fill: rgba(47, 111, 237, 0.24);
+        }
+
+        .chartPoint {
+          fill: #2f6fed;
+          stroke: #ffffff;
+          stroke-width: 2;
         }
 
         .axisLabels {
@@ -496,6 +753,51 @@ export default function ClickAnalyticsClient() {
           margin-top: 8px;
           color: #607089;
           font-size: 11px;
+        }
+
+        .rankBars {
+          display: grid;
+          gap: 12px;
+        }
+
+        .rankRow {
+          display: grid;
+          grid-template-columns: minmax(220px, 1.4fr) minmax(160px, 2fr) 48px;
+          align-items: center;
+          gap: 12px;
+        }
+
+        .rankLabel strong {
+          display: block;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          font-size: 13px;
+        }
+
+        .rankLabel span {
+          display: block;
+          margin-top: 3px;
+          color: #607089;
+          font-size: 12px;
+        }
+
+        .rankTrack {
+          height: 12px;
+          overflow: hidden;
+          background: #edf0f5;
+          border-radius: 999px;
+        }
+
+        .rankFill {
+          height: 100%;
+          background: #2f6fed;
+          border-radius: inherit;
+        }
+
+        .rankCount {
+          text-align: right;
+          font-weight: 800;
         }
 
         .tableWrap {
@@ -537,9 +839,19 @@ export default function ClickAnalyticsClient() {
           line-height: 1.35;
         }
 
+        .emptyState,
+        .emptyCell,
+        .emptyText {
+          color: #607089;
+        }
+
         .emptyState {
           padding: 24px;
-          color: #607089;
+        }
+
+        .emptyCell {
+          padding: 22px 8px;
+          text-align: center;
         }
 
         @media (max-width: 900px) {
@@ -547,7 +859,8 @@ export default function ClickAnalyticsClient() {
             padding: 16px;
           }
 
-          .loginBlock {
+          .loginBlock,
+          .toolbar {
             display: block;
           }
 
@@ -559,9 +872,23 @@ export default function ClickAnalyticsClient() {
             width: 100%;
           }
 
+          .toolbar button {
+            width: 100%;
+            margin-top: 14px;
+          }
+
           .metricsGrid,
           .chartsGrid {
             grid-template-columns: 1fr;
+          }
+
+          .rankRow {
+            grid-template-columns: 1fr;
+            gap: 6px;
+          }
+
+          .rankCount {
+            text-align: left;
           }
         }
       `}</style>

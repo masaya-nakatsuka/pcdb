@@ -3,6 +3,12 @@ import { getUpstashRedis } from './upstashRedis'
 const KEY_PREFIX = 'specsy:click_analytics'
 const RECENT_CLICK_LIMIT = 10000
 const ADMIN_RECENT_LIMIT = 250
+const RECENT_KEY = `${KEY_PREFIX}:recent`
+const TOTAL_KEY = `${KEY_PREFIX}:total`
+const PRODUCT_COUNTS_KEY = `${KEY_PREFIX}:product_counts`
+const PRODUCT_META_KEY = `${KEY_PREFIX}:product_meta`
+const DAY_COUNTS_KEY = `${KEY_PREFIX}:day_counts`
+const MINUTE_COUNTS_KEY = `${KEY_PREFIX}:minute_counts`
 
 export interface ProductClickInput {
   product_id: string
@@ -179,14 +185,100 @@ export async function recordProductClick(input: ProductClickInput, referrer: str
   }
 
   await getUpstashRedis().pipeline([
-    ['LPUSH', `${KEY_PREFIX}:recent`, JSON.stringify(click)],
-    ['LTRIM', `${KEY_PREFIX}:recent`, '0', (RECENT_CLICK_LIMIT - 1).toString()],
-    ['INCR', `${KEY_PREFIX}:total`],
-    ['HINCRBY', `${KEY_PREFIX}:product_counts`, key, '1'],
-    ['HSET', `${KEY_PREFIX}:product_meta`, key, JSON.stringify(meta)],
-    ['HINCRBY', `${KEY_PREFIX}:day_counts`, click.clicked_day, '1'],
-    ['HINCRBY', `${KEY_PREFIX}:minute_counts`, click.clicked_minute, '1'],
+    ['LPUSH', RECENT_KEY, JSON.stringify(click)],
+    ['LTRIM', RECENT_KEY, '0', (RECENT_CLICK_LIMIT - 1).toString()],
+    ['INCR', TOTAL_KEY],
+    ['HINCRBY', PRODUCT_COUNTS_KEY, key, '1'],
+    ['HSET', PRODUCT_META_KEY, key, JSON.stringify(meta)],
+    ['HINCRBY', DAY_COUNTS_KEY, click.clicked_day, '1'],
+    ['HINCRBY', MINUTE_COUNTS_KEY, click.clicked_minute, '1'],
   ])
+}
+
+export async function deleteClickAnalytics(): Promise<void> {
+  await getUpstashRedis().pipeline([
+    ['DEL', RECENT_KEY],
+    ['DEL', TOTAL_KEY],
+    ['DEL', PRODUCT_COUNTS_KEY],
+    ['DEL', PRODUCT_META_KEY],
+    ['DEL', DAY_COUNTS_KEY],
+    ['DEL', MINUTE_COUNTS_KEY],
+  ])
+}
+
+export async function deleteProductClickById(clickId: string): Promise<boolean> {
+  const safeClickId = safeText(clickId, 120)
+  if (!safeClickId) {
+    return false
+  }
+
+  const [recentResult] = await getUpstashRedis().pipeline([
+    ['LRANGE', RECENT_KEY, '0', (RECENT_CLICK_LIMIT - 1).toString()],
+  ])
+
+  if (!Array.isArray(recentResult)) {
+    return false
+  }
+
+  let targetJson = ''
+  let targetClick: StoredProductClick | null = null
+
+  for (const rawClick of recentResult) {
+    if (typeof rawClick !== 'string') {
+      continue
+    }
+
+    const parsedClick = parseStoredClick(rawClick)
+    if (parsedClick?.id === safeClickId) {
+      targetJson = rawClick
+      targetClick = parsedClick
+      break
+    }
+  }
+
+  if (!targetJson || !targetClick) {
+    return false
+  }
+
+  const key = productKey(targetClick)
+  const results = await getUpstashRedis().pipeline([
+    ['LREM', RECENT_KEY, '1', targetJson],
+    ['INCRBY', TOTAL_KEY, '-1'],
+    ['HINCRBY', PRODUCT_COUNTS_KEY, key, '-1'],
+    ['HINCRBY', DAY_COUNTS_KEY, targetClick.clicked_day, '-1'],
+    ['HINCRBY', MINUTE_COUNTS_KEY, targetClick.clicked_minute, '-1'],
+  ])
+
+  const removedCount = Number(results[0] ?? 0)
+  if (removedCount <= 0) {
+    return false
+  }
+
+  const nextTotal = Number(results[1] ?? 0)
+  const nextProductCount = Number(results[2] ?? 0)
+  const nextDayCount = Number(results[3] ?? 0)
+  const nextMinuteCount = Number(results[4] ?? 0)
+  const cleanupCommands: string[][] = []
+
+  if (nextTotal <= 0) {
+    cleanupCommands.push(['DEL', TOTAL_KEY])
+  }
+  if (nextProductCount <= 0) {
+    cleanupCommands.push(['HDEL', PRODUCT_COUNTS_KEY, key])
+    cleanupCommands.push(['HDEL', PRODUCT_META_KEY, key])
+  }
+  if (nextDayCount <= 0) {
+    cleanupCommands.push(['HDEL', DAY_COUNTS_KEY, targetClick.clicked_day])
+  }
+  if (nextMinuteCount <= 0) {
+    cleanupCommands.push(['HDEL', MINUTE_COUNTS_KEY, targetClick.clicked_minute])
+  }
+
+  if (cleanupCommands.length > 0) {
+    await getUpstashRedis().pipeline(cleanupCommands)
+  }
+
+  return true
 }
 
 function recentMinuteKeys(): string[] {
@@ -212,12 +304,12 @@ export async function readClickAnalyticsSnapshot(): Promise<ClickAnalyticsSnapsh
     dayCountsResult,
     minuteCountsResult,
   ] = await getUpstashRedis().pipeline([
-    ['GET', `${KEY_PREFIX}:total`],
-    ['LRANGE', `${KEY_PREFIX}:recent`, '0', (ADMIN_RECENT_LIMIT - 1).toString()],
-    ['HGETALL', `${KEY_PREFIX}:product_counts`],
-    ['HGETALL', `${KEY_PREFIX}:product_meta`],
-    ['HGETALL', `${KEY_PREFIX}:day_counts`],
-    ['HGETALL', `${KEY_PREFIX}:minute_counts`],
+    ['GET', TOTAL_KEY],
+    ['LRANGE', RECENT_KEY, '0', (ADMIN_RECENT_LIMIT - 1).toString()],
+    ['HGETALL', PRODUCT_COUNTS_KEY],
+    ['HGETALL', PRODUCT_META_KEY],
+    ['HGETALL', DAY_COUNTS_KEY],
+    ['HGETALL', MINUTE_COUNTS_KEY],
   ])
 
   const productCounts = parseRedisHash(productCountsResult)
@@ -232,6 +324,7 @@ export async function readClickAnalyticsSnapshot(): Promise<ClickAnalyticsSnapsh
   const product_stats = Object.keys(productCounts)
     .map((key) => {
       const countValue = productCounts[key]
+      const count = Number(countValue) || 0
       let meta: Partial<ProductClickStats> = {}
       try {
         meta = productMeta[key] ? JSON.parse(productMeta[key]) as Partial<ProductClickStats> : {}
@@ -244,13 +337,14 @@ export async function readClickAnalyticsSnapshot(): Promise<ClickAnalyticsSnapsh
         product_id: meta.product_id ?? key.split(':').slice(1).join(':'),
         product_name: meta.product_name ?? '',
         product_type: meta.product_type ?? key.split(':')[0] ?? '',
-        count: Number(countValue) || 0,
+        count,
         price: meta.price,
         destination_url: meta.destination_url,
         outbound_domain: meta.outbound_domain,
         last_seen_at: meta.last_seen_at,
       }
     })
+    .filter((product) => product.count > 0)
     .sort((a, b) => b.count - a.count)
     .slice(0, 80)
 
