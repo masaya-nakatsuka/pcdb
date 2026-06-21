@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { CSSProperties, FormEvent } from 'react'
 
 interface StoredProductClick {
@@ -334,13 +334,12 @@ function ChartPanel({
 }
 
 export default function ClickAnalyticsClient() {
-  const [activePassword, setActivePassword] = useState('')
   const [snapshot, setSnapshot] = useState<ClickAnalyticsSnapshot | null>(null)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [deletingId, setDeletingId] = useState('')
 
-  const loadSnapshot = async (passwordValue: string) => {
+  const loadSnapshot = useCallback(async (passwordValue = '', options: { silentUnauthorized?: boolean } = {}) => {
     setLoading(true)
     setError('')
 
@@ -350,31 +349,28 @@ export default function ClickAnalyticsClient() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ password: passwordValue }),
+        body: JSON.stringify(passwordValue ? { password: passwordValue } : {}),
         cache: 'no-store',
       })
 
       if (!response.ok) {
         const body = await response.json().catch(() => ({})) as { error?: string }
+        if (options.silentUnauthorized && response.status === 401) {
+          return
+        }
         throw new Error(body.error || 'データを読み込めませんでした')
       }
 
       const nextSnapshot = await response.json() as ClickAnalyticsSnapshot
       setSnapshot(nextSnapshot)
-      setActivePassword(passwordValue)
     } catch (loadError) {
       setError(loadError instanceof Error ? loadError.message : 'データを読み込めませんでした')
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
   const deleteAnalytics = async (deleteAction: DeleteAction) => {
-    if (!activePassword) {
-      setError('先にパスワードを入力してください')
-      return
-    }
-
     setDeletingId(deleteAction.action === 'delete_all' ? 'all' : deleteAction.click_id)
     setError('')
 
@@ -385,7 +381,6 @@ export default function ClickAnalyticsClient() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          password: activePassword,
           ...deleteAction,
         }),
         cache: 'no-store',
@@ -400,6 +395,9 @@ export default function ClickAnalyticsClient() {
       setSnapshot(nextSnapshot)
     } catch (deleteError) {
       setError(deleteError instanceof Error ? deleteError.message : '削除できませんでした')
+      if (deleteError instanceof Error && deleteError.message === 'unauthorized') {
+        setSnapshot(null)
+      }
     } finally {
       setDeletingId('')
     }
@@ -430,18 +428,22 @@ export default function ClickAnalyticsClient() {
   }
 
   useEffect(() => {
-    if (!activePassword) {
+    void loadSnapshot('', { silentUnauthorized: true })
+  }, [loadSnapshot])
+
+  useEffect(() => {
+    if (!snapshot) {
       return
     }
 
     const timer = window.setInterval(() => {
       if (!deletingId) {
-        void loadSnapshot(activePassword)
+        void loadSnapshot()
       }
     }, 15000)
 
     return () => window.clearInterval(timer)
-  }, [activePassword, deletingId])
+  }, [deletingId, loadSnapshot, snapshot])
 
   const last60Clicks = useMemo(() => {
     return snapshot?.minute_series.reduce((sum, item) => sum + item.count, 0) ?? 0
@@ -503,6 +505,7 @@ export default function ClickAnalyticsClient() {
           <button type="submit" disabled={loading}>
             {loading ? '読み込み中' : '開く'}
           </button>
+          <span className="passwordHint">一度開くと当日中は再入力不要です</span>
         </form>
       </section>
 
@@ -805,7 +808,15 @@ export default function ClickAnalyticsClient() {
 
         .passwordForm {
           display: flex;
+          align-items: center;
+          flex-wrap: wrap;
           gap: 8px;
+        }
+
+        .passwordHint {
+          flex-basis: 100%;
+          color: #607089;
+          font-size: 12px;
         }
 
         input,
