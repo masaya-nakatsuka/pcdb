@@ -25,6 +25,9 @@ export interface ProductClickInput {
   link_position?: string
   is_affiliate?: boolean
   destination_url?: string
+  entry_page_url?: string
+  entry_referrer?: string
+  first_seen_at?: string
   utm_source?: string
   utm_medium?: string
   utm_campaign?: string
@@ -158,6 +161,9 @@ function normalizeClick(input: ProductClickInput, referrer: string): StoredProdu
     link_position: safeText(input.link_position, 120),
     is_affiliate: Boolean(input.is_affiliate),
     destination_url: safeText(input.destination_url, 700),
+    entry_page_url: safeText(input.entry_page_url, 700),
+    entry_referrer: safeText(input.entry_referrer, 700),
+    first_seen_at: safeText(input.first_seen_at, 80),
     utm_source: safeText(input.utm_source, 120),
     utm_medium: safeText(input.utm_medium, 120),
     utm_campaign: safeText(input.utm_campaign, 160),
