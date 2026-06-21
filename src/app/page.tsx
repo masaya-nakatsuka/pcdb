@@ -312,8 +312,8 @@ export default function HomePage() {
           overflow: hidden;
           padding: clamp(84px, 11vh, 138px) 0 clamp(96px, 12vh, 150px);
           background-image:
-            linear-gradient(90deg, rgba(247, 248, 251, 0.98) 0%, rgba(247, 248, 251, 0.92) 32%, rgba(247, 248, 251, 0.42) 58%, rgba(247, 248, 251, 0.08) 100%),
-            linear-gradient(180deg, rgba(247, 248, 251, 0.02) 0%, rgba(247, 248, 251, 0.22) 68%, #f7f8fb 100%),
+            linear-gradient(90deg, rgba(247, 248, 251, 0.94) 0%, rgba(247, 248, 251, 0.72) 29%, rgba(247, 248, 251, 0.1) 52%, rgba(247, 248, 251, 0) 78%),
+            linear-gradient(180deg, rgba(247, 248, 251, 0) 0%, rgba(247, 248, 251, 0.03) 82%, rgba(247, 248, 251, 0.72) 100%),
             url('/lp/specsy-hero-devices.webp');
           background-size: cover;
           background-position: center right;
@@ -655,7 +655,7 @@ export default function HomePage() {
             padding-top: 42px;
             align-items: flex-start;
             background-image:
-              linear-gradient(180deg, rgba(247, 248, 251, 0.98) 0%, rgba(247, 248, 251, 0.94) 38%, rgba(247, 248, 251, 0.44) 68%, #f7f8fb 100%),
+              linear-gradient(180deg, rgba(247, 248, 251, 0.98) 0%, rgba(247, 248, 251, 0.88) 34%, rgba(247, 248, 251, 0.08) 58%, rgba(247, 248, 251, 0.02) 76%, rgba(247, 248, 251, 0.82) 100%),
               url('/lp/specsy-hero-devices.webp');
             background-position: center bottom;
           }
