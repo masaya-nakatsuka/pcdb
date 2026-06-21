@@ -45,12 +45,12 @@ interface Result {
 }
 
 const usageChoices: Array<Choice<Usage>> = [
-  { value: 'office', label: '仕事・Office', note: 'Excel、資料作成、事務作業' },
-  { value: 'mobile', label: '持ち運び', note: '通学、外回り、カフェ作業' },
-  { value: 'student', label: '学生・学習', note: 'レポート、調べ物、オンライン授業' },
-  { value: 'creative', label: '制作', note: '画像編集、動画編集、DTM' },
-  { value: 'gaming', label: 'ゲーム', note: '軽いゲームからGPU重視まで' },
-  { value: 'home', label: '家用', note: '動画視聴、家計、写真整理' },
+  { value: 'office', label: '仕事・Office', note: 'Excel、資料作成' },
+  { value: 'mobile', label: '持ち運び', note: '通学、外回り' },
+  { value: 'student', label: '学生・学習', note: 'レポート、授業' },
+  { value: 'creative', label: '制作', note: '画像・動画編集' },
+  { value: 'gaming', label: 'ゲーム', note: 'GPUも確認' },
+  { value: 'home', label: '家用', note: '動画、写真整理' },
 ]
 
 const budgetChoices: Array<Choice<Budget>> = [
@@ -78,12 +78,12 @@ const featureChoices: Array<{
   label: string
   note: string
 }> = [
-  { key: 'office', label: 'Office', note: 'Word/Excel/PowerPoint' },
-  { key: 'webMeeting', label: 'Web会議', note: 'Zoom、Teams、外部モニター' },
-  { key: 'gaming', label: 'ゲーム', note: 'GPUや冷却を確認' },
-  { key: 'creative', label: '動画・画像編集', note: 'CPU/GPU/メモリ重視' },
-  { key: 'programming', label: 'プログラミング', note: '16GB以上が安心' },
-  { key: 'accounting', label: '会計・確定申告', note: 'テンキーや画面も確認' },
+  { key: 'office', label: 'Office', note: 'Word / Excel' },
+  { key: 'webMeeting', label: 'Web会議', note: 'カメラ・端子' },
+  { key: 'gaming', label: 'ゲーム', note: 'GPU・冷却' },
+  { key: 'creative', label: '動画・画像編集', note: 'CPU / GPU' },
+  { key: 'programming', label: 'プログラミング', note: '16GB目安' },
+  { key: 'accounting', label: '会計・確定申告', note: '画面・テンキー' },
 ]
 
 const initialState: CheckState = {
@@ -142,25 +142,22 @@ function buildResult(state: CheckState): Result {
     return '候補PCを見る'
   })()
 
-  const memory = heavyWork || state.programming ? '16GB以上' : state.budget === 'low' ? '8GBでも可、できれば16GB' : '16GB推奨'
-  const storage = heavyWork ? 'SSD 512GB以上' : state.budget === 'low' ? 'SSD 256GB以上、写真や動画が多いなら512GB' : 'SSD 512GB推奨'
-  const cpu = heavyWork
-    ? 'Core Ultra / Ryzen 7 / 専用GPU搭載機を優先'
-    : state.budget === 'low'
-      ? 'N100/N150以上、古いCeleronは慎重'
-      : 'Core i5 / Ryzen 5 / Core Ultra 5級を優先'
+  const specLine = (() => {
+    if (heavyWork) return '16GB+ / SSD512GB+ / GPU目安'
+    if (state.budget === 'low') return '8GB-16GB / SSD256GB+'
+    return '16GB / SSD512GB / Core i5級'
+  })()
 
   const buyConditions = [
-    `${memory}、${storage}を基準にする`,
-    dailyCarry ? '1.3kg以下、できれば14インチ前後を見る' : '据え置き中心なら画面サイズと端子を優先する',
-    state.webMeeting ? 'Web会議用にカメラ、マイク、Wi-Fi、USB-C/HDMIを確認する' : '用途に不要な高性能GPUや大容量構成へ寄せすぎない',
-    state.office || state.accounting ? 'Office付属の有無と、後から買う場合の総額を分けて見る' : '本体価格だけでなく、必要な周辺機器込みで見る',
+    specLine,
+    dailyCarry ? '毎日持つなら1.3kg前後' : '据え置きなら画面と端子を優先',
+    state.office || state.accounting ? 'Office代込みで総額を見る' : '不要な高性能を削る',
   ]
 
   const avoidConditions = [
-    lowBudgetHeavy ? '5万円前後でゲーム・動画編集まで1台に任せる構成' : 'CPU名が大分類だけで型番が分からない商品',
-    state.budget === 'low' ? 'メモリ4GB、eMMC、極端に古いCPUの格安PC' : '価格は高いのにメモリ8GB/SSD256GB止まりの構成',
-    dailyCarry ? '1.5kg以上で充電器も重いモデル' : '端子や保証を確認せず、価格だけで決める買い方',
+    lowBudgetHeavy ? '5万円で制作・ゲームまで1台化' : 'CPU型番が分からない商品',
+    state.budget === 'low' ? '4GB / eMMC / 古すぎるCPU' : '高価格なのに8GB / 256GB止まり',
+    dailyCarry ? '本体1.5kg超の持ち歩き' : '価格だけで決める買い方',
   ]
 
   const title = finalScore >= 82
@@ -170,15 +167,16 @@ function buildResult(state: CheckState): Result {
       : '予算か用途を分けた方が安全です'
 
   const summary = finalScore >= 82
-    ? '用途と予算のバランスは良好です。スペックの最低ラインを外さず、上位候補の価格と保証を比較してください。'
+    ? 'このまま候補比較へ進めます。'
     : finalScore >= 65
-      ? '候補はありますが、安さ、軽さ、性能の全部取りは難しい条件です。優先順位を1つ決めてから比較すると選びやすくなります。'
-      : 'このまま買うと、性能不足か予算超過のどちらかに寄りやすいです。中古、据え置き、用途分割も含めて見直すのが安全です。'
+      ? '優先順位を1つ決めると絞れます。'
+      : '用途か予算を分けた方が安全です。'
 
   const nextLinks = [
-    { href: primaryHref, label: primaryLabel, note: '診断条件に近いランキングへ進む' },
-    { href: '/monitor-list', label: 'モニターも見る', note: '家用・仕事用なら作業効率に効く' },
-    { href: '/pc-list/used', label: '中古も比較', note: '予算重視なら価格差を確認する' },
+    { href: primaryHref, label: primaryLabel, note: '条件に近い候補へ' },
+    dailyCarry
+      ? { href: '/pc-list/used', label: '中古も比較', note: '予算を抑える' }
+      : { href: '/monitor-list', label: 'モニターも見る', note: '家用・仕事用に' },
   ]
 
   return {
@@ -187,7 +185,7 @@ function buildResult(state: CheckState): Result {
     summary,
     primaryHref,
     primaryLabel,
-    specLine: `${cpu} / ${memory} / ${storage}`,
+    specLine,
     buyConditions,
     avoidConditions,
     nextLinks,
@@ -217,13 +215,8 @@ export default function PcCheckClient() {
             <p className="pc-check-kicker">PC購入前チェック</p>
             <h1>買ってから後悔しない条件を先に決める</h1>
             <p>
-              用途、予算、持ち運び、必要な作業を選ぶと、買ってよい条件と避けたい条件を整理します。
+              用途と予算から、買ってよい条件だけに絞ります。
             </p>
-            <div className="pc-check-hero__chips" aria-label="診断の特徴">
-              <span>用途別に判定</span>
-              <span>予算の無理を検出</span>
-              <span>ランキングへ接続</span>
-            </div>
           </div>
           <div className={`pc-check-hero__panel pc-check-hero__panel--${scoreTone}`} aria-label="診断結果サマリー">
             <div className="pc-check-panel__eyebrow">
@@ -247,10 +240,6 @@ export default function PcCheckClient() {
                 <h2>{result.title}</h2>
                 <p>{result.summary}</p>
               </div>
-            </div>
-            <div className="pc-check-spec-preview">
-              <span>推奨ライン</span>
-              <strong>{result.specLine}</strong>
             </div>
             <Link href={result.primaryHref} className="pc-check-primary-link">
               {result.primaryLabel}
@@ -415,31 +404,11 @@ export default function PcCheckClient() {
           line-height: 1.8;
         }
 
-        .pc-check-hero__chips {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 8px;
-          margin-top: 22px;
-        }
-
-        .pc-check-hero__chips span {
-          display: inline-flex;
-          align-items: center;
-          min-height: 30px;
-          padding: 0 10px;
-          border: 1px solid #dbeafe;
-          border-radius: 999px;
-          background: #eff6ff;
-          color: #1e3a8a;
-          font-size: 12px;
-          font-weight: 900;
-        }
-
         .pc-check-hero__panel {
           padding: 22px;
           display: grid;
-          gap: 14px;
-          align-content: start;
+          gap: 16px;
+          align-content: center;
           border-top: 4px solid #0f766e;
         }
 
@@ -520,27 +489,6 @@ export default function PcCheckClient() {
           color: #475569;
           font-size: 14px;
           line-height: 1.75;
-        }
-
-        .pc-check-spec-preview {
-          display: grid;
-          gap: 6px;
-          padding: 12px;
-          border: 1px solid #dbeafe;
-          border-radius: 8px;
-          background: #eff6ff;
-        }
-
-        .pc-check-spec-preview span {
-          color: #1e3a8a;
-          font-size: 12px;
-          font-weight: 900;
-        }
-
-        .pc-check-spec-preview strong {
-          color: #0f172a;
-          font-size: 13px;
-          line-height: 1.55;
         }
 
         .pc-check-primary-link {
