@@ -204,10 +204,7 @@ function ChartPanel({
     return { ...item, x, y }
   })
   const linePath = points.map((point, index) => `${index === 0 ? 'M' : 'L'} ${point.x} ${point.y}`).join(' ')
-  const areaPath = points.length > 0
-    ? `${linePath} L ${points[points.length - 1].x} ${baseline} L ${points[0].x} ${baseline} Z`
-    : ''
-  const barWidth = Math.max(3, Math.min(18, usableWidth / Math.max(1, series.length) - 2))
+  const gridLines = [0.25, 0.5, 0.75].map((ratio) => paddingY + usableHeight * ratio)
 
   return (
     <section className="analyticsPanel">
@@ -220,22 +217,18 @@ function ChartPanel({
       </div>
       <div className="lineChartWrap">
         <svg className="lineChart" viewBox={`0 0 ${chartWidth} ${chartHeight}`} preserveAspectRatio="none">
+          {gridLines.map((y) => (
+            <line
+              key={y}
+              x1={paddingX}
+              y1={y}
+              x2={chartWidth - paddingX}
+              y2={y}
+              className="chartGridLine"
+            />
+          ))}
           <line x1={paddingX} y1={baseline} x2={chartWidth - paddingX} y2={baseline} className="chartAxis" />
           <line x1={paddingX} y1={paddingY} x2={paddingX} y2={baseline} className="chartAxis" />
-          {areaPath ? <path d={areaPath} className="chartArea" /> : null}
-          {points.map((point) => {
-            const height = Math.max(2, baseline - point.y)
-            return (
-              <rect
-                key={point.label}
-                className="chartBar"
-                x={point.x - barWidth / 2}
-                y={baseline - height}
-                width={barWidth}
-                height={height}
-              />
-            )
-          })}
           {linePath ? <path d={linePath} className="chartLine" /> : null}
           {points.map((point) => (
             point.count > 0 ? (
@@ -250,39 +243,6 @@ function ChartPanel({
         <span>{series[0]?.label ? formatLabel(series[0].label) : '-'}</span>
         <span>最大 {max.toLocaleString('ja-JP')}</span>
         <span>{series[series.length - 1]?.label ? formatLabel(series[series.length - 1].label) : '-'}</span>
-      </div>
-    </section>
-  )
-}
-
-function ProductRankBars({ products }: { products: ProductClickStats[] }) {
-  const topProducts = products.slice(0, 10)
-  const max = Math.max(1, ...topProducts.map((product) => product.count))
-
-  return (
-    <section className="analyticsPanel">
-      <div className="panelHeader">
-        <div>
-          <h2>商品別クリック数</h2>
-          <p className="panelCaption">クリックが多い商品トップ10</p>
-        </div>
-        <span>{products.length.toLocaleString('ja-JP')}商品</span>
-      </div>
-      <div className="rankBars">
-        {topProducts.length > 0 ? topProducts.map((product) => (
-          <div className="rankRow" key={product.product_key}>
-            <div className="rankLabel">
-              <strong>{product.product_name || product.product_id}</strong>
-              <span>{formatProductType(product.product_type)} / {product.outbound_domain || '-'}</span>
-            </div>
-            <div className="rankTrack">
-              <div className="rankFill" style={{ width: `${Math.max(6, (product.count / max) * 100)}%` }} />
-            </div>
-            <div className="rankCount">{product.count.toLocaleString('ja-JP')}</div>
-          </div>
-        )) : (
-          <p className="emptyText">まだ商品クリックがありません。</p>
-        )}
       </div>
     </section>
   )
@@ -494,8 +454,6 @@ export default function ClickAnalyticsClient() {
               formatLabel={formatDayLabel}
             />
           </div>
-
-          <ProductRankBars products={snapshot.product_stats} />
 
           <section className="analyticsPanel">
             <div className="panelHeader">
@@ -832,7 +790,7 @@ export default function ClickAnalyticsClient() {
           height: 210px;
           border: 1px solid #edf0f5;
           border-radius: 8px;
-          background: linear-gradient(180deg, #ffffff 0%, #f9fbff 100%);
+          background: #ffffff;
           padding: 10px;
         }
 
@@ -847,8 +805,9 @@ export default function ClickAnalyticsClient() {
           stroke-width: 1;
         }
 
-        .chartArea {
-          fill: rgba(47, 111, 237, 0.12);
+        .chartGridLine {
+          stroke: #edf0f5;
+          stroke-width: 1;
         }
 
         .chartLine {
@@ -857,10 +816,6 @@ export default function ClickAnalyticsClient() {
           stroke-width: 3;
           stroke-linecap: round;
           stroke-linejoin: round;
-        }
-
-        .chartBar {
-          fill: rgba(47, 111, 237, 0.24);
         }
 
         .chartPoint {
@@ -875,51 +830,6 @@ export default function ClickAnalyticsClient() {
           margin-top: 8px;
           color: #607089;
           font-size: 11px;
-        }
-
-        .rankBars {
-          display: grid;
-          gap: 12px;
-        }
-
-        .rankRow {
-          display: grid;
-          grid-template-columns: minmax(220px, 1.4fr) minmax(160px, 2fr) 48px;
-          align-items: center;
-          gap: 12px;
-        }
-
-        .rankLabel strong {
-          display: block;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
-          font-size: 13px;
-        }
-
-        .rankLabel span {
-          display: block;
-          margin-top: 3px;
-          color: #607089;
-          font-size: 12px;
-        }
-
-        .rankTrack {
-          height: 12px;
-          overflow: hidden;
-          background: #edf0f5;
-          border-radius: 999px;
-        }
-
-        .rankFill {
-          height: 100%;
-          background: #2f6fed;
-          border-radius: inherit;
-        }
-
-        .rankCount {
-          text-align: right;
-          font-weight: 800;
         }
 
         .tableWrap {
@@ -1004,14 +914,6 @@ export default function ClickAnalyticsClient() {
             grid-template-columns: 1fr;
           }
 
-          .rankRow {
-            grid-template-columns: 1fr;
-            gap: 6px;
-          }
-
-          .rankCount {
-            text-align: left;
-          }
         }
       `}</style>
     </main>
