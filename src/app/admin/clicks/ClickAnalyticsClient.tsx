@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import type { FormEvent } from 'react'
+import type { CSSProperties, FormEvent } from 'react'
 
 interface StoredProductClick {
   id: string
@@ -44,11 +44,14 @@ interface ProductClickStats {
 
 interface ClickAnalyticsSnapshot {
   total_clicks: number
+  total_page_views: number
   last_updated_at: string
   recent_clicks: StoredProductClick[]
   product_stats: ProductClickStats[]
   minute_series: Array<{ minute: string; count: number }>
   day_series: Array<{ day: string; count: number }>
+  page_view_hour_series: Array<{ hour: string; count: number }>
+  page_view_day_series: Array<{ day: string; count: number }>
 }
 
 interface CampaignClickStats {
@@ -104,6 +107,12 @@ function formatProductType(value: string): string {
 function formatMinuteLabel(value: string): string {
   const parts = value.split('T')
   return parts[1] ?? value
+}
+
+function formatHourLabel(value: string): string {
+  const [day, hour] = value.split('T')
+  const dayLabel = day ? formatDayLabel(day) : ''
+  return hour ? `${dayLabel} ${hour}時` : value
 }
 
 function formatDayLabel(value: string): string {
@@ -183,11 +192,17 @@ function ChartPanel({
   caption,
   series,
   formatLabel,
+  unit = 'クリック',
+  variant = 'line',
+  accent = '#2f6fed',
 }: {
   title: string
   caption: string
   series: Array<{ label: string; count: number }>
   formatLabel: (value: string) => string
+  unit?: string
+  variant?: 'line' | 'bar'
+  accent?: string
 }) {
   const max = Math.max(1, ...series.map((item) => item.count))
   const total = series.reduce((sum, item) => sum + item.count, 0)
@@ -209,15 +224,17 @@ function ChartPanel({
     ? points.map((point, index) => `${index === 0 ? 'M' : 'L'} ${point.x} ${point.y}`).join(' ')
     : ''
   const gridLines = [0.25, 0.5, 0.75].map((ratio) => paddingY + usableHeight * ratio)
+  const barWidth = Math.max(4, Math.min(18, usableWidth / Math.max(1, series.length) * 0.58))
+  const panelStyle = { '--chart-accent': accent } as CSSProperties
 
   return (
-    <section className="analyticsPanel">
+    <section className="analyticsPanel" style={panelStyle}>
       <div className="panelHeader">
         <div>
           <h2>{title}</h2>
           <p className="panelCaption">{caption}</p>
         </div>
-        <span>{total.toLocaleString('ja-JP')}クリック</span>
+        <span>{total.toLocaleString('ja-JP')}{unit}</span>
       </div>
       <div className="lineChartWrap">
         <svg className="lineChart" viewBox={`0 0 ${chartWidth} ${chartHeight}`} preserveAspectRatio="none">
@@ -233,20 +250,40 @@ function ChartPanel({
           ))}
           <line x1={paddingX} y1={baseline} x2={chartWidth - paddingX} y2={baseline} className="chartAxis" />
           <line x1={paddingX} y1={paddingY} x2={paddingX} y2={baseline} className="chartAxis" />
-          {linePath ? <path d={linePath} className="chartLine" /> : null}
-          {points.map((point) => {
+          {variant === 'bar' && hasData ? points.map((point) => {
             if (point.count === 0) {
+              return null
+            }
+
+            const height = Math.max(2, baseline - point.y)
+            return (
+              <rect
+                key={point.label}
+                x={point.x - barWidth / 2}
+                y={baseline - height}
+                width={barWidth}
+                height={height}
+                rx="3"
+                className="chartBar"
+              >
+                <title>{`${formatLabel(point.label)}: ${point.count}${unit}`}</title>
+              </rect>
+            )
+          }) : null}
+          {variant === 'line' && linePath ? <path d={linePath} className="chartLine" /> : null}
+          {points.map((point) => {
+            if (variant !== 'line' || point.count === 0) {
               return null
             }
 
             return (
               <circle key={point.label} cx={point.x} cy={point.y} r="4" className="chartPoint">
-                <title>{`${formatLabel(point.label)}: ${point.count}クリック`}</title>
+                <title>{`${formatLabel(point.label)}: ${point.count}${unit}`}</title>
               </circle>
             )
           })}
         </svg>
-        {!hasData ? <div className="chartEmptyText">まだクリックがありません</div> : null}
+        {!hasData ? <div className="chartEmptyText">まだデータがありません</div> : null}
       </div>
       <div className="axisLabels">
         <span>{series[0]?.label ? formatLabel(series[0].label) : '-'}</span>
@@ -375,6 +412,14 @@ export default function ClickAnalyticsClient() {
     return snapshot?.day_series.reduce((sum, item) => sum + item.count, 0) ?? 0
   }, [snapshot])
 
+  const last24HourPageViews = useMemo(() => {
+    return snapshot?.page_view_hour_series.reduce((sum, item) => sum + item.count, 0) ?? 0
+  }, [snapshot])
+
+  const last30DayPageViews = useMemo(() => {
+    return snapshot?.page_view_day_series.reduce((sum, item) => sum + item.count, 0) ?? 0
+  }, [snapshot])
+
   const minuteSeries = snapshot?.minute_series.map((item) => ({
     label: item.minute,
     count: item.count,
@@ -384,6 +429,17 @@ export default function ClickAnalyticsClient() {
     label: item.day,
     count: item.count,
   })) ?? []
+
+  const pageViewHourSeries = snapshot?.page_view_hour_series.map((item) => ({
+    label: item.hour,
+    count: item.count,
+  })) ?? []
+
+  const pageViewDaySeries = snapshot?.page_view_day_series.map((item) => ({
+    label: item.day,
+    count: item.count,
+  })) ?? []
+
   const campaignStats = useMemo(
     () => buildCampaignStats(snapshot?.recent_clicks ?? []),
     [snapshot?.recent_clicks]
@@ -424,7 +480,7 @@ export default function ClickAnalyticsClient() {
               type="button"
               className="dangerButton"
               onClick={handleDeleteAll}
-              disabled={Boolean(deletingId) || snapshot.total_clicks === 0}
+              disabled={Boolean(deletingId) || (snapshot.total_clicks === 0 && snapshot.total_page_views === 0)}
             >
               {deletingId === 'all' ? '削除中' : 'すべて削除'}
             </button>
@@ -435,13 +491,25 @@ export default function ClickAnalyticsClient() {
               <span>総クリック数</span>
               <strong>{snapshot.total_clicks.toLocaleString('ja-JP')}</strong>
             </div>
+            <div className="metricBox metricBoxGreen">
+              <span>総PV数</span>
+              <strong>{snapshot.total_page_views.toLocaleString('ja-JP')}</strong>
+            </div>
             <div className="metricBox">
               <span>直近60分</span>
               <strong>{last60Clicks.toLocaleString('ja-JP')}</strong>
             </div>
+            <div className="metricBox metricBoxPurple">
+              <span>直近24時間PV</span>
+              <strong>{last24HourPageViews.toLocaleString('ja-JP')}</strong>
+            </div>
             <div className="metricBox">
-              <span>過去30日</span>
+              <span>過去30日クリック</span>
               <strong>{last30DayClicks.toLocaleString('ja-JP')}</strong>
+            </div>
+            <div className="metricBox metricBoxGreen">
+              <span>過去30日PV</span>
+              <strong>{last30DayPageViews.toLocaleString('ja-JP')}</strong>
             </div>
             <div className="metricBox">
               <span>クリック商品数</span>
@@ -455,12 +523,32 @@ export default function ClickAnalyticsClient() {
               caption="直近60分の分単位クリック"
               series={minuteSeries}
               formatLabel={formatMinuteLabel}
+              accent="#2563eb"
             />
             <ChartPanel
-              title="日別クリック推移"
-              caption="過去30日の日別クリック"
+              title="日別クリック数"
+              caption="過去30日のクリック数"
               series={daySeries}
               formatLabel={formatDayLabel}
+              variant="bar"
+              accent="#2563eb"
+            />
+            <ChartPanel
+              title="時間別PV数"
+              caption="直近24時間のページビュー"
+              series={pageViewHourSeries}
+              formatLabel={formatHourLabel}
+              unit="PV"
+              accent="#0f9f6e"
+            />
+            <ChartPanel
+              title="日別PV数"
+              caption="過去30日のページビュー"
+              series={pageViewDaySeries}
+              formatLabel={formatDayLabel}
+              unit="PV"
+              variant="bar"
+              accent="#7c3aed"
             />
           </div>
 
@@ -757,15 +845,25 @@ export default function ClickAnalyticsClient() {
         }
 
         .metricsGrid {
-          grid-template-columns: repeat(4, minmax(0, 1fr));
+          grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
         }
 
         .chartsGrid {
-          grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+          grid-template-columns: repeat(2, minmax(0, 1fr));
         }
 
         .metricBox {
           padding: 18px;
+        }
+
+        .metricBoxGreen {
+          border-color: #b7e4d1;
+          background: #f4fbf8;
+        }
+
+        .metricBoxPurple {
+          border-color: #d9ccff;
+          background: #f8f5ff;
         }
 
         .metricBox span,
@@ -824,15 +922,20 @@ export default function ClickAnalyticsClient() {
 
         .chartLine {
           fill: none;
-          stroke: #2f6fed;
+          stroke: var(--chart-accent, #2f6fed);
           stroke-width: 3;
           stroke-linecap: round;
           stroke-linejoin: round;
           vector-effect: non-scaling-stroke;
         }
 
+        .chartBar {
+          fill: var(--chart-accent, #2f6fed);
+          opacity: 0.78;
+        }
+
         .chartPoint {
-          fill: #2f6fed;
+          fill: var(--chart-accent, #2f6fed);
           stroke: #ffffff;
           stroke-width: 2;
           vector-effect: non-scaling-stroke;

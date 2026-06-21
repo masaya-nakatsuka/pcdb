@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Script from 'next/script'
 import { createPageMetadata } from '@/lib/seoMetadata'
+import PageViewTracker from '@/components/analytics/PageViewTracker'
 import './global.css'
 
 export const metadata: Metadata = createPageMetadata({
@@ -33,7 +34,10 @@ export default function RootLayout({
           `}
         </Script>
       </head>
-      <body className="bg-charcoal-deep font-sans antialiased text-frost-soft">{children}</body>
+      <body className="bg-charcoal-deep font-sans antialiased text-frost-soft">
+        <PageViewTracker />
+        {children}
+      </body>
     </html>
   )
 }

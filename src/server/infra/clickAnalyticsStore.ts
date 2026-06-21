@@ -9,6 +9,9 @@ const PRODUCT_COUNTS_KEY = `${KEY_PREFIX}:product_counts`
 const PRODUCT_META_KEY = `${KEY_PREFIX}:product_meta`
 const DAY_COUNTS_KEY = `${KEY_PREFIX}:day_counts`
 const MINUTE_COUNTS_KEY = `${KEY_PREFIX}:minute_counts`
+const PAGE_VIEW_TOTAL_KEY = `${KEY_PREFIX}:page_view_total`
+const PAGE_VIEW_HOUR_COUNTS_KEY = `${KEY_PREFIX}:page_view_hour_counts`
+const PAGE_VIEW_DAY_COUNTS_KEY = `${KEY_PREFIX}:page_view_day_counts`
 
 export interface ProductClickInput {
   product_id: string
@@ -55,13 +58,31 @@ export interface ProductClickStats {
   last_seen_at?: string
 }
 
+export interface PageViewInput {
+  page_path?: string
+  page_url?: string
+  page_title?: string
+  referrer?: string
+  entry_page_url?: string
+  entry_referrer?: string
+  first_seen_at?: string
+  utm_source?: string
+  utm_medium?: string
+  utm_campaign?: string
+  utm_content?: string
+  utm_term?: string
+}
+
 export interface ClickAnalyticsSnapshot {
   total_clicks: number
+  total_page_views: number
   last_updated_at: string
   recent_clicks: StoredProductClick[]
   product_stats: ProductClickStats[]
   minute_series: Array<{ minute: string; count: number }>
   day_series: Array<{ day: string; count: number }>
+  page_view_hour_series: Array<{ hour: string; count: number }>
+  page_view_day_series: Array<{ day: string; count: number }>
 }
 
 function twoDigits(value: number): string {
@@ -80,6 +101,11 @@ function formatJstDay(date: Date): string {
 function formatJstMinute(date: Date): string {
   const jst = asJstDate(date)
   return `${formatJstDay(date)}T${twoDigits(jst.getUTCHours())}:${twoDigits(jst.getUTCMinutes())}`
+}
+
+function formatJstHour(date: Date): string {
+  const jst = asJstDate(date)
+  return `${formatJstDay(date)}T${twoDigits(jst.getUTCHours())}`
 }
 
 function safeText(value: unknown, maxLength = 500): string {
@@ -201,6 +227,20 @@ export async function recordProductClick(input: ProductClickInput, referrer: str
   ])
 }
 
+export async function recordPageView(input: PageViewInput): Promise<void> {
+  const now = new Date()
+  const pagePath = safeText(input.page_path, 240)
+  if (!pagePath || pagePath.startsWith('/admin')) {
+    return
+  }
+
+  await getUpstashRedis().pipeline([
+    ['INCR', PAGE_VIEW_TOTAL_KEY],
+    ['HINCRBY', PAGE_VIEW_HOUR_COUNTS_KEY, formatJstHour(now), '1'],
+    ['HINCRBY', PAGE_VIEW_DAY_COUNTS_KEY, formatJstDay(now), '1'],
+  ])
+}
+
 export async function deleteClickAnalytics(): Promise<void> {
   await getUpstashRedis().pipeline([
     ['DEL', RECENT_KEY],
@@ -209,6 +249,9 @@ export async function deleteClickAnalytics(): Promise<void> {
     ['DEL', PRODUCT_META_KEY],
     ['DEL', DAY_COUNTS_KEY],
     ['DEL', MINUTE_COUNTS_KEY],
+    ['DEL', PAGE_VIEW_TOTAL_KEY],
+    ['DEL', PAGE_VIEW_HOUR_COUNTS_KEY],
+    ['DEL', PAGE_VIEW_DAY_COUNTS_KEY],
   ])
 }
 
@@ -301,27 +344,42 @@ function recentDayKeys(): string[] {
   )
 }
 
+function recentHourKeys(): string[] {
+  const now = Date.now()
+  return Array.from({ length: 24 }, (_value, index) =>
+    formatJstHour(new Date(now - (23 - index) * 60 * 60 * 1000))
+  )
+}
+
 export async function readClickAnalyticsSnapshot(): Promise<ClickAnalyticsSnapshot> {
   const [
     totalResult,
+    pageViewTotalResult,
     recentResult,
     productCountsResult,
     productMetaResult,
     dayCountsResult,
     minuteCountsResult,
+    pageViewHourCountsResult,
+    pageViewDayCountsResult,
   ] = await getUpstashRedis().pipeline([
     ['GET', TOTAL_KEY],
+    ['GET', PAGE_VIEW_TOTAL_KEY],
     ['LRANGE', RECENT_KEY, '0', (ADMIN_RECENT_LIMIT - 1).toString()],
     ['HGETALL', PRODUCT_COUNTS_KEY],
     ['HGETALL', PRODUCT_META_KEY],
     ['HGETALL', DAY_COUNTS_KEY],
     ['HGETALL', MINUTE_COUNTS_KEY],
+    ['HGETALL', PAGE_VIEW_HOUR_COUNTS_KEY],
+    ['HGETALL', PAGE_VIEW_DAY_COUNTS_KEY],
   ])
 
   const productCounts = parseRedisHash(productCountsResult)
   const productMeta = parseRedisHash(productMetaResult)
   const dayCounts = parseRedisHash(dayCountsResult)
   const minuteCounts = parseRedisHash(minuteCountsResult)
+  const pageViewHourCounts = parseRedisHash(pageViewHourCountsResult)
+  const pageViewDayCounts = parseRedisHash(pageViewDayCountsResult)
 
   const recent_clicks = Array.isArray(recentResult)
     ? recentResult.map(parseStoredClick).filter((click): click is StoredProductClick => Boolean(click))
@@ -356,6 +414,7 @@ export async function readClickAnalyticsSnapshot(): Promise<ClickAnalyticsSnapsh
 
   return {
     total_clicks: Number(totalResult ?? 0),
+    total_page_views: Number(pageViewTotalResult ?? 0),
     last_updated_at: new Date().toISOString(),
     recent_clicks,
     product_stats,
@@ -366,6 +425,14 @@ export async function readClickAnalyticsSnapshot(): Promise<ClickAnalyticsSnapsh
     day_series: recentDayKeys().map((day) => ({
       day,
       count: Number(dayCounts[day] ?? 0),
+    })),
+    page_view_hour_series: recentHourKeys().map((hour) => ({
+      hour,
+      count: Number(pageViewHourCounts[hour] ?? 0),
+    })),
+    page_view_day_series: recentDayKeys().map((day) => ({
+      day,
+      count: Number(pageViewDayCounts[day] ?? 0),
     })),
   }
 }
