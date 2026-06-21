@@ -132,9 +132,7 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="heroVisual" aria-label="PC関連カテゴリの商品集合画像">
-            <div className="heroImage" />
-          </div>
+          <div className="heroVisual" aria-hidden="true" />
         </section>
 
         <section className="quickCategorySection" aria-label="カテゴリ一覧">
@@ -305,17 +303,32 @@ export default function HomePage() {
         }
 
         .heroSection {
-          width: min(1180px, calc(100% - 32px));
+          position: relative;
+          width: 100%;
           min-height: calc(100vh - 72px);
-          margin: 0 auto;
-          display: grid;
-          grid-template-columns: minmax(0, 0.9fr) minmax(460px, 1.1fr);
+          margin: 0;
+          display: flex;
           align-items: center;
-          gap: 44px;
-          padding: 26px 0 58px;
+          overflow: hidden;
+          padding: clamp(84px, 11vh, 138px) 0 clamp(96px, 12vh, 150px);
+          background-image:
+            linear-gradient(90deg, rgba(247, 248, 251, 0.98) 0%, rgba(247, 248, 251, 0.92) 32%, rgba(247, 248, 251, 0.42) 58%, rgba(247, 248, 251, 0.08) 100%),
+            linear-gradient(180deg, rgba(247, 248, 251, 0.02) 0%, rgba(247, 248, 251, 0.22) 68%, #f7f8fb 100%),
+            url('/lp/specsy-hero-devices.webp');
+          background-size: cover;
+          background-position: center right;
         }
 
         .heroText {
+          position: relative;
+          z-index: 1;
+          width: min(1180px, calc(100% - 32px));
+          margin: 0 auto;
+        }
+
+        .heroText h1,
+        .heroLead,
+        .heroActions {
           max-width: 590px;
         }
 
@@ -389,20 +402,7 @@ export default function HomePage() {
         }
 
         .heroVisual {
-          min-width: 0;
-        }
-
-        .heroImage {
-          min-height: 520px;
-          border-radius: 22px;
-          border: 1px solid rgba(215, 221, 232, 0.9);
-          background-image:
-            linear-gradient(90deg, rgba(247, 248, 251, 0.98) 0%, rgba(247, 248, 251, 0.5) 24%, rgba(247, 248, 251, 0.04) 56%),
-            radial-gradient(circle at 78% 28%, rgba(37, 99, 235, 0.15), transparent 34%),
-            url('/lp/specsy-hero-devices.webp');
-          background-size: cover;
-          background-position: center;
-          box-shadow: 0 28px 70px rgba(18, 24, 38, 0.12);
+          display: none;
         }
 
         .quickCategorySection {
@@ -651,18 +651,17 @@ export default function HomePage() {
           }
 
           .heroSection {
-            min-height: auto;
-            grid-template-columns: 1fr;
-            gap: 28px;
+            min-height: 720px;
             padding-top: 42px;
+            align-items: flex-start;
+            background-image:
+              linear-gradient(180deg, rgba(247, 248, 251, 0.98) 0%, rgba(247, 248, 251, 0.94) 38%, rgba(247, 248, 251, 0.44) 68%, #f7f8fb 100%),
+              url('/lp/specsy-hero-devices.webp');
+            background-position: center bottom;
           }
 
           h1 {
             font-size: 44px;
-          }
-
-          .heroImage {
-            min-height: 420px;
           }
 
           .quickCategoryGrid {
@@ -714,7 +713,10 @@ export default function HomePage() {
           }
 
           .heroSection {
+            min-height: 690px;
             padding: 28px 0 42px;
+            background-size: cover, auto 58%;
+            background-position: center, center bottom;
           }
 
           h1 {
@@ -734,11 +736,6 @@ export default function HomePage() {
           .primaryAction,
           .secondaryAction {
             width: 100%;
-          }
-
-          .heroImage {
-            min-height: 310px;
-            border-radius: 16px;
           }
 
           .quickCategorySection {
