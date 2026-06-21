@@ -3,16 +3,13 @@
 import { useEffect } from 'react'
 import type { CSSProperties, ReactNode } from 'react'
 
-type ProductType = 'pc' | 'monitor' | 'tablet'
+export type ProductType = 'pc' | 'monitor' | 'tablet'
 
-interface TrackableProductLinkProps {
+export interface ProductClickTrackingParams {
   href: string
   productId: number | string
   productName: string | null
   productType: ProductType
-  children: ReactNode
-  className?: string
-  style?: CSSProperties
   rank?: number
   price?: number | null
   usage?: string | null
@@ -20,6 +17,12 @@ interface TrackableProductLinkProps {
   listing?: string | null
   linkPosition?: string
   isAffiliate?: boolean
+}
+
+interface TrackableProductLinkProps extends ProductClickTrackingParams {
+  children: ReactNode
+  className?: string
+  style?: CSSProperties
 }
 
 declare global {
@@ -175,6 +178,59 @@ function recordClickLocally(eventParams: Record<string, unknown>) {
   })
 }
 
+export function trackProductClick({
+  href,
+  productId,
+  productName,
+  productType,
+  rank,
+  price,
+  usage,
+  device,
+  listing,
+  linkPosition,
+  isAffiliate,
+}: ProductClickTrackingParams) {
+  if (typeof window === 'undefined') {
+    return
+  }
+
+  const sourcePage = window.location.pathname
+  const eventParams = {
+    product_id: String(productId),
+    product_name: productName ?? '',
+    product_type: productType,
+    source_page: sourcePage,
+    page_url: window.location.href,
+    usage: usage ?? inferUsageFromPath(sourcePage),
+    device: device ?? '',
+    listing: listing ?? '',
+    outbound_domain: getOutboundDomain(href),
+    price: price ?? undefined,
+    rank: rank ?? undefined,
+    link_position: linkPosition ?? '',
+    is_affiliate: isAffiliateOutbound(href, isAffiliate),
+    destination_url: href,
+    transport_type: 'beacon',
+    ...getCampaignAttribution(),
+  }
+
+  window.gtag?.('event', 'specsy_product_click', eventParams)
+  window.dataLayer?.push?.({
+    event: 'specsy_product_click',
+    ...eventParams,
+  })
+  recordClickLocally(eventParams)
+
+  if (eventParams.is_affiliate) {
+    window.gtag?.('event', 'affiliate_outbound_click', eventParams)
+    window.dataLayer?.push?.({
+      event: 'affiliate_outbound_click',
+      ...eventParams,
+    })
+  }
+}
+
 export default function TrackableProductLink({
   href,
   productId,
@@ -196,44 +252,19 @@ export default function TrackableProductLink({
   }, [])
 
   const handleClick = () => {
-    if (typeof window === 'undefined') {
-      return
-    }
-
-    const sourcePage = window.location.pathname
-    const eventParams = {
-      product_id: String(productId),
-      product_name: productName ?? '',
-      product_type: productType,
-      source_page: sourcePage,
-      page_url: window.location.href,
-      usage: usage ?? inferUsageFromPath(sourcePage),
-      device: device ?? '',
-      listing: listing ?? '',
-      outbound_domain: getOutboundDomain(href),
-      price: price ?? undefined,
-      rank: rank ?? undefined,
-      link_position: linkPosition ?? '',
-      is_affiliate: isAffiliateOutbound(href, isAffiliate),
-      destination_url: href,
-      transport_type: 'beacon',
-      ...getCampaignAttribution(),
-    }
-
-    window.gtag?.('event', 'specsy_product_click', eventParams)
-    window.dataLayer?.push?.({
-      event: 'specsy_product_click',
-      ...eventParams,
+    trackProductClick({
+      href,
+      productId,
+      productName,
+      productType,
+      rank,
+      price,
+      usage,
+      device,
+      listing,
+      linkPosition,
+      isAffiliate,
     })
-    recordClickLocally(eventParams)
-
-    if (eventParams.is_affiliate) {
-      window.gtag?.('event', 'affiliate_outbound_click', eventParams)
-      window.dataLayer?.push?.({
-        event: 'affiliate_outbound_click',
-        ...eventParams,
-      })
-    }
   }
 
   return (

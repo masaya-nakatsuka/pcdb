@@ -9,6 +9,7 @@ import {
 } from '../../lib/monitorRecommendation'
 import type { MonitorRecommendation, MonitorUsage } from '../../lib/monitorRecommendation'
 import TrackableProductLink from '../../components/analytics/TrackableProductLink'
+import ProductLinkTableRow from '../../components/analytics/ProductLinkTableRow'
 import PcListHeader from '../pc-list/PcListHeader'
 
 const monitorColumns = [
@@ -562,7 +563,20 @@ export default async function MonitorListView({ usage }: MonitorListViewProps) {
                   const productUrl = monitor.af_url || monitor.url
 
                   return (
-                    <tr key={monitor.id}>
+                    <ProductLinkTableRow
+                      key={monitor.id}
+                      href={productUrl}
+                      productId={monitor.id}
+                      productName={`${monitor.brand ?? ''} / ${monitor.name ?? ''}`}
+                      productType="monitor"
+                      rank={index + 1}
+                      price={monitor.real_price ?? monitor.price}
+                      usage={usage}
+                      device="monitor"
+                      listing="new"
+                      linkPosition="monitor_table_row"
+                      isAffiliate={Boolean(monitor.af_url)}
+                    >
                       <td style={{
                         padding: '12px',
                         borderBottom: '1px solid #f1f5f9',
@@ -728,7 +742,7 @@ export default async function MonitorListView({ usage }: MonitorListViewProps) {
                           <span style={{ color: '#94a3b8', fontSize: '12px' }}>-</span>
                         )}
                       </td>
-                    </tr>
+                    </ProductLinkTableRow>
                   )
                 })}
               </tbody>

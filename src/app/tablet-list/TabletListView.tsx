@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import type { Tablet } from '../../server/domain/models/tablet'
 import { rankTablets, type TabletRecommendation } from '../../lib/tabletRecommendation'
 import TrackableProductLink from '../../components/analytics/TrackableProductLink'
+import ProductLinkTableRow from '../../components/analytics/ProductLinkTableRow'
 import PcListHeader from '../pc-list/PcListHeader'
 
 const tabletColumns = [
@@ -261,7 +262,19 @@ function TabletTable({ rankedTablets }: { rankedTablets: TabletRecommendation[] 
               const productUrl = tablet.af_url || tablet.url
 
               return (
-                <tr key={tablet.id}>
+                <ProductLinkTableRow
+                  key={tablet.id}
+                  href={productUrl}
+                  productId={tablet.id}
+                  productName={`${tablet.brand ?? ''} / ${tablet.name ?? ''}`}
+                  productType="tablet"
+                  rank={index + 1}
+                  price={tablet.real_price ?? tablet.price}
+                  device="tablet"
+                  listing="new"
+                  linkPosition="tablet_table_row"
+                  isAffiliate={Boolean(tablet.af_url)}
+                >
                   <td>
                     <span className="tablet-list__table-rank">{index + 1}位</span>
                     <span className="tablet-list__table-score">{score}</span>
@@ -328,7 +341,7 @@ function TabletTable({ rankedTablets }: { rankedTablets: TabletRecommendation[] 
                       '-'
                     )}
                   </td>
-                </tr>
+                </ProductLinkTableRow>
               )
             })}
           </tbody>

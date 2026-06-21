@@ -26,6 +26,23 @@
   vertical-align: 0.08em;
 }
 
+.product-link-table-row {
+  cursor: pointer;
+}
+
+.product-link-table-row:hover td {
+  background: #f8fafc;
+}
+
+.product-link-table-row:focus-visible {
+  outline: 3px solid #2563eb;
+  outline-offset: -3px;
+}
+
+.product-link-table-row:focus-visible td {
+  background: #eff6ff;
+}
+
 @media (max-width: 767px) {
   .pc-list-page-intro {
     padding: 20px 16px 0 !important;

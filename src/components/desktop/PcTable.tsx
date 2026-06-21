@@ -8,6 +8,7 @@ import { getBatteryLifeProfileRows } from '../utils/batteryLifeDisplay'
 import { fetchPcList } from '../../app/pc-list/fetchPcs'
 import { getPcListUsagePath } from '../../app/pc-list/usageConfig'
 import TrackableProductLink from '../analytics/TrackableProductLink'
+import ProductLinkTableRow from '../analytics/ProductLinkTableRow'
 import ImageComponent from './ImageComponent'
 
 const podiumRankStyles = {
@@ -977,7 +978,20 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
                   const batteryLifeRows = getBatteryLifeProfileRows(pc.batteryLifeProfiles)
 
                   return (
-                    <tr key={pc.id}>
+                    <ProductLinkTableRow
+                      key={pc.id}
+                      href={productLink}
+                      productId={pc.id}
+                      productName={`${pc.brand ?? ''} / ${pc.name ?? ''}`}
+                      productType="pc"
+                      rank={index + 1}
+                      price={pc.price}
+                      usage={selectedUsage}
+                      device={device}
+                      listing={listing}
+                      linkPosition="pc_table_row"
+                      isAffiliate={Boolean(pc.af_url)}
+                    >
                       <td style={{border: '1px solid #ddd', padding: '8px', textAlign: 'center'}}>
                         {pc.pcScore && (
                           <span style={{ fontWeight: 'bold', fontSize: '14px' }}>
@@ -1187,7 +1201,7 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
                           </TrackableProductLink>
                         )}
                       </td>
-                    </tr>
+                    </ProductLinkTableRow>
                   )
                 })}
               </tbody>
