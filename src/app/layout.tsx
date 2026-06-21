@@ -1,10 +1,13 @@
+import type { Metadata } from 'next'
 import Script from 'next/script'
+import { createPageMetadata } from '@/lib/seoMetadata'
 import './global.css'
 
-export const metadata = {
-  title: 'Specsy（スペクシー)',
-  description: '自分のスペックを引き上げる総合プラットフォーム',
-}
+export const metadata: Metadata = createPageMetadata({
+  title: 'Specsy（スペクシー）',
+  description: 'AmazonのPC、ミニPC、タブレット、モニターを価格、CPU、GPU、メモリ、SSD、用途別スコアで比較できるスペック比較サイトです。',
+  path: '/',
+})
 
 export default function RootLayout({
   children,

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
+import { createPageMetadata } from '@/lib/seoMetadata'
 import {
   getMonitorUsageOption,
   monitorUsageOptions,
@@ -26,17 +27,20 @@ export async function generateMetadata({ params }: MonitorUsagePageProps): Promi
   const usage = parseMonitorUsageSlug(usageSlug)
 
   if (!usage) {
-    return {
+    return createPageMetadata({
       title: 'モニター比較 - スペクシーハブ',
-    }
+      description: 'PCモニターをサイズ、解像度、リフレッシュレート、パネル、端子、価格、用途別の見やすさで比較する画面です。',
+      path: '/monitor-list',
+    })
   }
 
   const usageOption = getMonitorUsageOption(usage)
 
-  return {
+  return createPageMetadata({
     title: `${usageOption.label}モニター比較 - スペクシーハブ`,
     description: usageOption.description,
-  }
+    path: `/monitor-list/${usageOption.slug}`,
+  })
 }
 
 export default async function MonitorUsagePage({ params }: MonitorUsagePageProps) {

@@ -1,6 +1,11 @@
-'use client'
-
 import Link from 'next/link'
+import { createPageMetadata } from '@/lib/seoMetadata'
+
+export const metadata = createPageMetadata({
+  title: 'プライバシーポリシー - スペクシーハブ',
+  description: 'Specsyのプライバシーポリシー、個人情報の取り扱い、アクセス解析、広告配信、免責事項について掲載しています。',
+  path: '/privacy',
+})
 
 export default function PrivacyPage() {
   return (

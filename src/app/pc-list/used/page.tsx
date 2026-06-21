@@ -1,11 +1,13 @@
 import type { Metadata } from 'next'
+import { createPageMetadata } from '@/lib/seoMetadata'
 import UsagePcListPageClient from '../UsagePcListPageClient'
 import { getPcListUsagePage, parsePcListUsage, pcListUsageLabels } from '../usageConfig'
 
-export const metadata: Metadata = {
+export const metadata: Metadata = createPageMetadata({
   title: '中古PCランキング - スペクシーハブ',
-  description: '中古・整備済みPCだけを分けて、価格、CPU、メモリ、SSD、重量などの条件で比較できます。',
-}
+  description: '中古PCと整備済みPCを、価格、CPU、メモリ、SSD、重量、用途別スコアで比較し、安さと実用性のバランスを確認できます。',
+  path: '/pc-list/used',
+})
 
 interface UsedPcListPageProps {
   searchParams?: Promise<Record<string, string | string[] | undefined>>

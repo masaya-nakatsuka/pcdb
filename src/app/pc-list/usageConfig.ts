@@ -40,19 +40,19 @@ export const pcListUsagePages: Record<ClientUsageCategory, {
     path: '/pc-list/cafe',
     title: 'カフェ作業向けPCランキング - スペクシーハブ',
     heading: 'カフェ作業向けPCランキング',
-    description: 'カフェや出先で集中作業しやすいPCを、携帯性・画面サイズ・電池持ち・性能のバランスで比較します。'
+    description: 'カフェや出先で集中作業しやすいPCを、携帯性、画面サイズ、電池持ち、CPU性能、メモリ、価格のバランスで比較します。'
   },
   home: {
     path: '/pc-list/home',
     title: '自宅作業向けPCランキング - スペクシーハブ',
     heading: '自宅作業向けPCランキング',
-    description: '自宅でじっくり使うPCを、処理性能・メモリ・ストレージ・画面の見やすさを中心に比較します。'
+    description: '自宅でじっくり使うPCを、処理性能、メモリ、ストレージ、画面の見やすさ、価格のバランスから比較します。'
   },
   cost_performance: {
     path: '/pc-list/cost-performance',
     title: 'コスパPCランキング - スペクシーハブ',
     heading: 'コスパPCランキング',
-    description: '画面サイズを評価に入れず、価格と基本性能のバランスでPCを比較するランキングです。'
+    description: '価格と基本性能のバランスを重視して、CPU、メモリ、SSD、GPU、実用性からコスパの良いPCを比較します。'
   },
   gaming: {
     path: '/pc-list/gaming',
@@ -74,7 +74,7 @@ export const pcListUsagePages: Record<ClientUsageCategory, {
     path: '/pc-list/video-editing',
     title: '動画編集向けPCランキング - スペクシーハブ',
     heading: '動画編集向けPCランキング',
-    description: '動画編集に使うPCを、CPU・GPU・メモリ・ストレージ性能を中心に比較します。'
+    description: '動画編集に使うPCを、CPU、GPU、メモリ、SSD、ストレージ容量、価格のバランスを中心に比較します。'
   }
 }
 

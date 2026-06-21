@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
+import { SITE_URL as SHARED_SITE_URL } from './seoMetadata'
 
-export const SITE_URL = 'https://specsy-hub.com'
+export const SITE_URL = SHARED_SITE_URL
 
 export interface ArticleMetadata {
   id: number

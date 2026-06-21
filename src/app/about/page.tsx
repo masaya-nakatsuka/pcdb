@@ -1,6 +1,11 @@
-'use client'
-
 import Link from 'next/link'
+import { createPageMetadata } from '@/lib/seoMetadata'
+
+export const metadata = createPageMetadata({
+  title: '運営者情報 - スペクシーハブ',
+  description: 'Specsyの運営者情報、サイト概要、PC・タブレット・モニター比較で扱う情報、アフィリエイト広告の方針を掲載しています。',
+  path: '/about',
+})
 
 export default function AboutPage() {
   return (
