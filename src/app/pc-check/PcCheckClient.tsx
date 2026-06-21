@@ -197,6 +197,8 @@ function buildResult(state: CheckState): Result {
 export default function PcCheckClient() {
   const [state, setState] = useState<CheckState>(initialState)
   const result = useMemo(() => buildResult(state), [state])
+  const scoreTone = result.score >= 82 ? 'good' : result.score >= 65 ? 'middle' : 'risk'
+  const scoreColor = result.score >= 82 ? '#0f766e' : result.score >= 65 ? '#2563eb' : '#b45309'
 
   const setField = <K extends keyof CheckState>(key: K, value: CheckState[K]) => {
     setState((current) => ({ ...current, [key]: value }))
@@ -217,15 +219,38 @@ export default function PcCheckClient() {
             <p>
               用途、予算、持ち運び、必要な作業を選ぶと、買ってよい条件と避けたい条件を整理します。
             </p>
-          </div>
-          <div className="pc-check-hero__panel" aria-label="診断結果サマリー">
-            <div className="pc-check-score">
-              <span className="pc-check-score__value">{result.score}</span>
-              <span className="pc-check-score__label">購入判断スコア</span>
+            <div className="pc-check-hero__chips" aria-label="診断の特徴">
+              <span>用途別に判定</span>
+              <span>予算の無理を検出</span>
+              <span>ランキングへ接続</span>
             </div>
-            <div>
-              <h2>{result.title}</h2>
-              <p>{result.summary}</p>
+          </div>
+          <div className={`pc-check-hero__panel pc-check-hero__panel--${scoreTone}`} aria-label="診断結果サマリー">
+            <div className="pc-check-panel__eyebrow">
+              <span>Live diagnosis</span>
+              <strong>{result.score >= 82 ? 'Ready' : result.score >= 65 ? 'Review' : 'Careful'}</strong>
+            </div>
+            <div className="pc-check-score-card">
+              <div
+                className="pc-check-score-ring"
+                style={{
+                  background: `conic-gradient(${scoreColor} ${result.score * 3.6}deg, #e2e8f0 0deg)`,
+                }}
+                aria-hidden="true"
+              >
+                <div className="pc-check-score-ring__inner">
+                  <span>{result.score}</span>
+                  <small>/100</small>
+                </div>
+              </div>
+              <div>
+                <h2>{result.title}</h2>
+                <p>{result.summary}</p>
+              </div>
+            </div>
+            <div className="pc-check-spec-preview">
+              <span>推奨ライン</span>
+              <strong>{result.specLine}</strong>
             </div>
             <Link href={result.primaryHref} className="pc-check-primary-link">
               {result.primaryLabel}
@@ -235,7 +260,12 @@ export default function PcCheckClient() {
 
         <section className="pc-check-grid" aria-label="PC購入前チェック項目">
           <div className="pc-check-form">
+            <div className="pc-check-form__intro">
+              <span>Input</span>
+              <strong>条件を選ぶ</strong>
+            </div>
             <ChoiceGroup
+              step="01"
               title="主な用途"
               choices={usageChoices}
               value={state.usage}
@@ -243,6 +273,7 @@ export default function PcCheckClient() {
             />
 
             <ChoiceGroup
+              step="02"
               title="予算"
               choices={budgetChoices}
               value={state.budget}
@@ -250,6 +281,7 @@ export default function PcCheckClient() {
             />
 
             <ChoiceGroup
+              step="03"
               title="持ち運び"
               choices={mobilityChoices}
               value={state.mobility}
@@ -257,6 +289,7 @@ export default function PcCheckClient() {
             />
 
             <ChoiceGroup
+              step="04"
               title="買う場所"
               choices={purchasePlaceChoices}
               value={state.purchasePlace}
@@ -265,7 +298,10 @@ export default function PcCheckClient() {
 
             <div className="pc-check-section">
               <div className="pc-check-section__head">
-                <h2>必要な作業</h2>
+                <div>
+                  <span className="pc-check-section__step">05</span>
+                  <h2>必要な作業</h2>
+                </div>
                 <span>複数選択</span>
               </div>
               <div className="pc-check-feature-grid">
@@ -277,8 +313,11 @@ export default function PcCheckClient() {
                     aria-pressed={state[item.key]}
                     onClick={() => toggleFeature(item.key)}
                   >
-                    <strong>{item.label}</strong>
-                    <span>{item.note}</span>
+                    <span className="pc-check-choice__marker" aria-hidden="true" />
+                    <span className="pc-check-choice__body">
+                      <strong>{item.label}</strong>
+                      <span>{item.note}</span>
+                    </span>
                   </button>
                 ))}
               </div>
@@ -286,6 +325,10 @@ export default function PcCheckClient() {
           </div>
 
           <aside className="pc-check-result" aria-label="診断結果">
+            <div className="pc-check-result__header">
+              <span>Personal report</span>
+              <h2>{result.title}</h2>
+            </div>
             <div className="pc-check-result__top">
               <span>推奨ライン</span>
               <strong>{result.specLine}</strong>
@@ -312,7 +355,8 @@ export default function PcCheckClient() {
       <style jsx global>{`
         .pc-check-page {
           min-height: 100vh;
-          background: #f8fafc;
+          background:
+            linear-gradient(180deg, #f8fafc 0%, #ffffff 42%, #f1f5f9 100%);
           color: #0f172a;
         }
 
@@ -324,10 +368,10 @@ export default function PcCheckClient() {
 
         .pc-check-hero {
           display: grid;
-          grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
+          grid-template-columns: minmax(0, 1.08fr) minmax(360px, 0.92fr);
           gap: 20px;
           align-items: stretch;
-          margin-bottom: 20px;
+          margin-bottom: 22px;
         }
 
         .pc-check-hero__copy,
@@ -337,11 +381,14 @@ export default function PcCheckClient() {
           border: 1px solid #e2e8f0;
           border-radius: 8px;
           background: #ffffff;
-          box-shadow: 0 16px 30px rgba(15, 23, 42, 0.06);
+          box-shadow: 0 18px 36px rgba(15, 23, 42, 0.07);
         }
 
         .pc-check-hero__copy {
-          padding: 30px;
+          padding: 34px;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
         }
 
         .pc-check-kicker {
@@ -349,17 +396,18 @@ export default function PcCheckClient() {
           color: #2563eb;
           font-size: 13px;
           font-weight: 900;
+          text-transform: uppercase;
         }
 
         .pc-check-hero h1 {
           margin: 0;
           max-width: 720px;
-          font-size: 34px;
-          line-height: 1.24;
+          font-size: 36px;
+          line-height: 1.22;
           font-weight: 900;
         }
 
-        .pc-check-hero__copy > p:last-child {
+        .pc-check-hero__copy > p {
           max-width: 720px;
           margin: 14px 0 0;
           color: #475569;
@@ -367,30 +415,92 @@ export default function PcCheckClient() {
           line-height: 1.8;
         }
 
-        .pc-check-hero__panel {
-          padding: 24px;
-          display: grid;
-          gap: 16px;
+        .pc-check-hero__chips {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 8px;
+          margin-top: 22px;
         }
 
-        .pc-check-score {
+        .pc-check-hero__chips span {
+          display: inline-flex;
+          align-items: center;
+          min-height: 30px;
+          padding: 0 10px;
+          border: 1px solid #dbeafe;
+          border-radius: 999px;
+          background: #eff6ff;
+          color: #1e3a8a;
+          font-size: 12px;
+          font-weight: 900;
+        }
+
+        .pc-check-hero__panel {
+          padding: 22px;
+          display: grid;
+          gap: 14px;
+          align-content: start;
+          border-top: 4px solid #0f766e;
+        }
+
+        .pc-check-hero__panel--middle {
+          border-top-color: #2563eb;
+        }
+
+        .pc-check-hero__panel--risk {
+          border-top-color: #b45309;
+        }
+
+        .pc-check-panel__eyebrow {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+          color: #64748b;
+          font-size: 12px;
+          font-weight: 900;
+          text-transform: uppercase;
+        }
+
+        .pc-check-panel__eyebrow strong {
+          color: #0f172a;
+        }
+
+        .pc-check-score-card {
+          display: grid;
+          grid-template-columns: 112px minmax(0, 1fr);
+          gap: 16px;
+          align-items: center;
+        }
+
+        .pc-check-score-ring {
+          width: 112px;
+          height: 112px;
+          padding: 8px;
+          border-radius: 999px;
+        }
+
+        .pc-check-score-ring__inner {
+          width: 100%;
+          height: 100%;
           display: flex;
           align-items: baseline;
-          gap: 10px;
-          padding-bottom: 12px;
-          border-bottom: 1px solid #e2e8f0;
+          justify-content: center;
+          gap: 2px;
+          border-radius: 999px;
+          background: #ffffff;
+          box-shadow: inset 0 0 0 1px #e2e8f0;
         }
 
-        .pc-check-score__value {
-          color: #0f766e;
-          font-size: 48px;
+        .pc-check-score-ring__inner span {
+          font-size: 34px;
           line-height: 1;
           font-weight: 900;
         }
 
-        .pc-check-score__label {
+        .pc-check-score-ring__inner small {
           color: #475569;
-          font-size: 13px;
+          font-size: 12px;
           font-weight: 800;
         }
 
@@ -411,6 +521,27 @@ export default function PcCheckClient() {
           line-height: 1.75;
         }
 
+        .pc-check-spec-preview {
+          display: grid;
+          gap: 6px;
+          padding: 12px;
+          border: 1px solid #dbeafe;
+          border-radius: 8px;
+          background: #eff6ff;
+        }
+
+        .pc-check-spec-preview span {
+          color: #1e3a8a;
+          font-size: 12px;
+          font-weight: 900;
+        }
+
+        .pc-check-spec-preview strong {
+          color: #0f172a;
+          font-size: 13px;
+          line-height: 1.55;
+        }
+
         .pc-check-primary-link {
           display: inline-flex;
           align-items: center;
@@ -418,11 +549,12 @@ export default function PcCheckClient() {
           min-height: 42px;
           padding: 0 16px;
           border-radius: 8px;
-          background: #2563eb;
+          background: #0f172a;
           color: #ffffff;
           font-size: 14px;
           font-weight: 900;
           text-decoration: none;
+          box-shadow: 0 12px 22px rgba(15, 23, 42, 0.18);
         }
 
         .pc-check-grid {
@@ -442,6 +574,27 @@ export default function PcCheckClient() {
           gap: 18px;
         }
 
+        .pc-check-form__intro {
+          display: flex;
+          align-items: baseline;
+          justify-content: space-between;
+          gap: 12px;
+          padding-bottom: 14px;
+          border-bottom: 1px solid #e2e8f0;
+        }
+
+        .pc-check-form__intro span {
+          color: #64748b;
+          font-size: 12px;
+          font-weight: 900;
+          text-transform: uppercase;
+        }
+
+        .pc-check-form__intro strong {
+          font-size: 18px;
+          font-weight: 900;
+        }
+
         .pc-check-section {
           display: grid;
           gap: 10px;
@@ -454,7 +607,26 @@ export default function PcCheckClient() {
           gap: 12px;
         }
 
-        .pc-check-section__head span {
+        .pc-check-section__head > div {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .pc-check-section__step {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 28px;
+          height: 24px;
+          border-radius: 8px;
+          background: #f1f5f9;
+          color: #334155;
+          font-size: 11px;
+          font-weight: 900;
+        }
+
+        .pc-check-section__head > span {
           color: #64748b;
           font-size: 12px;
           font-weight: 800;
@@ -464,7 +636,7 @@ export default function PcCheckClient() {
         .pc-check-feature-grid {
           display: grid;
           grid-template-columns: repeat(2, minmax(0, 1fr));
-          gap: 8px;
+          gap: 10px;
         }
 
         .pc-check-choice,
@@ -473,11 +645,36 @@ export default function PcCheckClient() {
           padding: 11px 12px;
           border: 1px solid #e2e8f0;
           border-radius: 8px;
-          background: #ffffff;
+          background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
           color: #0f172a;
           text-align: left;
           cursor: pointer;
+          display: grid;
+          grid-template-columns: 18px minmax(0, 1fr);
+          gap: 9px;
+          align-items: start;
           transition: border-color 0.16s ease, background-color 0.16s ease, box-shadow 0.16s ease;
+        }
+
+        .pc-check-choice__marker {
+          width: 14px;
+          height: 14px;
+          margin-top: 2px;
+          border: 2px solid #cbd5e1;
+          border-radius: 999px;
+          background: #ffffff;
+        }
+
+        .pc-check-choice--active .pc-check-choice__marker,
+        .pc-check-feature--active .pc-check-choice__marker {
+          border-color: #ffffff;
+          background: #2563eb;
+          box-shadow: 0 0 0 2px #2563eb;
+        }
+
+        .pc-check-feature--active .pc-check-choice__marker {
+          background: #0f766e;
+          box-shadow: 0 0 0 2px #0f766e;
         }
 
         .pc-check-choice strong,
@@ -488,8 +685,7 @@ export default function PcCheckClient() {
           font-weight: 900;
         }
 
-        .pc-check-choice span,
-        .pc-check-feature span {
+        .pc-check-choice__body > span {
           display: block;
           margin-top: 5px;
           color: #64748b;
@@ -521,15 +717,38 @@ export default function PcCheckClient() {
           top: 18px;
           display: grid;
           gap: 16px;
+          border-top: 4px solid #0f172a;
+        }
+
+        .pc-check-result__header {
+          display: grid;
+          gap: 5px;
+          padding-bottom: 14px;
+          border-bottom: 1px solid #e2e8f0;
+        }
+
+        .pc-check-result__header span {
+          color: #64748b;
+          font-size: 12px;
+          font-weight: 900;
+          text-transform: uppercase;
+        }
+
+        .pc-check-result__header h2 {
+          margin: 0;
+          font-size: 20px;
+          line-height: 1.35;
+          font-weight: 900;
         }
 
         .pc-check-result__top {
           display: grid;
           gap: 7px;
-          padding: 14px;
+          padding: 14px 16px;
           border: 1px solid #cbd5e1;
           border-radius: 8px;
-          background: #f8fafc;
+          background:
+            linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
         }
 
         .pc-check-result__top span {
@@ -602,6 +821,11 @@ export default function PcCheckClient() {
           text-decoration: none;
         }
 
+        .pc-check-next__link:first-child {
+          border-color: #bfdbfe;
+          background: #eff6ff;
+        }
+
         .pc-check-next__link:hover {
           border-color: #bfdbfe;
           background: #f8fafc;
@@ -647,6 +871,20 @@ export default function PcCheckClient() {
             font-size: 26px;
           }
 
+          .pc-check-score-card {
+            grid-template-columns: 92px minmax(0, 1fr);
+            gap: 12px;
+          }
+
+          .pc-check-score-ring {
+            width: 92px;
+            height: 92px;
+          }
+
+          .pc-check-score-ring__inner span {
+            font-size: 28px;
+          }
+
           .pc-check-choice-grid,
           .pc-check-feature-grid {
             grid-template-columns: 1fr;
@@ -658,11 +896,13 @@ export default function PcCheckClient() {
 }
 
 function ChoiceGroup<T extends string>({
+  step,
   title,
   choices,
   value,
   onChange,
 }: {
+  step: string
   title: string
   choices: Array<Choice<T>>
   value: T
@@ -671,7 +911,10 @@ function ChoiceGroup<T extends string>({
   return (
     <div className="pc-check-section">
       <div className="pc-check-section__head">
-        <h2>{title}</h2>
+        <div>
+          <span className="pc-check-section__step">{step}</span>
+          <h2>{title}</h2>
+        </div>
       </div>
       <div className="pc-check-choice-grid">
         {choices.map((choice) => (
@@ -682,8 +925,11 @@ function ChoiceGroup<T extends string>({
             aria-pressed={choice.value === value}
             onClick={() => onChange(choice.value)}
           >
-            <strong>{choice.label}</strong>
-            <span>{choice.note}</span>
+            <span className="pc-check-choice__marker" aria-hidden="true" />
+            <span className="pc-check-choice__body">
+              <strong>{choice.label}</strong>
+              <span>{choice.note}</span>
+            </span>
           </button>
         ))}
       </div>
