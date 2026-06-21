@@ -141,6 +141,10 @@ class UpstashRedisClient {
 
 let upstashRedisClient: UpstashRedisClient | null = null
 
+export function hasUpstashRedisConfig(): boolean {
+  return Boolean(process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN)
+}
+
 export function getUpstashRedis(): UpstashRedisClient {
   if (!upstashRedisClient) {
     upstashRedisClient = new UpstashRedisClient()

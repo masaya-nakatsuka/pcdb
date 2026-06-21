@@ -1,6 +1,6 @@
 'use client'
 
-import type { CSSProperties, MouseEvent, ReactNode } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 
 type ProductType = 'pc' | 'monitor' | 'tablet'
 
@@ -68,6 +68,28 @@ function inferUsageFromPath(pathname: string): string {
   return match?.[1] ?? ''
 }
 
+function recordClickLocally(eventParams: Record<string, unknown>) {
+  const body = JSON.stringify(eventParams)
+
+  if (navigator.sendBeacon) {
+    const blob = new Blob([body], { type: 'application/json' })
+    if (navigator.sendBeacon('/api/analytics/product-click', blob)) {
+      return
+    }
+  }
+
+  fetch('/api/analytics/product-click', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body,
+    keepalive: true,
+  }).catch(() => {
+    // Local analytics must never block the outbound click.
+  })
+}
+
 export default function TrackableProductLink({
   href,
   productId,
@@ -84,7 +106,7 @@ export default function TrackableProductLink({
   linkPosition,
   isAffiliate,
 }: TrackableProductLinkProps) {
-  const handleClick = (_event: MouseEvent<HTMLAnchorElement>) => {
+  const handleClick = () => {
     if (typeof window === 'undefined') {
       return
     }
@@ -114,6 +136,7 @@ export default function TrackableProductLink({
       event: 'specsy_product_click',
       ...eventParams,
     })
+    recordClickLocally(eventParams)
 
     if (eventParams.is_affiliate) {
       window.gtag?.('event', 'affiliate_outbound_click', eventParams)
