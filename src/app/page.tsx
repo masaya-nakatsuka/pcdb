@@ -85,6 +85,11 @@ const heroLinks = [
   { href: '/monitor-list', label: 'モニター' },
 ]
 
+const quickLinks = [
+  { href: '/pc-check', label: '購入診断' },
+  ...heroLinks,
+]
+
 export default function HomePage() {
   return (
     <div className="lpPage">
@@ -118,8 +123,8 @@ export default function HomePage() {
               まずは探したいカテゴリを選んで、用途とスペックに合う候補を確認できます。
             </p>
             <div className="heroActions">
-              <Link href="/pc-list" className="primaryAction">
-                新品ノートPCを見る
+              <Link href="/pc-check" className="primaryAction">
+                購入診断を始める
               </Link>
               <Link href="#categories" className="secondaryAction">
                 カテゴリから選ぶ
@@ -134,7 +139,7 @@ export default function HomePage() {
 
         <section className="quickCategorySection" aria-label="カテゴリ一覧">
           <div className="quickCategoryGrid">
-            {heroLinks.map((link) => (
+            {quickLinks.map((link) => (
               <Link key={link.href} href={link.href}>
                 {link.label}
               </Link>
@@ -409,7 +414,7 @@ export default function HomePage() {
 
         .quickCategoryGrid {
           display: grid;
-          grid-template-columns: repeat(6, minmax(0, 1fr));
+          grid-template-columns: repeat(7, minmax(0, 1fr));
           gap: 8px;
           padding: 10px;
           border: 1px solid #e1e6ef;
@@ -661,7 +666,7 @@ export default function HomePage() {
           }
 
           .quickCategoryGrid {
-            grid-template-columns: repeat(3, minmax(0, 1fr));
+            grid-template-columns: repeat(4, minmax(0, 1fr));
           }
 
           .categoryBlock,
