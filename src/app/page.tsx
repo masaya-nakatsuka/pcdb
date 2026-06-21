@@ -2,236 +2,194 @@
 
 import Link from 'next/link'
 
-type PreviewPanel = {
-  href: string
-  label: string
+type CategorySection = {
+  eyebrow: string
   title: string
-  lead: string
-  chips: string[]
-  columns: string[]
-  featured?: boolean
+  body: string
+  href: string
+  cta: string
+  image: string
+  specs: string[]
+  tone: 'blue' | 'green' | 'slate' | 'purple' | 'cyan' | 'amber'
 }
 
-type CategoryCard = {
-  href: string
-  label: string
-  title: string
-  description: string
-  points: string[]
-}
-
-const previewPanels: PreviewPanel[] = [
+const categories: CategorySection[] = [
   {
+    eyebrow: 'New laptops',
+    title: 'ノートPC（新品）',
+    body: '軽量モバイル、カフェ作業、在宅用、コスパ重視まで。新品PCを用途とスペックで絞り込みます。',
     href: '/pc-list',
-    label: 'ノートPC',
-    title: 'Amazon PC一覧スコア比較',
-    lead: '用途別に候補を並べ替え',
-    chips: ['軽量', 'コスパ', '仕事用'],
-    columns: ['CPU', 'メモリ', '重量', '電池'],
-    featured: true,
+    cta: '新品ノートPCを見る',
+    image: '/lp/specsy-laptop-new.webp',
+    specs: ['CPU型番', 'メモリ', 'SSD', '重量', '駆動時間'],
+    tone: 'blue',
   },
   {
+    eyebrow: 'Used laptops',
+    title: 'ノートPC（中古）',
+    body: '価格を抑えたい人向けに、中古・整備済みPCを分けて確認。状態や実用スペックを見ながら探せます。',
+    href: '/pc-list/used',
+    cta: '中古ノートPCを見る',
+    image: '/lp/specsy-laptop-used.webp',
+    specs: ['価格差', '状態', 'CPU世代', 'メモリ', 'SSD'],
+    tone: 'green',
+  },
+  {
+    eyebrow: 'Desktop PCs',
+    title: 'デスクトップPC',
+    body: 'ゲーム、動画編集、据え置き作業向け。CPU/GPU/RAM/ストレージを軸に比較します。',
     href: '/pc-list/desktop',
-    label: 'デスクトップ',
-    title: 'デスクトップPC比較',
-    lead: '据え置き性能と拡張性を見る',
-    chips: ['ゲーム', '動画編集'],
-    columns: ['CPU', 'GPU', 'RAM', 'SSD'],
+    cta: 'デスクトップPCを見る',
+    image: '/lp/specsy-desktop.webp',
+    specs: ['CPU', 'GPU', 'RAM', 'SSD', '拡張性'],
+    tone: 'slate',
   },
   {
+    eyebrow: 'Mini PCs',
+    title: 'Mini PC',
+    body: '省スペースな据え置きPCを、性能、端子、価格で比較。デスクを広く使いたい人向けです。',
+    href: '/pc-list/mini-pc',
+    cta: 'Mini PCを見る',
+    image: '/lp/specsy-mini-pc.webp',
+    specs: ['CPU', 'RAM', 'SSD', '端子', 'サイズ'],
+    tone: 'purple',
+  },
+  {
+    eyebrow: 'Tablets',
+    title: 'タブレット',
+    body: 'AndroidとiPadを分けて、SoC、RAM、ROM、画面、駆動時間を確認できます。',
     href: '/tablet-list',
-    label: 'タブレット',
-    title: 'タブレット比較',
-    lead: 'AndroidとiPadを整理',
-    chips: ['iPad', 'Android'],
-    columns: ['SoC', 'RAM', 'ROM', '駆動'],
+    cta: 'タブレットを見る',
+    image: '/lp/specsy-tablet.webp',
+    specs: ['iPad/Android', 'SoC', 'RAM', 'ROM', '駆動時間'],
+    tone: 'cyan',
   },
   {
+    eyebrow: 'Monitors',
+    title: 'モニター',
+    body: '作業用、ゲーム用、USB-C環境など、デスクまわりに合わせてサイズや解像度を比較します。',
     href: '/monitor-list',
-    label: 'モニター',
-    title: 'モニター比較',
-    lead: '作業用とゲーム用を分ける',
-    chips: ['WQHD', 'USB-C'],
-    columns: ['サイズ', '解像度', 'Hz', '端子'],
+    cta: 'モニターを見る',
+    image: '/lp/specsy-monitor.webp',
+    specs: ['サイズ', '解像度', 'Hz', 'パネル', 'USB-C'],
+    tone: 'amber',
   },
 ]
 
-const categoryCards: CategoryCard[] = [
-  {
-    href: '/pc-list',
-    label: 'PC',
-    title: 'ノートPCを用途別に比較',
-    description: '軽量モバイル、カフェ作業、コスパ重視など、使い方から候補を絞れます。',
-    points: ['CPU型番', 'メモリ', '重量', 'バッテリー'],
-  },
-  {
-    href: '/pc-list/desktop',
-    label: 'Desktop',
-    title: 'デスクトップPCを比較',
-    description: 'ゲーム、動画編集、据え置き作業向けに、CPU/GPU/拡張性を見比べます。',
-    points: ['CPU', 'GPU', '拡張性', '価格'],
-  },
-  {
-    href: '/tablet-list',
-    label: 'Tablet',
-    title: 'AndroidとiPadを比較',
-    description: 'SoC、容量、画面、駆動時間を軸に、タブレット選びを整理します。',
-    points: ['SoC', 'RAM/ROM', '画面', '駆動時間'],
-  },
-  {
-    href: '/monitor-list',
-    label: 'Monitor',
-    title: 'モニターを用途別に比較',
-    description: '作業用、ゲーム用、USB-C環境など、デスク周りの選び方に合わせます。',
-    points: ['サイズ', '解像度', 'Hz', 'USB-C'],
-  },
-]
-
-const useCaseLinks = [
-  { href: '/pc-list/mobile', label: '軽量モバイル' },
-  { href: '/pc-list/cost-performance', label: 'コスパ重視' },
-  { href: '/pc-list/gaming', label: 'ゲーム向け' },
-  { href: '/pc-list/video-editing', label: '動画編集' },
+const heroLinks = [
+  { href: '/pc-list', label: '新品ノートPC' },
+  { href: '/pc-list/used', label: '中古ノートPC' },
+  { href: '/pc-list/desktop', label: 'デスクトップPC' },
   { href: '/pc-list/mini-pc', label: 'Mini PC' },
-  { href: '/monitor-list/gaming', label: 'ゲーミングモニター' },
+  { href: '/tablet-list', label: 'タブレット' },
+  { href: '/monitor-list', label: 'モニター' },
 ]
-
-function ScreenPreview({ panel }: { panel: PreviewPanel }) {
-  return (
-    <Link
-      href={panel.href}
-      className={`screenPreview${panel.featured ? ' screenPreviewFeatured' : ''}`}
-      aria-label={`${panel.label}の比較画面を見る`}
-    >
-      <div className="screenTopbar">
-        <span />
-        <span />
-        <span />
-      </div>
-      <div className="screenBody">
-        <div className="screenMeta">{panel.label}</div>
-        <div className="screenTitle">{panel.title}</div>
-        <div className="screenLead">{panel.lead}</div>
-        <div className="screenChips">
-          {panel.chips.map((chip) => (
-            <span key={chip}>{chip}</span>
-          ))}
-        </div>
-        <div className="screenTable" aria-hidden="true">
-          {panel.columns.map((column, index) => (
-            <div key={column} className="screenRow">
-              <span>{column}</span>
-              <i style={{ width: `${78 - index * 10}%` }} />
-            </div>
-          ))}
-        </div>
-      </div>
-    </Link>
-  )
-}
 
 export default function HomePage() {
   return (
-    <div className="homePage">
+    <div className="lpPage">
       <header className="siteHeader">
         <Link href="/" className="brand" aria-label="Specsy トップ">
           <span className="brandMark">S</span>
           <span>Specsy</span>
         </Link>
         <nav className="topNav" aria-label="主要カテゴリ">
-          <Link href="/pc-list">PC</Link>
-          <Link href="/pc-list/desktop">デスクトップ</Link>
-          <Link href="/tablet-list">タブレット</Link>
-          <Link href="/monitor-list">モニター</Link>
-          <Link href="/blog">ブログ</Link>
+          {heroLinks.slice(0, 5).map((link) => (
+            <Link key={link.href} href={link.href}>
+              {link.label}
+            </Link>
+          ))}
         </nav>
-        <Link href="/pc-list" className="headerCta">
-          PCを比較
+        <Link href="/pc-check" className="headerCta">
+          購入診断
         </Link>
       </header>
 
       <main>
         <section className="heroSection" aria-labelledby="hero-title">
-          <div className="heroCopy">
-            <p className="eyebrow">PCまわりの購入前比較ハブ</p>
+          <div className="heroText">
+            <p className="eyebrow">PC comparison hub</p>
             <h1 id="hero-title">
-              <span className="titleLine">PCまわりの買い物を</span>
-              <span>用途とスペックで比較する</span>
+              <span>PCまわりの買い物を</span>
+              <span>カテゴリ別に比較する</span>
             </h1>
             <p className="heroLead">
-              ノートPC、デスクトップPC、Androidタブレット、iPad、モニターを、
-              価格・スペック・用途別の見方で整理。買う前の候補選びをシンプルにします。
+              ノートPC、デスクトップPC、Mini PC、タブレット、モニターまで。
+              まずは探したいカテゴリを選んで、用途とスペックに合う候補を確認できます。
             </p>
             <div className="heroActions">
               <Link href="/pc-list" className="primaryAction">
-                PCを比較する
+                新品ノートPCを見る
               </Link>
-              <Link href="/monitor-list" className="secondaryAction">
-                モニターを見る
+              <Link href="#categories" className="secondaryAction">
+                カテゴリから選ぶ
               </Link>
-            </div>
-            <div className="quickLinks" aria-label="カテゴリ別の入口">
-              <Link href="/pc-list">ノートPC</Link>
-              <Link href="/pc-list/desktop">デスクトップPC</Link>
-              <Link href="/tablet-list">タブレット</Link>
-              <Link href="/monitor-list">モニター</Link>
             </div>
           </div>
 
-          <div className="previewStage" aria-label="各カテゴリの比較画面プレビュー">
-            <div className="previewFrame">
-              <div className="previewHeader">
-                <div>
-                  <span className="previewKicker">Live comparison preview</span>
-                  <strong>カテゴリ別の比較画面</strong>
-                </div>
-                <span className="previewStatus">4 views</span>
-              </div>
-              <div className="previewGrid">
-                {previewPanels.map((panel) => (
-                  <ScreenPreview key={panel.href} panel={panel} />
-                ))}
-              </div>
-            </div>
+          <div className="heroVisual" aria-label="PC関連カテゴリの商品集合画像">
+            <div className="heroImage" />
           </div>
         </section>
 
-        <section className="categorySection" aria-labelledby="category-title">
-          <div className="sectionHeading">
-            <p className="eyebrow">Start by category</p>
-            <h2 id="category-title">比較したいカテゴリから選ぶ</h2>
-            <p>
-              それぞれの画面で、用途に合わせたランキングと比較軸を確認できます。
-            </p>
-          </div>
-          <div className="categoryGrid">
-            {categoryCards.map((card) => (
-              <Link key={card.href} href={card.href} className="categoryCard">
-                <span className="categoryLabel">{card.label}</span>
-                <h3>{card.title}</h3>
-                <p>{card.description}</p>
-                <div className="pointList">
-                  {card.points.map((point) => (
-                    <span key={point}>{point}</span>
-                  ))}
-                </div>
-              </Link>
-            ))}
-          </div>
-        </section>
-
-        <section className="useCaseSection" aria-labelledby="usecase-title">
-          <div className="sectionHeading compact">
-            <p className="eyebrow">Use cases</p>
-            <h2 id="usecase-title">用途が決まっている場合はこちら</h2>
-          </div>
-          <div className="useCaseLinks">
-            {useCaseLinks.map((link) => (
+        <section className="quickCategorySection" aria-label="カテゴリ一覧">
+          <div className="quickCategoryGrid">
+            {heroLinks.map((link) => (
               <Link key={link.href} href={link.href}>
                 {link.label}
               </Link>
             ))}
           </div>
+        </section>
+
+        <section id="categories" className="categorySections" aria-label="商品カテゴリ">
+          {categories.map((category, index) => (
+            <section
+              key={category.href}
+              className={`categoryBlock categoryBlock-${category.tone}${index % 2 === 1 ? ' categoryBlockReverse' : ''}`}
+              aria-labelledby={`category-${index}`}
+            >
+              <div className="categoryImageWrap">
+                <div
+                  className="categoryImage"
+                  style={{ backgroundImage: `linear-gradient(135deg, var(--image-tint), transparent 58%), url(${category.image})` }}
+                  aria-hidden="true"
+                >
+                  <div className="deviceHint">
+                    <span />
+                    <span />
+                    <span />
+                  </div>
+                </div>
+              </div>
+              <div className="categoryCopy">
+                <p className="eyebrow">{category.eyebrow}</p>
+                <h2 id={`category-${index}`}>{category.title}</h2>
+                <p>{category.body}</p>
+                <div className="specList" aria-label={`${category.title}の比較軸`}>
+                  {category.specs.map((spec) => (
+                    <span key={spec}>{spec}</span>
+                  ))}
+                </div>
+                <Link href={category.href} className="categoryCta">
+                  {category.cta}
+                </Link>
+              </div>
+            </section>
+          ))}
+        </section>
+
+        <section className="todoSection" aria-labelledby="todo-title">
+          <div>
+            <p className="eyebrow">Specsy Todo</p>
+            <h2 id="todo-title">買う前後のやることも整理する</h2>
+            <p>
+              PC選びが終わった後は、購入前チェック、初期設定、移行作業、周辺機器の準備もまとめて確認できます。
+            </p>
+          </div>
+          <Link href="/todo/lp" className="todoCta">
+            Todoを見る
+          </Link>
         </section>
       </main>
 
@@ -248,17 +206,16 @@ export default function HomePage() {
             <Link href="/about">運営者情報</Link>
             <Link href="/privacy">プライバシーポリシー</Link>
             <a href="mailto:contact@specsy-hub.com">お問い合わせ</a>
-            <Link href="/todo/lp">Specsy Todo</Link>
+            <Link href="/blog">ブログ</Link>
           </div>
         </div>
       </footer>
 
       <style jsx global>{`
-        .homePage {
+        .lpPage {
           min-height: 100vh;
-          background:
-            linear-gradient(180deg, #f8fafc 0%, #ffffff 42%, #f8fafc 100%);
-          color: #0f172a;
+          background: #f7f8fb;
+          color: #121826;
         }
 
         .siteHeader {
@@ -276,11 +233,10 @@ export default function HomePage() {
         .headerCta,
         .primaryAction,
         .secondaryAction,
-        .quickLinks a,
-        .categoryCard,
-        .useCaseLinks a,
-        .footerLinks a,
-        .screenPreview {
+        .quickCategoryGrid a,
+        .categoryCta,
+        .todoCta,
+        .footerLinks a {
           text-decoration: none;
         }
 
@@ -288,7 +244,7 @@ export default function HomePage() {
           display: inline-flex;
           align-items: center;
           gap: 10px;
-          color: #0f172a;
+          color: #121826;
           font-size: 18px;
           font-weight: 900;
         }
@@ -299,8 +255,8 @@ export default function HomePage() {
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          border-radius: 10px;
-          background: #0f172a;
+          border-radius: 8px;
+          background: #121826;
           color: #ffffff;
           font-size: 15px;
           letter-spacing: 0;
@@ -309,7 +265,6 @@ export default function HomePage() {
         .topNav {
           display: flex;
           justify-content: center;
-          align-items: center;
           gap: 4px;
         }
 
@@ -317,16 +272,17 @@ export default function HomePage() {
           min-height: 36px;
           display: inline-flex;
           align-items: center;
-          padding: 0 12px;
+          padding: 0 11px;
           border-radius: 8px;
-          color: #475569;
+          color: #526074;
           font-size: 13px;
           font-weight: 800;
+          white-space: nowrap;
         }
 
         .topNav a:hover {
-          background: #f1f5f9;
-          color: #0f172a;
+          background: #ffffff;
+          color: #121826;
         }
 
         .headerCta {
@@ -336,10 +292,11 @@ export default function HomePage() {
           justify-content: center;
           padding: 0 16px;
           border-radius: 8px;
-          background: #0f172a;
+          background: #121826;
           color: #ffffff;
           font-size: 13px;
           font-weight: 900;
+          white-space: nowrap;
         }
 
         .heroSection {
@@ -347,14 +304,14 @@ export default function HomePage() {
           min-height: calc(100vh - 72px);
           margin: 0 auto;
           display: grid;
-          grid-template-columns: minmax(0, 0.9fr) minmax(500px, 1.1fr);
+          grid-template-columns: minmax(0, 0.9fr) minmax(460px, 1.1fr);
           align-items: center;
-          gap: 36px;
-          padding: 28px 0 40px;
+          gap: 44px;
+          padding: 26px 0 58px;
         }
 
-        .heroCopy {
-          max-width: 620px;
+        .heroText {
+          max-width: 590px;
         }
 
         .eyebrow {
@@ -366,39 +323,42 @@ export default function HomePage() {
           text-transform: uppercase;
         }
 
-        h1 {
+        h1,
+        h2 {
           margin: 0;
-          color: #0f172a;
-          font-size: 44px;
-          line-height: 1.04;
+          color: #121826;
           letter-spacing: 0;
+        }
+
+        h1 {
+          max-width: 720px;
+          font-size: 54px;
+          line-height: 1.04;
         }
 
         h1 span {
           display: block;
         }
 
-        h1 span:not(.titleLine) {
-          color: #1d4ed8;
-        }
-
         .heroLead {
-          max-width: 560px;
-          margin: 22px 0 0;
-          color: #475569;
+          max-width: 570px;
+          margin: 24px 0 0;
+          color: #526074;
           font-size: 16px;
           line-height: 1.9;
         }
 
         .heroActions {
-          margin-top: 30px;
+          margin-top: 32px;
           display: flex;
           flex-wrap: wrap;
           gap: 12px;
         }
 
         .primaryAction,
-        .secondaryAction {
+        .secondaryAction,
+        .categoryCta,
+        .todoCta {
           min-height: 48px;
           display: inline-flex;
           align-items: center;
@@ -409,348 +369,234 @@ export default function HomePage() {
           font-weight: 900;
         }
 
-        .primaryAction {
+        .primaryAction,
+        .categoryCta {
           background: #2563eb;
           color: #ffffff;
-          box-shadow: 0 14px 32px rgba(37, 99, 235, 0.22);
+          box-shadow: 0 14px 32px rgba(37, 99, 235, 0.18);
         }
 
-        .secondaryAction {
-          border: 1px solid #cbd5e1;
+        .secondaryAction,
+        .todoCta {
+          border: 1px solid #d7dde8;
           background: #ffffff;
-          color: #0f172a;
+          color: #121826;
         }
 
-        .quickLinks {
-          margin-top: 18px;
+        .heroVisual {
+          min-width: 0;
+        }
+
+        .heroImage {
+          min-height: 520px;
+          border-radius: 22px;
+          border: 1px solid rgba(215, 221, 232, 0.9);
+          background-image:
+            linear-gradient(90deg, rgba(247, 248, 251, 0.98) 0%, rgba(247, 248, 251, 0.5) 24%, rgba(247, 248, 251, 0.04) 56%),
+            radial-gradient(circle at 78% 28%, rgba(37, 99, 235, 0.15), transparent 34%),
+            url('/lp/specsy-hero-devices.webp');
+          background-size: cover;
+          background-position: center;
+          box-shadow: 0 28px 70px rgba(18, 24, 38, 0.12);
+        }
+
+        .quickCategorySection {
+          width: min(1180px, calc(100% - 32px));
+          margin: -28px auto 0;
+          position: relative;
+          z-index: 2;
+        }
+
+        .quickCategoryGrid {
+          display: grid;
+          grid-template-columns: repeat(6, minmax(0, 1fr));
+          gap: 8px;
+          padding: 10px;
+          border: 1px solid #e1e6ef;
+          border-radius: 14px;
+          background: rgba(255, 255, 255, 0.9);
+          box-shadow: 0 18px 42px rgba(18, 24, 38, 0.08);
+          backdrop-filter: blur(12px);
+        }
+
+        .quickCategoryGrid a {
+          min-height: 46px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          padding: 0 10px;
+          border-radius: 8px;
+          color: #121826;
+          font-size: 13px;
+          font-weight: 900;
+          text-align: center;
+        }
+
+        .quickCategoryGrid a:hover {
+          background: #eff6ff;
+          color: #1d4ed8;
+        }
+
+        .categorySections {
+          width: min(1180px, calc(100% - 32px));
+          margin: 0 auto;
+          padding: 80px 0 54px;
+          display: grid;
+          gap: 28px;
+        }
+
+        .categoryBlock {
+          --image-tint: rgba(37, 99, 235, 0.16);
+          display: grid;
+          grid-template-columns: minmax(0, 1.05fr) minmax(380px, 0.95fr);
+          gap: 34px;
+          align-items: center;
+          min-height: 460px;
+          padding: 28px;
+          border: 1px solid #e1e6ef;
+          border-radius: 20px;
+          background: #ffffff;
+          box-shadow: 0 16px 40px rgba(18, 24, 38, 0.06);
+        }
+
+        .categoryBlockReverse {
+          grid-template-columns: minmax(380px, 0.95fr) minmax(0, 1.05fr);
+        }
+
+        .categoryBlockReverse .categoryImageWrap {
+          order: 2;
+        }
+
+        .categoryBlockReverse .categoryCopy {
+          order: 1;
+        }
+
+        .categoryBlock-green {
+          --image-tint: rgba(20, 184, 166, 0.16);
+        }
+
+        .categoryBlock-slate {
+          --image-tint: rgba(71, 85, 105, 0.18);
+        }
+
+        .categoryBlock-purple {
+          --image-tint: rgba(124, 58, 237, 0.16);
+        }
+
+        .categoryBlock-cyan {
+          --image-tint: rgba(6, 182, 212, 0.16);
+        }
+
+        .categoryBlock-amber {
+          --image-tint: rgba(245, 158, 11, 0.16);
+        }
+
+        .categoryImageWrap {
+          min-width: 0;
+        }
+
+        .categoryImage {
+          position: relative;
+          min-height: 360px;
+          border-radius: 16px;
+          background-color: #f2f5fa;
+          background-size: cover;
+          background-position: center;
+          overflow: hidden;
+        }
+
+        .deviceHint {
+          position: absolute;
+          right: 24px;
+          bottom: 22px;
+          display: flex;
+          align-items: flex-end;
+          gap: 10px;
+          opacity: 0.42;
+        }
+
+        .deviceHint span {
+          display: block;
+          border-radius: 8px;
+          background: rgba(18, 24, 38, 0.18);
+        }
+
+        .deviceHint span:nth-child(1) {
+          width: 90px;
+          height: 58px;
+        }
+
+        .deviceHint span:nth-child(2) {
+          width: 32px;
+          height: 32px;
+        }
+
+        .deviceHint span:nth-child(3) {
+          width: 122px;
+          height: 76px;
+        }
+
+        .categoryCopy {
+          max-width: 480px;
+        }
+
+        .categoryCopy h2,
+        .todoSection h2 {
+          font-size: 34px;
+          line-height: 1.18;
+        }
+
+        .categoryCopy p,
+        .todoSection p {
+          margin: 16px 0 0;
+          color: #526074;
+          font-size: 15px;
+          line-height: 1.85;
+        }
+
+        .specList {
+          margin-top: 22px;
           display: flex;
           flex-wrap: wrap;
           gap: 8px;
         }
 
-        .quickLinks a {
-          min-height: 34px;
+        .specList span {
+          min-height: 32px;
           display: inline-flex;
           align-items: center;
-          padding: 0 11px;
-          border: 1px solid #dbeafe;
+          padding: 0 10px;
           border-radius: 8px;
-          background: #eff6ff;
-          color: #1e3a8a;
+          background: #f2f5fa;
+          color: #364154;
           font-size: 12px;
           font-weight: 900;
         }
 
-        .previewStage {
-          min-width: 0;
+        .categoryCta {
+          margin-top: 28px;
         }
 
-        .previewFrame {
-          position: relative;
-          padding: 16px;
-          border: 1px solid #dbe3ef;
-          border-radius: 18px;
-          background: rgba(255, 255, 255, 0.86);
-          box-shadow:
-            0 28px 70px rgba(15, 23, 42, 0.14),
-            inset 0 1px 0 rgba(255, 255, 255, 0.9);
-          overflow: hidden;
-        }
-
-        .previewFrame::before {
-          content: '';
-          position: absolute;
-          inset: 0;
-          background:
-            linear-gradient(90deg, rgba(37, 99, 235, 0.08), transparent 42%),
-            radial-gradient(circle at 78% 12%, rgba(6, 182, 212, 0.16), transparent 32%);
-          pointer-events: none;
-        }
-
-        .previewHeader,
-        .previewGrid {
-          position: relative;
-          z-index: 1;
-        }
-
-        .previewHeader {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 16px;
-          margin-bottom: 14px;
-        }
-
-        .previewHeader strong {
-          display: block;
-          margin-top: 3px;
-          color: #0f172a;
-          font-size: 15px;
-          line-height: 1.3;
-        }
-
-        .previewKicker,
-        .previewStatus {
-          color: #64748b;
-          font-size: 11px;
-          font-weight: 900;
-          letter-spacing: 0;
-          text-transform: uppercase;
-        }
-
-        .previewStatus {
-          min-height: 28px;
-          display: inline-flex;
-          align-items: center;
-          padding: 0 10px;
-          border: 1px solid #dbeafe;
-          border-radius: 999px;
-          background: #eff6ff;
-          color: #1d4ed8;
-          white-space: nowrap;
-        }
-
-        .previewGrid {
-          display: grid;
-          grid-template-columns: 1.2fr 0.92fr;
-          grid-auto-rows: minmax(154px, auto);
-          gap: 12px;
-        }
-
-        .screenPreview {
-          min-width: 0;
-          display: block;
-          border: 1px solid #dbe3ef;
-          border-radius: 14px;
-          background: #ffffff;
-          color: #0f172a;
-          overflow: hidden;
-          box-shadow: 0 10px 22px rgba(15, 23, 42, 0.08);
-          transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
-        }
-
-        .screenPreview:hover {
-          transform: translateY(-2px);
-          border-color: #bfdbfe;
-          box-shadow: 0 16px 34px rgba(15, 23, 42, 0.12);
-        }
-
-        .screenPreviewFeatured {
-          grid-row: span 2;
-        }
-
-        .screenTopbar {
-          height: 24px;
-          display: flex;
-          align-items: center;
-          gap: 5px;
-          padding: 0 10px;
-          border-bottom: 1px solid #e2e8f0;
-          background: #f8fafc;
-        }
-
-        .screenTopbar span {
-          width: 6px;
-          height: 6px;
-          border-radius: 50%;
-          background: #cbd5e1;
-        }
-
-        .screenBody {
-          padding: 12px;
-        }
-
-        .screenMeta {
-          color: #2563eb;
-          font-size: 10px;
-          font-weight: 900;
-          letter-spacing: 0;
-        }
-
-        .screenTitle {
-          margin-top: 4px;
-          color: #0f172a;
-          font-size: 14px;
-          font-weight: 900;
-          line-height: 1.35;
-        }
-
-        .screenLead {
-          margin-top: 4px;
-          color: #64748b;
-          font-size: 11px;
-          font-weight: 700;
-          line-height: 1.45;
-        }
-
-        .screenChips {
-          margin-top: 10px;
-          display: flex;
-          flex-wrap: wrap;
-          gap: 5px;
-        }
-
-        .screenChips span {
-          min-height: 22px;
-          display: inline-flex;
-          align-items: center;
-          padding: 0 7px;
-          border-radius: 999px;
-          background: #f1f5f9;
-          color: #334155;
-          font-size: 10px;
-          font-weight: 900;
-        }
-
-        .screenTable {
-          margin-top: 12px;
-          display: grid;
-          gap: 8px;
-        }
-
-        .screenRow {
-          display: grid;
-          grid-template-columns: 48px 1fr;
-          align-items: center;
-          gap: 8px;
-          min-height: 14px;
-        }
-
-        .screenRow span {
-          color: #64748b;
-          font-size: 10px;
-          font-weight: 900;
-        }
-
-        .screenRow i {
-          height: 8px;
-          display: block;
-          border-radius: 999px;
-          background: linear-gradient(90deg, #bfdbfe, #67e8f9);
-        }
-
-        .categorySection,
-        .useCaseSection {
+        .todoSection {
           width: min(1180px, calc(100% - 32px));
-          margin: 0 auto;
-          padding: 54px 0;
-        }
-
-        .sectionHeading {
-          max-width: 720px;
-          margin-bottom: 24px;
-        }
-
-        .sectionHeading.compact {
-          margin-bottom: 18px;
-        }
-
-        .sectionHeading h2 {
-          margin: 0;
-          color: #0f172a;
-          font-size: 30px;
-          line-height: 1.25;
-        }
-
-        .sectionHeading p:not(.eyebrow) {
-          margin: 10px 0 0;
-          color: #64748b;
-          font-size: 15px;
-          line-height: 1.8;
-        }
-
-        .categoryGrid {
+          margin: 0 auto 70px;
           display: grid;
-          grid-template-columns: repeat(4, minmax(0, 1fr));
-          gap: 14px;
-        }
-
-        .categoryCard {
-          display: flex;
-          min-height: 244px;
-          flex-direction: column;
-          padding: 18px;
-          border: 1px solid #e2e8f0;
-          border-radius: 12px;
-          background: #ffffff;
-          color: #0f172a;
-          box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
-        }
-
-        .categoryCard:hover {
-          border-color: #bfdbfe;
-          box-shadow: 0 16px 34px rgba(15, 23, 42, 0.1);
-        }
-
-        .categoryLabel {
-          color: #2563eb;
-          font-size: 11px;
-          font-weight: 900;
-          letter-spacing: 0;
-          text-transform: uppercase;
-        }
-
-        .categoryCard h3 {
-          margin: 12px 0 0;
-          font-size: 18px;
-          line-height: 1.35;
-        }
-
-        .categoryCard p {
-          margin: 10px 0 0;
-          color: #64748b;
-          font-size: 13px;
-          line-height: 1.7;
-        }
-
-        .pointList {
-          margin-top: auto;
-          padding-top: 16px;
-          display: flex;
-          flex-wrap: wrap;
-          gap: 6px;
-        }
-
-        .pointList span {
-          min-height: 26px;
-          display: inline-flex;
+          grid-template-columns: 1fr auto;
           align-items: center;
-          padding: 0 8px;
-          border-radius: 8px;
-          background: #f8fafc;
-          color: #334155;
-          font-size: 11px;
-          font-weight: 900;
-        }
-
-        .useCaseSection {
-          padding-top: 10px;
-        }
-
-        .useCaseLinks {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 10px;
-        }
-
-        .useCaseLinks a {
-          min-height: 40px;
-          display: inline-flex;
-          align-items: center;
-          padding: 0 14px;
-          border: 1px solid #e2e8f0;
-          border-radius: 8px;
+          gap: 24px;
+          padding: 30px;
+          border: 1px solid #e1e6ef;
+          border-radius: 18px;
           background: #ffffff;
-          color: #0f172a;
-          font-size: 13px;
-          font-weight: 900;
-          box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+        }
+
+        .todoSection > div {
+          max-width: 720px;
         }
 
         .siteFooter {
-          margin-top: 28px;
-          border-top: 1px solid #e2e8f0;
-          background: #0f172a;
+          border-top: 1px solid #e1e6ef;
+          background: #121826;
           color: #cbd5e1;
         }
 
@@ -770,8 +616,9 @@ export default function HomePage() {
         }
 
         .footerInner p {
-          max-width: 680px;
+          max-width: 690px;
           margin: 10px 0 0;
+          color: #cbd5e1;
           font-size: 13px;
           line-height: 1.7;
         }
@@ -801,35 +648,48 @@ export default function HomePage() {
           .heroSection {
             min-height: auto;
             grid-template-columns: 1fr;
-            gap: 30px;
-            padding-top: 40px;
-          }
-
-          .heroCopy {
-            max-width: none;
+            gap: 28px;
+            padding-top: 42px;
           }
 
           h1 {
-            max-width: 760px;
-            font-size: 42px;
+            font-size: 44px;
           }
 
-          .previewGrid {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
+          .heroImage {
+            min-height: 420px;
           }
 
-          .screenPreviewFeatured {
-            grid-row: auto;
+          .quickCategoryGrid {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
           }
 
-          .categoryGrid {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
+          .categoryBlock,
+          .categoryBlockReverse {
+            grid-template-columns: 1fr;
+          }
+
+          .categoryBlockReverse .categoryImageWrap,
+          .categoryBlockReverse .categoryCopy {
+            order: initial;
+          }
+
+          .categoryCopy {
+            max-width: none;
           }
         }
 
         @media (max-width: 640px) {
-          .siteHeader {
+          .siteHeader,
+          .heroSection,
+          .quickCategorySection,
+          .categorySections,
+          .todoSection,
+          .footerInner {
             width: min(100% - 24px, 1180px);
+          }
+
+          .siteHeader {
             min-height: 64px;
             gap: 12px;
           }
@@ -841,7 +701,6 @@ export default function HomePage() {
           .brandMark {
             width: 30px;
             height: 30px;
-            border-radius: 8px;
           }
 
           .headerCta {
@@ -849,25 +708,17 @@ export default function HomePage() {
             padding: 0 12px;
           }
 
-          .heroSection,
-          .categorySection,
-          .useCaseSection,
-          .footerInner {
-            width: min(100% - 24px, 1180px);
-          }
-
           .heroSection {
-            padding: 30px 0 34px;
+            padding: 28px 0 42px;
           }
 
           h1 {
-            font-size: 32px;
+            font-size: 34px;
             line-height: 1.08;
           }
 
           .heroLead {
             font-size: 14px;
-            line-height: 1.8;
           }
 
           .heroActions {
@@ -880,54 +731,59 @@ export default function HomePage() {
             width: 100%;
           }
 
-          .quickLinks {
-            display: grid;
+          .heroImage {
+            min-height: 310px;
+            border-radius: 16px;
+          }
+
+          .quickCategorySection {
+            margin-top: -18px;
+          }
+
+          .quickCategoryGrid {
             grid-template-columns: repeat(2, minmax(0, 1fr));
           }
 
-          .quickLinks a {
-            justify-content: center;
+          .categorySections {
+            padding: 50px 0 38px;
+            gap: 18px;
           }
 
-          .previewFrame {
-            padding: 12px;
-            border-radius: 14px;
-          }
-
-          .previewHeader {
-            align-items: flex-start;
-          }
-
-          .previewGrid,
-          .categoryGrid {
-            grid-template-columns: 1fr;
-          }
-
-          .screenPreview:nth-child(n + 3) {
-            display: none;
-          }
-
-          .categorySection,
-          .useCaseSection {
-            padding: 38px 0;
-          }
-
-          .sectionHeading h2 {
-            font-size: 24px;
-          }
-
-          .categoryCard {
+          .categoryBlock {
             min-height: 0;
+            padding: 14px;
+            gap: 22px;
+            border-radius: 16px;
           }
 
-          .useCaseLinks {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
+          .categoryImage {
+            min-height: 230px;
+            border-radius: 12px;
           }
 
-          .useCaseLinks a {
-            justify-content: center;
-            text-align: center;
+          .categoryCopy {
+            padding: 0 4px 6px;
+          }
+
+          .categoryCopy h2,
+          .todoSection h2 {
+            font-size: 26px;
+          }
+
+          .categoryCopy p,
+          .todoSection p {
+            font-size: 14px;
+          }
+
+          .categoryCta,
+          .todoCta {
+            width: 100%;
+          }
+
+          .todoSection {
+            grid-template-columns: 1fr;
+            margin-bottom: 48px;
+            padding: 22px;
           }
 
           .footerInner {
