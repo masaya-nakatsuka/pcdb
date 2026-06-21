@@ -246,10 +246,28 @@ function ChartPanel({
               x2={chartWidth - paddingX}
               y2={y}
               className="chartGridLine"
+              stroke="#edf0f5"
+              strokeWidth="1"
             />
           ))}
-          <line x1={paddingX} y1={baseline} x2={chartWidth - paddingX} y2={baseline} className="chartAxis" />
-          <line x1={paddingX} y1={paddingY} x2={paddingX} y2={baseline} className="chartAxis" />
+          <line
+            x1={paddingX}
+            y1={baseline}
+            x2={chartWidth - paddingX}
+            y2={baseline}
+            className="chartAxis"
+            stroke="#d9dee8"
+            strokeWidth="1"
+          />
+          <line
+            x1={paddingX}
+            y1={paddingY}
+            x2={paddingX}
+            y2={baseline}
+            className="chartAxis"
+            stroke="#d9dee8"
+            strokeWidth="1"
+          />
           {variant === 'bar' && hasData ? points.map((point) => {
             if (point.count === 0) {
               return null
@@ -265,19 +283,40 @@ function ChartPanel({
                 height={height}
                 rx="3"
                 className="chartBar"
+                fill={accent}
+                opacity="0.78"
               >
                 <title>{`${formatLabel(point.label)}: ${point.count}${unit}`}</title>
               </rect>
             )
           }) : null}
-          {variant === 'line' && linePath ? <path d={linePath} className="chartLine" /> : null}
+          {variant === 'line' && linePath ? (
+            <path
+              d={linePath}
+              className="chartLine"
+              fill="none"
+              stroke={accent}
+              strokeWidth="3"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          ) : null}
           {points.map((point) => {
             if (variant !== 'line' || point.count === 0) {
               return null
             }
 
             return (
-              <circle key={point.label} cx={point.x} cy={point.y} r="4" className="chartPoint">
+              <circle
+                key={point.label}
+                cx={point.x}
+                cy={point.y}
+                r="4"
+                className="chartPoint"
+                fill={accent}
+                stroke="#ffffff"
+                strokeWidth="2"
+              >
                 <title>{`${formatLabel(point.label)}: ${point.count}${unit}`}</title>
               </circle>
             )
@@ -706,7 +745,7 @@ export default function ClickAnalyticsClient() {
         </section>
       )}
 
-      <style jsx>{`
+      <style jsx global>{`
         .clickAnalyticsPage {
           min-height: 100vh;
           background: #f7f8fb;
