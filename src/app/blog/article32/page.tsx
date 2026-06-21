@@ -27,7 +27,7 @@ export default async function Article32Page() {
       listHref="/pc-list/mobile"
       listLabel="軽量モバイルPCランキングを見る"
       lead="Intel N95搭載ミニノートは、低価格帯で見かけることが多いCPUです。N100/N150と同じように普段使い向けですが、実際の満足度はメモリ、SSD、画面サイズ、重量、バッテリーで変わります。SpecsyのPC-DBからN95かつ13.5インチ以下の候補を抽出して比較します。"
-      conclusionTitle="結論｜N95は価格重視、ただし8GB/256GBには注意"
+      conclusionTitle="N95は価格重視、ただし8GB/256GBには注意"
       conclusion="N95搭載機は低価格で候補に入りやすい一方、メモリやSSDを削った構成もあります。価格だけで判断せず、16GBメモリ、SSD512GB以上、推定駆動時間、重量を同時に確認すると失敗しにくいです。"
       criteriaTitle="N95ミニノートで優先する基準"
       criteria={[

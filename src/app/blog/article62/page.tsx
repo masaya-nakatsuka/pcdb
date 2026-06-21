@@ -27,7 +27,7 @@ export default async function Article62Page() {
       listHref="/pc-list/mobile"
       listLabel="軽量モバイルPCランキングを見る"
       lead="11インチ以下のミニノートPCは、バッグに入れやすく、外出先のメモ、学習、軽い文書作成に向いたサイズです。ただし小型モデルは、安さや軽さを優先しすぎるとメモリやSSD容量が足りず、実用性で不満が出やすくなります。この記事ではSpecsyのPC-DBから、11インチ以下かつメモリ16GB・SSD512GB以上のAmazonミニノートPCだけを抽出して比較します。"
-      conclusionTitle="結論｜11インチ以下でも16GB/512GBなら実用候補になる"
+      conclusionTitle="11インチ以下でも16GB/512GBなら実用候補になる"
       conclusion="11インチ以下かつメモリ16GB・SSD512GB以上を満たすモデルは、サブPCだけでなく、外出用の軽作業PCとしても候補になります。ただし画面サイズが小さいぶん、長時間作業や複数ウィンドウ作業には向きにくいです。小ささを優先するなら、重量、CPU詳細型番、推定駆動時間を見て、用途を文書作成、Web閲覧、学習、軽いWeb会議あたりに絞るのが現実的です。"
       criteriaTitle="11インチ以下の実用構成で優先する基準"
       criteria={[

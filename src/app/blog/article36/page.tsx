@@ -25,7 +25,7 @@ export default async function Article36Page() {
       listHref="/pc-list/cost-performance"
       listLabel="コスパPCランキングを見る"
       lead="PassMarkスコアはCPU性能の目安として便利ですが、数字だけでPCを選ぶとメモリ、SSD、価格、GPUの弱さを見落としやすくなります。この記事ではSpecsyのPC-DBを使い、Amazon内のCore/Ryzen搭載PCをCPU型番とPassMark目安まで見て比較します。"
-      conclusionTitle="結論｜PassMarkは目安にしつつ、詳細CPU型番と構成を見る"
+      conclusionTitle="PassMarkは目安にしつつ、詳細CPU型番と構成を見る"
       conclusion="PassMarkスコアは、CPUの大まかな処理性能を比べる入口として使えます。ただしCore i5、Core i7、Ryzen 5、Ryzen 7という大分類だけでは世代差を判断できません。PC-DBではCore i5-1334U、Core Ultra 5 125H、Ryzen 5 7530U、Ryzen 7 8840HSのような詳細型番を優先してスコア化するため、PassMarkの目安と実売価格、メモリ、SSDを同じ表で確認できます。"
       criteriaTitle="PassMarkスコア目安でPCを選ぶ基準"
       criteria={[

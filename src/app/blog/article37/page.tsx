@@ -28,7 +28,7 @@ export default async function Article37Page() {
       listHref="/pc-list/mobile"
       listLabel="軽量モバイルPCランキングを見る"
       lead="ノートPCのバッテリー時間は、公称値だけでは実用感が分かりにくいです。SpecsyではPC-DBのバッテリー容量、CPU TDP、画面サイズ、GPU情報から、Excel作業・動画視聴・動画編集・3Dゲームの用途別推定時間を計算しています。"
-      conclusionTitle="結論｜外出用ならExcel作業と動画視聴の推定時間を優先する"
+      conclusionTitle="外出用ならExcel作業と動画視聴の推定時間を優先する"
       conclusion="外出先で使うノートPCは、最大公称時間よりも軽作業時の推定時間を見る方が現実的です。Excel作業と動画視聴の推定時間が長く、重量が軽く、メモリ16GB以上のモデルを優先すると、持ち歩き用途で失敗しにくくなります。"
       criteriaTitle="バッテリー重視で優先する基準"
       criteria={[

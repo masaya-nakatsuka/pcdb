@@ -33,7 +33,7 @@ export default async function Article52Page() {
       listHref="/pc-list/mobile"
       listLabel="軽量モバイルPCランキングを見る"
       lead="2in1ノートPCは、キーボード付きノートPCとしても、タブレットに近い形でも使える柔軟さが魅力です。一方で、軽さ、画面サイズ、CPU型番、メモリ、SSD、バッテリーのバランスを見ないと、持ち運びやすいだけで作業しにくい候補を選びやすくなります。この記事ではSpecsyのPC-DBからAmazonの2in1ノートPCを抽出して比較します。"
-      conclusionTitle="結論｜2in1は形状だけでなく重量と16GB/512GB構成を見る"
+      conclusionTitle="2in1は形状だけでなく重量と16GB/512GB構成を見る"
       conclusion="2in1ノートPCは学習、メモ、動画視聴、外出先の軽作業に向きます。ただしメインPCとして使うなら、形状だけで選ばず、メモリ16GB、SSD512GB以上、CPU詳細型番、推定駆動時間を確認してください。軽量サブ機として割り切る場合は、価格と重量を優先する選び方も現実的です。"
       criteriaTitle="2in1ノートPCで優先する基準"
       criteria={[

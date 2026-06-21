@@ -75,7 +75,7 @@ export default async function Article33Page() {
       listLabel="コスパPCランキングを見る"
       lead={`Amazonでコスパの良いPCを探していると、安いものはかなり安い一方で、「結局いくら出せば普通に使えるのか」が分かりにくいです。そこで今回は、SpecsyのPC-DBで価格が取れている${priceStats.total}件をざっと集計して、予算目安と価格帯の傾向をメモしておきます。`}
       secondaryLead={`この記事は「おすすめランキングをきれいに作る」というより、自分がPCを選ぶ前に価格感を掴むための記録です。5万円以下、6万円以下、7万円以下、10万円以上に分けて見ると、どのあたりから実用構成が増えるのかが少し見えてきます。`}
-      conclusionTitle="結論｜まずは7万円前後まで見ればよさそう"
+      conclusionTitle="まずは7万円前後まで見ればよさそう"
       conclusion={`今回の集計では、5万円以下が${priceStats.under50000Pct}%、6万円以下が${priceStats.under60000Pct}%、7万円以下が${priceStats.under70000Pct}%、10万円以上が${priceStats.over100000Pct}%でした。中央値は${formatPrice(priceStats.median)}です。つまり、最安だけを狙うなら5万円台にも候補はありますが、メインPCとして無理なく選びたいなら、まず7万円前後まで広げて見るのが現実的っぽいです。`}
       conclusionIntro="先に価格だけでざっくり見ると、思ったより低価格帯にも候補はあります。ただし、安いほどメモリやSSD、CPU世代の確認は必須です。コスパPCとして見るなら、価格の安さだけでなく実用構成までセットで確認します。"
       criteriaTitle="今回の集計メモ"

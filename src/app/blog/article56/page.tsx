@@ -35,7 +35,7 @@ export default async function Article56Page() {
       listHref="/pc-list/cost-performance"
       listLabel="コスパPCランキングを見る"
       lead="N95/N100/N150搭載PCはAmazonの低価格帯でよく見かけますが、8GBメモリやSSD256GB構成まで含めると実用性に差が出ます。この記事ではSpecsyのPC-DBから、N95/N100/N150搭載かつメモリ16GB・SSD512GB以上の候補だけを抽出し、低価格でも長く使いやすい構成を比較します。"
-      conclusionTitle="結論｜Nシリーズは16GB/512GBを満たす候補から選ぶ"
+      conclusionTitle="Nシリーズは16GB/512GBを満たす候補から選ぶ"
       conclusion="N95/N100/N150は文書作成、Web閲覧、動画視聴、学習用途なら十分候補になります。ただしCPU性能に大きな余裕があるカテゴリではないため、メモリやSSDまで削られた構成は避けたいところです。まず16GB/512GB以上に絞り、その中で価格、重量、画面サイズ、推定駆動時間を見比べるのが現実的です。"
       criteriaTitle="N95/N100/N150の実用構成で優先する基準"
       criteria={[

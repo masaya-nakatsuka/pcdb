@@ -29,7 +29,7 @@ export default async function Article39Page() {
       listHref="/pc-list/cost-performance"
       listLabel="コスパPCランキングを見る"
       lead="15万円以下のPCは、普段使いだけでなく、軽いゲームや動画編集まで候補が広がる価格帯です。ただし同じ価格でもCPU世代、GPU、メモリ、SSDの差が大きいため、SpecsyのPC-DBから15万円以下のAmazon PCを抽出して比較します。"
-      conclusionTitle="結論｜15万円以下はCPU型番とGPU名まで見て用途を決める"
+      conclusionTitle="15万円以下はCPU型番とGPU名まで見て用途を決める"
       conclusion="15万円以下では、Core i5/Ryzen 5の上位構成、Core i7/Ryzen 7系、専用GPU搭載機が混ざります。文書作業中心ならCPUとメモリ、ゲームや動画編集も考えるならGPU名とSSD容量まで同時に確認すると、価格だけ高い構成を避けやすくなります。"
       criteriaTitle="15万円以下PCで優先する基準"
       criteria={[

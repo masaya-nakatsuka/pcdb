@@ -22,7 +22,7 @@ export default async function Article42Page() {
       listHref="/pc-list/cost-performance"
       listLabel="コスパPCランキングを見る"
       lead="安いPCではSSD256GB構成も多く見かけますが、Windows本体、アプリ、写真、動画、学習資料を入れると容量不足になりやすいです。この記事ではSpecsyのPC-DBからSSD512GB以上のAmazon PCを抽出し、容量だけでなくCPU型番、メモリ、GPU、価格まで比較します。"
-      conclusionTitle="結論｜SSD512GB以上を基準に、メモリとCPU型番で絞る"
+      conclusionTitle="SSD512GB以上を基準に、メモリとCPU型番で絞る"
       conclusion="SSD512GB以上なら普段使いの保存容量に余裕が出やすく、メインPCとして選びやすくなります。ただし容量だけで選ぶと、CPUが古い、メモリが少ない、価格が高い構成を拾うことがあります。PC-DBでは512GB以上に絞ったうえで、CPU型番、メモリ16GB、GPU、推定駆動時間、価格を同じ表で確認できます。"
       criteriaTitle="SSD512GB以上PCで優先する基準"
       criteria={[

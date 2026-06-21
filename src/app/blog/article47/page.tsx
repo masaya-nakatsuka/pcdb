@@ -25,7 +25,7 @@ export default async function Article47Page() {
       listHref="/pc-list/cost-performance"
       listLabel="コスパPCランキングを見る"
       lead="Intel N95/N100/N150搭載PCは、Amazonの低価格ノートPCや小型PCでよく見かける構成です。安く買いやすい一方で、メモリ8GB/16GB、SSD256GB/512GB、画面サイズ、重量、バッテリーの差で満足度が大きく変わります。この記事ではSpecsyのPC-DBからN95、N100、N150搭載のAmazon PCを抽出して比較します。"
-      conclusionTitle="結論｜N95/N100/N150は価格だけでなく16GB/512GB構成を優先する"
+      conclusionTitle="N95/N100/N150は価格だけでなく16GB/512GB構成を優先する"
       conclusion="N95/N100/N150は文書作成、ブラウジング、動画視聴、学習用途なら候補になります。ただしCPU性能に大きな余裕があるカテゴリではないため、メモリ16GB、SSD512GB以上、推定駆動時間、重量を同時に確認してください。価格が安くても8GB/256GB構成や重いモデルは、用途によって不満が出やすくなります。"
       criteriaTitle="N95/N100/N150搭載PCで優先する基準"
       criteria={[

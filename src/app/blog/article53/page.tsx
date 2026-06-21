@@ -25,7 +25,7 @@ export default async function Article53Page() {
       listHref="/pc-list/mobile"
       listLabel="軽量モバイルPCランキングを見る"
       lead="900g以下のPCは、毎日バッグに入れて持ち歩く、移動中にメモを取る、サブ機として使う、といった用途で強みがあります。一方で、超軽量なぶん画面サイズ、キーボード、メモリ、SSD、バッテリーに制約が出やすいカテゴリです。この記事ではSpecsyのPC-DBから900g以下のAmazon超軽量ノートPCを抽出し、軽さと実用性を同じ表で比較します。"
-      conclusionTitle="結論｜900g以下はメインPCよりサブ機目線で見る"
+      conclusionTitle="900g以下はメインPCよりサブ機目線で見る"
       conclusion="900g以下のPCは携帯性が非常に高い一方、メモリ16GBやSSD512GB以上の候補は限られます。メインPCとして万能に使うより、外出先のメモ、学習、Web閲覧、動画視聴などに絞って選ぶのが現実的です。長く使うならCPU詳細型番、メモリ、SSD、推定駆動時間を必ず確認してください。"
       criteriaTitle="900g以下の超軽量PCで優先する基準"
       criteria={[

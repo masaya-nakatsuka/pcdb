@@ -25,7 +25,7 @@ export default async function Article48Page() {
       listHref="/pc-list/mobile"
       listLabel="軽量モバイルPCランキングを見る"
       lead="毎日持ち運ぶノートPCは、性能や価格だけでなく重量の差が効きます。1.3kg以下なら通勤、通学、カフェ作業でも扱いやすい候補が増えますが、軽いだけでメモリやSSDが弱いモデルもあります。この記事ではSpecsyのPC-DBから1.3kg以下のAmazon軽量ノートPCを抽出して比較します。"
-      conclusionTitle="結論｜1.3kg以下でも16GBメモリとSSD512GBを確認する"
+      conclusionTitle="1.3kg以下でも16GBメモリとSSD512GBを確認する"
       conclusion="1.3kg以下の軽量ノートPCは持ち運びやすさが魅力ですが、快適さはCPU型番、メモリ、SSD、推定駆動時間で大きく変わります。外出用のサブ機なら8GB/256GBでも足りる場合がありますが、メインPCとして長く使うなら16GBメモリとSSD512GB以上を優先してください。"
       criteriaTitle="1.3kg以下の軽量ノートPCで優先する基準"
       criteria={[

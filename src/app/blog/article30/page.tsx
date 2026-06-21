@@ -27,7 +27,7 @@ export default async function Article30Page() {
       listHref="/pc-list/mobile"
       listLabel="軽量モバイルPCランキングを見る"
       lead="Intel N100搭載のミニノートは、低価格で普段使いしやすい一方、メモリやSSD、画面サイズ、バッテリーで差が出ます。SpecsyのPC-DBからN100かつ13.5インチ以下の候補を抽出して比較します。"
-      conclusionTitle="結論｜N100は軽作業用として、メモリとSSDを優先する"
+      conclusionTitle="N100は軽作業用として、メモリとSSDを優先する"
       conclusion="N100は文書作成、ブラウジング、動画視聴には十分なことが多いですが、長く使うならメモリ16GBとSSD512GB以上を優先した方が安心です。安さだけでなく、推定駆動時間と重量も一緒に確認してください。"
       criteriaTitle="N100ミニノートで優先する基準"
       criteria={[

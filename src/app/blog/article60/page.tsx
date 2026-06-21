@@ -28,7 +28,7 @@ export default async function Article60Page() {
       listHref="/pc-list/home"
       listLabel="自宅用PCランキングを見る"
       lead="15.6インチ前後のノートPCは、在宅ワーク、学習、資料作成、動画視聴で画面の見やすさを重視する人に向いたサイズです。ただし大画面でもメモリ8GBやSSD256GBでは、長く使うメインPCとして不安が残ります。この記事ではSpecsyのPC-DBから、15インチ以上16.5インチ以下かつメモリ16GB・SSD512GB以上のAmazonノートPCだけを抽出し、大画面で実用構成を満たす候補を比較します。"
-      conclusionTitle="結論｜大画面は16GB/512GBを満たしてからCPUと重量を見る"
+      conclusionTitle="大画面は16GB/512GBを満たしてからCPUと重量を見る"
       conclusion="15.6インチ前後でメモリ16GB・SSD512GB以上を満たすモデルは、自宅用や据え置き中心のメインPC候補になります。ただし同じ大画面でも、CPU世代、重量、推定駆動時間、価格の差は大きく出ます。外出頻度が少ないなら画面の見やすさとCPU型番を優先し、たまに持ち運ぶなら重量とバッテリーも確認してください。"
       criteriaTitle="15.6インチ前後の実用PCで優先する基準"
       criteria={[

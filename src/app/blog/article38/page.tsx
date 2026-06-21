@@ -29,7 +29,7 @@ export default async function Article38Page() {
       listHref="/pc-list/cost-performance"
       listLabel="コスパPCランキングを見る"
       lead="10万円以下のPCは候補が多い一方、CPU世代、メモリ、SSD、GPUの差が見えにくい価格帯です。この記事ではSpecsyのPC-DBから10万円以下のAmazon PCを抽出し、安さだけでなく実用性まで同じ表で比較します。"
-      conclusionTitle="結論｜10万円以下はCPU型番・16GBメモリ・SSD512GBを優先する"
+      conclusionTitle="10万円以下はCPU型番・16GBメモリ・SSD512GBを優先する"
       conclusion="10万円以下では、ブランド名やCore i5/Ryzen 5という大分類だけで判断すると外れやすくなります。CPU型番、メモリ16GB、SSD512GB以上、価格の順に見て、用途がゲームや動画編集ならGPU名も必ず確認してください。"
       criteriaTitle="10万円以下PCで優先する基準"
       criteria={[

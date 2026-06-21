@@ -29,7 +29,7 @@ export default async function Article54Page() {
       listHref="/pc-list/cost-performance"
       listLabel="コスパPCランキングを見る"
       lead="7万円以下のPCは、低価格を維持しながらメモリ16GBやSSD512GBの候補をかなり選びやすくなる価格帯です。5万円以下や6万円以下では構成が限られる一方、10万円までは出したくない人にとって現実的な落としどころになります。この記事ではSpecsyのPC-DBから7万円以下のAmazon PCを抽出し、価格だけでなく実用構成まで比較します。"
-      conclusionTitle="結論｜7万円以下は16GB/512GBを基準に選ぶ"
+      conclusionTitle="7万円以下は16GB/512GBを基準に選ぶ"
       conclusion="7万円以下では、文書作成、Web閲覧、動画視聴、学習、在宅作業向けのメインPC候補が増えます。安さだけで選ぶのではなく、メモリ16GB、SSD512GB以上、CPU詳細型番、推定駆動時間を見て、必要ならGPU名も確認してください。"
       criteriaTitle="7万円以下PCで優先する基準"
       criteria={[

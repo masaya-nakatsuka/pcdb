@@ -17,7 +17,7 @@ export default async function Article34Page() {
       listHref="/pc-list/gaming"
       listLabel="ゲーム向けPCランキングを見る"
       lead="ゲーム用途ではGPUが重要ですが、CPU・メモリ・価格を無視するとバランスの悪い構成になります。この記事ではSpecsyのPC-DBを使い、Amazon内のPCをゲーム適性の観点で並べます。"
-      conclusionTitle="結論｜専用GPUだけでなく、CPUとメモリも同時に見る"
+      conclusionTitle="専用GPUだけでなく、CPUとメモリも同時に見る"
       conclusion="軽いゲームなら内蔵GPUでも候補になりますが、3Dゲーム中心なら専用GPUの有無とGPUクラスが重要です。さらにCPU型番、メモリ16GB以上、SSD容量、価格を同じ表で確認すると、過剰スペックや型落ち高値を避けやすくなります。"
       criteriaTitle="ゲーム向けPCで優先する基準"
       criteria={[

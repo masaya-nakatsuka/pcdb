@@ -17,7 +17,7 @@ export default async function Article28Page() {
       listHref="/pc-list/mobile"
       listLabel="軽量モバイルPCランキングを見る"
       lead="小型ノートPCや軽量モバイルノートは、CPU名だけでは選びにくいカテゴリです。軽さ、画面サイズ、バッテリー、メモリ、SSD、価格のバランスで満足度が変わるため、SpecsyのPC-DBを使って持ち運びやすいミニノート候補を比較します。"
-      conclusionTitle="結論｜小型・軽量だけでなく、16GBメモリと推定駆動時間を同時に見る"
+      conclusionTitle="小型・軽量だけでなく、16GBメモリと推定駆動時間を同時に見る"
       conclusion="毎日持ち運ぶなら重量と画面サイズが重要ですが、小型で安いモデルほどメモリ8GBやSSD256GBに寄りがちです。まずはモバイルスコア上位から、重量、画面サイズ、推定駆動時間、16GBメモリ、SSD512GB以上を同時に確認するのが現実的です。"
       criteriaTitle="小型・軽量モバイルノートで優先する基準"
       criteria={[

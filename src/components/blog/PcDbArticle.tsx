@@ -175,7 +175,7 @@ export default function PcDbArticle({
           <BlogParagraph>{lead}</BlogParagraph>
           {secondaryLead !== null && (
             <BlogParagraph>
-              {secondaryLead ?? 'PC選びは、商品名の印象や価格だけで決めるよりも、用途に対してどこが弱点になりそうかを先に見る方が失敗しにくいです。この記事では、先に結論を整理し、そのあとPC-DBの実データで候補を見比べます。'}
+              {secondaryLead ?? 'PC選びは、商品名の印象や価格だけで決めるよりも、用途に対してどこが弱点になりそうかを先に見る方が失敗しにくいです。この記事では、要点を先に整理し、そのあとPC-DBの実データで候補を見比べます。'}
             </BlogParagraph>
           )}
 

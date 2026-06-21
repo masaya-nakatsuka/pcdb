@@ -17,7 +17,7 @@ export default async function Article35Page() {
       listHref="/pc-list/video-editing"
       listLabel="動画編集向けPCランキングを見る"
       lead="動画編集用PCは、CPUだけでもGPUだけでも決まりません。プレビュー、書き出し、素材管理、外出先作業まで考えると、CPU型番・GPU・メモリ・SSD・推定駆動時間をまとめて見る必要があります。"
-      conclusionTitle="結論｜CPU型番・GPU・16GB以上のメモリを同時に確認する"
+      conclusionTitle="CPU型番・GPU・16GB以上のメモリを同時に確認する"
       conclusion="FHD編集中心なら上位内蔵GPUでも候補になりますが、4Kや長尺編集ではGPUとメモリの余裕が重要です。SpecsyではCPU型番別スコアとGPU評価を分けて見られるため、同じCore i7/Ryzen 7でも世代差を反映して比較できます。"
       criteriaTitle="動画編集PCで優先する基準"
       criteria={[

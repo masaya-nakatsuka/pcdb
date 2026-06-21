@@ -22,7 +22,7 @@ export default async function Article44Page() {
       listHref="/pc-list/cost-performance"
       listLabel="コスパPCランキングを見る"
       lead="Intel Core搭載PCは、Core i3、Core i5、Core Ultraなど名前の種類が多く、世代や型番で性能差も大きく変わります。この記事ではSpecsyのPC-DBからCore搭載のAmazon PCを抽出し、CPU型番、メモリ、SSD、GPU、価格を同じ表で比較します。"
-      conclusionTitle="結論｜Core i3/i5/Core Ultraの名前だけで決めない"
+      conclusionTitle="Core i3/i5/Core Ultraの名前だけで決めない"
       conclusion="Core搭載PCは候補が多い一方、Core i5でも世代が古いモデルや、Core Ultraでも価格が高いモデルがあります。Core i3/i5/Core Ultraという大分類だけでなく、CPU詳細型番、メモリ16GB、SSD512GB、推定駆動時間、価格を同時に見ると、名前だけ強い構成を避けやすくなります。"
       criteriaTitle="Core搭載PCで優先する基準"
       criteria={[

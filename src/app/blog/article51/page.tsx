@@ -29,7 +29,7 @@ export default async function Article51Page() {
       listHref="/pc-list/cost-performance"
       listLabel="コスパPCランキングを見る"
       lead="6万円以下のPCは、5万円以下より候補が広がり、メモリ16GBやSSD512GBの構成も見つけやすくなる価格帯です。一方で、CPU型番やバッテリー、GPUの差を見ないと、安さだけで選んで後悔しやすい領域でもあります。この記事ではSpecsyのPC-DBから6万円以下のAmazon PCを抽出し、低価格でも実用的な候補を比較します。"
-      conclusionTitle="結論｜6万円以下は16GB/512GB構成まで狙える"
+      conclusionTitle="6万円以下は16GB/512GB構成まで狙える"
       conclusion="6万円以下では、文書作成、Web閲覧、動画視聴、学習用なら十分候補になるPCがあります。5万円以下に固定すると構成が弱くなりやすいため、少し予算を広げてメモリ16GB、SSD512GB以上、CPU詳細型番、推定駆動時間を確認するのが現実的です。"
       criteriaTitle="6万円以下PCで優先する基準"
       criteria={[

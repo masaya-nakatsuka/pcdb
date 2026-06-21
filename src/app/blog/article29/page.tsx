@@ -17,7 +17,7 @@ export default async function Article29Page() {
       listHref="/pc-list/cafe"
       listLabel="カフェ向けPCランキングを見る"
       lead="小型ノートPCは、性能だけでも軽さだけでも決まりません。カフェ作業、学習、在宅ワークを想定し、SpecsyのPC-DBでCPU型番、GPU、メモリ、SSD、推定駆動時間、価格をまとめて比較します。"
-      conclusionTitle="結論｜総合スコア上位から、用途に合わない弱点を消す"
+      conclusionTitle="総合スコア上位から、用途に合わない弱点を消す"
       conclusion="まずは総合スコア上位を見て、CPU型番、16GBメモリ、SSD512GB以上、推定駆動時間、重量の順に確認します。価格が安くてもメモリやSSDが弱いモデルは長期満足度が下がりやすいため、スコアとスペック表をセットで見るのが安全です。"
       criteriaTitle="小型ノートPCで優先する基準"
       criteria={[

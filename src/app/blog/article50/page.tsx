@@ -25,7 +25,7 @@ export default async function Article50Page() {
       listHref="/pc-list/mobile"
       listLabel="軽量モバイルPCランキングを見る"
       lead="1kg以下のノートPCは、毎日持ち歩く人にとって体感差が大きいカテゴリです。ただし超軽量モデルには、画面が小さい、メモリやSSDが少ない、バッテリーが短いといった弱点も混ざります。この記事ではSpecsyのPC-DBから1kg以下のAmazon軽量ノートPCを抽出し、軽さと実用性能を同じ表で比較します。"
-      conclusionTitle="結論｜1kg以下は軽さの理由まで確認する"
+      conclusionTitle="1kg以下は軽さの理由まで確認する"
       conclusion="1kg以下は携帯性を最優先する人には有力ですが、軽いほど画面サイズ、キーボード、バッテリー、冷却に制約が出やすくなります。サブ機なら価格と軽さを優先してもよい一方、メインPCとして使うならメモリ16GB、SSD512GB以上、CPU詳細型番、推定駆動時間を必ず確認してください。"
       criteriaTitle="1kg以下の軽量ノートPCで優先する基準"
       criteria={[

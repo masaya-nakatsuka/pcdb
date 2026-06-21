@@ -22,7 +22,7 @@ export default async function Article41Page() {
       listHref="/pc-list/cost-performance"
       listLabel="コスパPCランキングを見る"
       lead="PCを長く使うなら、価格やCPU名だけでなくメモリ容量が重要です。8GBでも軽作業はできますが、多タブ作業、Web会議、写真管理、数年利用を考えると16GB以上を選ぶ価値があります。この記事ではSpecsyのPC-DBからメモリ16GB以上のAmazon PCを抽出して比較します。"
-      conclusionTitle="結論｜16GBメモリを基準に、CPU型番とSSD容量で絞る"
+      conclusionTitle="16GBメモリを基準に、CPU型番とSSD容量で絞る"
       conclusion="メモリ16GB以上なら普段使いの余裕は出やすいですが、それだけで快適とは限りません。CPUが古い、SSDが256GB、価格が高いなどの弱点が残ることがあります。PC-DBでは16GB以上に絞ったうえで、CPU型番、SSD512GB以上、GPU、推定駆動時間、価格を同じ表で確認できます。"
       criteriaTitle="メモリ16GB以上PCで優先する基準"
       criteria={[

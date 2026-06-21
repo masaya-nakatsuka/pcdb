@@ -27,7 +27,7 @@ export default async function Article31Page() {
       listHref="/pc-list/mobile"
       listLabel="軽量モバイルPCランキングを見る"
       lead="Intel N150搭載ミニノートは、N100系の低消費電力路線を引き継ぎつつ、軽作業で少し余裕を持たせたい人向けの候補です。SpecsyのPC-DBからN150かつ13.5インチ以下の候補を抽出して比較します。"
-      conclusionTitle="結論｜N150は低価格モバイルの実用寄り候補"
+      conclusionTitle="N150は低価格モバイルの実用寄り候補"
       conclusion="N150はブラウジング、資料作成、学習、リモート会議向けに扱いやすいCPUです。ただし快適さはCPUだけでなくメモリとSSDに左右されるため、16GB/512GB構成を優先し、重量と推定駆動時間も確認してください。"
       criteriaTitle="N150ミニノートで優先する基準"
       criteria={[

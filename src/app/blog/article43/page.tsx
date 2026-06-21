@@ -22,7 +22,7 @@ export default async function Article43Page() {
       listHref="/pc-list/cost-performance"
       listLabel="コスパPCランキングを見る"
       lead="Ryzen搭載PCは、同じRyzen 5やRyzen 7でも世代や型番で性能が変わります。価格だけで選ぶと、古い世代のCPUやSSD容量の少ない構成を選んでしまうことがあります。この記事ではSpecsyのPC-DBからRyzen搭載のAmazon PCを抽出し、CPU型番、メモリ、SSD、GPU、価格を同じ表で比較します。"
-      conclusionTitle="結論｜Ryzen 5/7の名前だけでなく、型番と構成を見る"
+      conclusionTitle="Ryzen 5/7の名前だけでなく、型番と構成を見る"
       conclusion="Ryzen搭載PCは、16GBメモリやSSD512GB構成が多く、普段使いから軽い制作作業まで候補になります。ただしRyzen 5/7という名前だけでは世代差を判断できません。PC-DBではRyzen搭載機に絞ったうえで、CPU型番、メモリ、SSD、GPU、推定駆動時間、価格のバランスを確認できます。"
       criteriaTitle="Ryzen搭載PCで優先する基準"
       criteria={[

@@ -37,7 +37,7 @@ export default async function Article59Page() {
       listHref="/pc-list/mobile"
       listLabel="軽量モバイルPCランキングを見る"
       lead="2in1ノートPCは、キーボード付きのノートPCとしても、タブレットに近い形でも使える柔軟さが魅力です。ただし形状だけで選ぶと、メモリやSSDが弱く、メインPCとしては物足りない候補も混ざります。この記事ではSpecsyのPC-DBから、2in1系かつメモリ16GB・SSD512GB以上のAmazonノートPCだけを抽出し、タブレット兼用でも実用構成を満たす候補を比較します。"
-      conclusionTitle="結論｜2in1は形状より先に16GB/512GBを確認する"
+      conclusionTitle="2in1は形状より先に16GB/512GBを確認する"
       conclusion="2in1でメモリ16GB・SSD512GB以上を満たすモデルは、学習、メモ、動画視聴、Web会議、外出先の軽作業を1台でこなしやすい候補です。ただし同じ2in1でも、重量、画面サイズ、CPU世代、推定駆動時間には差があります。タブレット的な使いやすさとノートPCとしての実用性を同時に見て選ぶのが現実的です。"
       criteriaTitle="2in1実用構成で優先する基準"
       criteria={[

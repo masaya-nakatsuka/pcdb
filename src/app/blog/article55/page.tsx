@@ -25,7 +25,7 @@ export default async function Article55Page() {
       listHref="/pc-list/cost-performance"
       listLabel="コスパPCランキングを見る"
       lead="メモリ16GBとSSD512GB以上は、AmazonでPCを選ぶときの分かりやすい実用ラインです。8GB/256GB構成でも軽作業はできますが、長く使うメインPCとしては、メモリ不足や容量不足で後悔しやすくなります。この記事ではSpecsyのPC-DBからメモリ16GBかつSSD512GB以上のAmazon PCだけを抽出し、CPU型番、GPU、価格、推定駆動時間まで同じ表で比較します。"
-      conclusionTitle="結論｜16GB/512GBを満たしてからCPU型番と価格で絞る"
+      conclusionTitle="16GB/512GBを満たしてからCPU型番と価格で絞る"
       conclusion="メモリ16GB・SSD512GB以上なら、文書作成、Web閲覧、動画視聴、学習、在宅作業のメインPCとして選びやすくなります。ただし同じ16GB/512GB構成でも、CPU世代、GPU、重量、バッテリー、価格には差があります。まず実用構成で足切りし、その中でCPU詳細型番と価格のバランスを見るのが現実的です。"
       criteriaTitle="16GB/512GB構成で優先する基準"
       criteria={[

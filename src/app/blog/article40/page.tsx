@@ -29,7 +29,7 @@ export default async function Article40Page() {
       listHref="/pc-list/cost-performance"
       listLabel="コスパPCランキングを見る"
       lead="5万円以下のPCは、安さが魅力な一方で、CPU世代、メモリ容量、SSD容量、バッテリーの差が使い勝手に直結します。この記事ではSpecsyのPC-DBから5万円以下のAmazon PCを抽出し、価格だけでは見えない弱点を比較します。"
-      conclusionTitle="結論｜5万円以下はメモリとSSDを削りすぎない構成を選ぶ"
+      conclusionTitle="5万円以下はメモリとSSDを削りすぎない構成を選ぶ"
       conclusion="5万円以下ではN100/N150/N95系や低価格帯のCore/Ryzen搭載機が候補になります。ただし8GBメモリや256GB SSDは用途を絞る必要があります。文書作成、ブラウジング、動画視聴中心なら、CPU型番、メモリ、SSD、推定駆動時間を同時に見て、安さの理由を確認するのが安全です。"
       criteriaTitle="5万円以下PCで優先する基準"
       criteria={[

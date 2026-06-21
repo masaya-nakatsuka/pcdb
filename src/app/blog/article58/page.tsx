@@ -28,7 +28,7 @@ export default async function Article58Page() {
       listHref="/pc-list/cafe"
       listLabel="カフェ向けPCランキングを見る"
       lead="14インチ前後のノートPCは、持ち運びやすさと作業画面の広さを両立しやすいサイズです。ただしメモリ8GBやSSD256GBの構成まで含めてしまうと、長く使うメインPC候補としては比較しづらくなります。この記事ではSpecsyのPC-DBから、13.8インチ以上14.5インチ以下かつメモリ16GB・SSD512GB以上のAmazonノートPCだけを抽出し、作業しやすい実用PCとして比較します。"
-      conclusionTitle="結論｜14インチ前後は16GB/512GBを満たしてから重量を見る"
+      conclusionTitle="14インチ前後は16GB/512GBを満たしてから重量を見る"
       conclusion="14インチ前後でメモリ16GB・SSD512GB以上を満たすモデルは、カフェ作業、通学、在宅作業を1台でこなしやすい候補です。最終判断では、CPU詳細型番、重量、推定駆動時間、価格のバランスを見てください。同じ14インチ前後でも、軽さ重視のモデルと性能重視のモデルでは使い勝手が変わります。"
       criteriaTitle="14インチ前後の実用PCで優先する基準"
       criteria={[
