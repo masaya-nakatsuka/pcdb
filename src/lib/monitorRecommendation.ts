@@ -12,25 +12,25 @@ export const monitorUsageOptions: Array<{
     value: 'work',
     slug: 'work',
     label: '仕事用',
-    description: '27インチ前後、WQHD以上、価格、USB-Cのバランスで比較します。',
+    description: '27インチ前後、WQHD以上、価格、USB-C対応のバランスを見ながら、仕事用モニターを比較します。',
   },
   {
     value: 'gaming',
     slug: 'gaming',
     label: 'ゲーム用',
-    description: '高リフレッシュレート、見やすさ、価格のバランスで比較します。',
+    description: '高リフレッシュレート、見やすさ、応答速度、価格のバランスから、ゲーム用モニターを比較します。',
   },
   {
     value: 'creative',
     slug: 'creative',
     label: '制作向け',
-    description: '解像度、パネル、画面サイズを重視して比較します。',
+    description: '解像度、パネル方式、画面サイズ、色の見やすさを重視して、制作向けモニターを比較します。',
   },
   {
     value: 'usb_c',
     slug: 'usb-c',
     label: 'USB-C重視',
-    description: 'USB-C給電、解像度、価格のバランスで比較します。',
+    description: 'USB-C給電、解像度、価格、ノートPCとの接続しやすさを見ながら、USB-C重視モニターを比較します。',
   },
 ]
 

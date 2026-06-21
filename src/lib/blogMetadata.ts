@@ -164,7 +164,7 @@ export const blogArticles: ArticleMetadata[] = [
   {
     id: 29,
     title: 'Amazon小型ノートPCおすすめ 2026｜総合スコアでPC-DB比較',
-    description: '小型ノートPCをCPU型番、GPU、メモリ、SSD、推定駆動時間、価格からPC-DBで比較。',
+    description: '小型ノートPCをCPU型番、GPU、メモリ、SSD、推定駆動時間、価格、用途別スコアからPC-DBで比較します。',
     date: '2026-06-17',
   },
   {
