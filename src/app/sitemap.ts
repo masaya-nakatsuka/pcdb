@@ -30,6 +30,7 @@ const staticRoutes = [
   '/',
   '/about',
   '/blog',
+  '/pc-check',
   '/privacy',
   ...pcListRoutes,
   ...monitorRoutes,

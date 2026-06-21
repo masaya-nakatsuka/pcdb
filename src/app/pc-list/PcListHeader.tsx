@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
 const navItems = [
+  { href: '/pc-check', label: '購入診断' },
   { href: '/pc-list/cafe', label: 'ノートPC（新品）' },
   { href: '/pc-list/used', label: 'ノートPC（中古）' },
   { href: '/tablet-list', label: 'タブレット' },
@@ -55,7 +56,7 @@ export default function PcListHeader() {
         </Link>
 
         <div className="pc-list-header__navigation">
-          <nav className="pc-list-header__nav" aria-label="カテゴリ別商品一覧">
+          <nav className="pc-list-header__nav" aria-label="商品一覧と購入診断">
             {navItems.map((item) => (
               <Link
                 key={item.href}
