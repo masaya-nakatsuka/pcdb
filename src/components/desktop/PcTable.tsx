@@ -5,6 +5,11 @@ import { useRouter } from 'next/navigation'
 import { PcTableProps, ClientPcWithCpuSpec, ClientSortOptions, ClientSortField, ClientSortOrder, ClientUsageCategory } from '../types'
 import { sortPcs } from '../utils/pcSort'
 import { getBatteryLifeProfileRows } from '../utils/batteryLifeDisplay'
+import {
+  getDisplaySizeFilterOptions,
+  getInitialDisplaySizeFilter,
+  matchesDisplaySizeFilter,
+} from '../utils/displaySizeFilter'
 import { fetchPcList } from '../../app/pc-list/fetchPcs'
 import { getPcListUsagePath } from '../../app/pc-list/usageConfig'
 import TrackableProductLink from '../analytics/TrackableProductLink'
@@ -293,7 +298,7 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
   const [selectedUsage, setSelectedUsage] = useState<ClientUsageCategory>(initialUsage)
   const [selectedCpu, setSelectedCpu] = useState<string>(defaultCpu ?? 'all')
   const [selectedDisplaySize, setSelectedDisplaySize] = useState<string>(
-    defaultMaxDisplaySize ? `max:${defaultMaxDisplaySize}` : 'all'
+    getInitialDisplaySizeFilter(defaultMaxDisplaySize)
   )
   const [isSortApplied, setIsSortApplied] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -314,16 +319,10 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
     return [...ordered, ...missing]
   }, [allPcs, cpuOrderList])
 
-  const availableDisplaySizeOptions = useMemo(() => {
-    const sizeSet = new Set<number>()
-    allPcs.forEach((pc) => {
-      if (typeof pc.display_size === 'number') {
-        sizeSet.add(pc.display_size)
-      }
-    })
-
-    return Array.from(sizeSet).sort((a, b) => a - b)
-  }, [allPcs])
+  const availableDisplaySizeOptions = useMemo(
+    () => getDisplaySizeFilterOptions(allPcs, defaultMaxDisplaySize),
+    [allPcs, defaultMaxDisplaySize]
+  )
 
   const applyCpuFilterAndSort = useCallback((
     sourcePcs: ClientPcWithCpuSpec[],
@@ -334,14 +333,8 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
   ) => {
     let filtered = cpuName === 'all' ? sourcePcs : sourcePcs.filter((pc) => pc.cpu === cpuName)
 
-    if (displaySize.startsWith('max:')) {
-      const limit = Number(displaySize.replace('max:', ''))
-      filtered = filtered.filter((pc) =>
-        typeof pc.display_size === 'number' ? pc.display_size <= limit : false
-      )
-    } else if (displaySize !== 'all') {
-      const targetSize = Number(displaySize)
-      filtered = filtered.filter((pc) => pc.display_size === targetSize)
+    if (displaySize !== 'all') {
+      filtered = filtered.filter((pc) => matchesDisplaySizeFilter(pc, displaySize))
     }
 
     const displayed = sortApplied ? sortPcs(filtered, options, cpuOrderList) : filtered
@@ -354,7 +347,7 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
     setIsSortApplied(false)
 
     const initialCpuFilter = defaultCpu ?? 'all'
-    const initialDisplayFilter = defaultMaxDisplaySize ? `max:${defaultMaxDisplaySize}` : 'all'
+    const initialDisplayFilter = getInitialDisplaySizeFilter(defaultMaxDisplaySize)
 
     const baseSortOptions: ClientSortOptions = { field: 'pcScore', order: 'desc' }
     setSortOptions(baseSortOptions)
@@ -395,14 +388,14 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
       const newPcs = await fetchPcList(usage, listing, device)
       setAllPcs(newPcs)
       setSelectedCpu(defaultCpu ?? 'all')
-      setSelectedDisplaySize(defaultMaxDisplaySize ? `max:${defaultMaxDisplaySize}` : 'all')
+      setSelectedDisplaySize(getInitialDisplaySizeFilter(defaultMaxDisplaySize))
       setIsSortApplied(false)
       const baseSortOptions: ClientSortOptions = { field: 'pcScore', order: 'desc' }
       setSortOptions(baseSortOptions)
       applyCpuFilterAndSort(
         newPcs,
         defaultCpu ?? 'all',
-        defaultMaxDisplaySize ? `max:${defaultMaxDisplaySize}` : 'all',
+        getInitialDisplaySizeFilter(defaultMaxDisplaySize),
         baseSortOptions,
         false
       )
@@ -696,14 +689,9 @@ export default function PcTable({ pcs: initialPcs, defaultCpu, defaultMaxDisplay
           }}
         >
           <option value="all">すべて</option>
-          {defaultMaxDisplaySize && (
-            <option value={`max:${defaultMaxDisplaySize}`}>
-              {defaultMaxDisplaySize}インチ以下
-            </option>
-          )}
-          {availableDisplaySizeOptions.map((size) => (
-            <option key={size} value={size}>
-              {size}インチ
+          {availableDisplaySizeOptions.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
             </option>
           ))}
           </select>

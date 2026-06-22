@@ -6,6 +6,11 @@ import { PcListProps, ClientPcWithCpuSpec, ClientUsageCategory, ClientSortField,
 import { fetchPcList } from '../../app/pc-list/fetchPcs'
 import { getPcListUsagePath } from '../../app/pc-list/usageConfig'
 import { sortPcs } from '../utils/pcSort'
+import {
+  getDisplaySizeFilterOptions,
+  getInitialDisplaySizeFilter,
+  matchesDisplaySizeFilter,
+} from '../utils/displaySizeFilter'
 import PcCard from './PcCard'
 
 export default function PcList({ pcs: initialPcs, defaultCpu, defaultMaxDisplaySize, initialUsage = 'cafe', listing = 'new', device = 'notebook_pc', urlBasedUsage = false }: PcListProps) {
@@ -18,7 +23,7 @@ export default function PcList({ pcs: initialPcs, defaultCpu, defaultMaxDisplayS
   const [cpuOrderList, setCpuOrderList] = useState<string[]>([])
   const [selectedCpu, setSelectedCpu] = useState<string>(defaultCpu ?? 'all')
   const [selectedDisplaySize, setSelectedDisplaySize] = useState<string>(
-    defaultMaxDisplaySize ? `max:${defaultMaxDisplaySize}` : 'all'
+    getInitialDisplaySizeFilter(defaultMaxDisplaySize)
   )
   const [isSortApplied, setIsSortApplied] = useState(false)
 
@@ -35,16 +40,10 @@ export default function PcList({ pcs: initialPcs, defaultCpu, defaultMaxDisplayS
     return [...ordered, ...missing]
   }, [allPcs, cpuOrderList])
 
-  const availableDisplaySizeOptions = useMemo(() => {
-    const sizeSet = new Set<number>()
-    allPcs.forEach((pc) => {
-      if (typeof pc.display_size === 'number') {
-        sizeSet.add(pc.display_size)
-      }
-    })
-
-    return Array.from(sizeSet).sort((a, b) => a - b)
-  }, [allPcs])
+  const availableDisplaySizeOptions = useMemo(
+    () => getDisplaySizeFilterOptions(allPcs, defaultMaxDisplaySize),
+    [allPcs, defaultMaxDisplaySize]
+  )
 
   const applyCpuFilterAndSort = useCallback((
     sourcePcs: ClientPcWithCpuSpec[],
@@ -55,14 +54,8 @@ export default function PcList({ pcs: initialPcs, defaultCpu, defaultMaxDisplayS
   ) => {
     let filtered = cpuName === 'all' ? sourcePcs : sourcePcs.filter((pc) => pc.cpu === cpuName)
 
-    if (displaySize.startsWith('max:')) {
-      const limit = Number(displaySize.replace('max:', ''))
-      filtered = filtered.filter((pc) =>
-        typeof pc.display_size === 'number' ? pc.display_size <= limit : false
-      )
-    } else if (displaySize !== 'all') {
-      const targetSize = Number(displaySize)
-      filtered = filtered.filter((pc) => pc.display_size === targetSize)
+    if (displaySize !== 'all') {
+      filtered = filtered.filter((pc) => matchesDisplaySizeFilter(pc, displaySize))
     }
 
     const displayed = sortApplied ? sortPcs(filtered, options, cpuOrderList) : filtered
@@ -75,7 +68,7 @@ export default function PcList({ pcs: initialPcs, defaultCpu, defaultMaxDisplayS
     setIsSortApplied(false)
 
     const initialCpuFilter = defaultCpu ?? 'all'
-    const initialDisplayFilter = defaultMaxDisplaySize ? `max:${defaultMaxDisplaySize}` : 'all'
+    const initialDisplayFilter = getInitialDisplaySizeFilter(defaultMaxDisplaySize)
 
     const baseSortOptions: ClientSortOptions = { field: 'pcScore', order: 'desc' }
     setSortOptions(baseSortOptions)
@@ -118,14 +111,14 @@ export default function PcList({ pcs: initialPcs, defaultCpu, defaultMaxDisplayS
       const newPcs = await fetchPcList(usage, listing, device)
       setAllPcs(newPcs)
       setSelectedCpu(defaultCpu ?? 'all')
-      setSelectedDisplaySize(defaultMaxDisplaySize ? `max:${defaultMaxDisplaySize}` : 'all')
+      setSelectedDisplaySize(getInitialDisplaySizeFilter(defaultMaxDisplaySize))
       setIsSortApplied(false)
       const baseSortOptions: ClientSortOptions = { field: 'pcScore', order: 'desc' }
       setSortOptions(baseSortOptions)
       applyCpuFilterAndSort(
         newPcs,
         defaultCpu ?? 'all',
-        defaultMaxDisplaySize ? `max:${defaultMaxDisplaySize}` : 'all',
+        getInitialDisplaySizeFilter(defaultMaxDisplaySize),
         baseSortOptions,
         false
       )
@@ -541,14 +534,9 @@ export default function PcList({ pcs: initialPcs, defaultCpu, defaultMaxDisplayS
               }}
             >
               <option value="all">すべて</option>
-              {defaultMaxDisplaySize && (
-                <option value={`max:${defaultMaxDisplaySize}`}>
-                  {defaultMaxDisplaySize}インチ以下
-                </option>
-              )}
-              {availableDisplaySizeOptions.map((size) => (
-                <option key={size} value={size}>
-                  {size}インチ
+              {availableDisplaySizeOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
                 </option>
               ))}
             </select>
