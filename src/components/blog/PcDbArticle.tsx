@@ -361,7 +361,7 @@ export default function PcDbArticle({
                 margin: '0 0 12px',
               }}
             >
-              フル機能のPC比較リスト
+              PC比較リスト
             </h2>
             <p style={{
               color: '#475569',
