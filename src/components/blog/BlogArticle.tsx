@@ -89,14 +89,16 @@ export function BlogTable({ children }: { children: ReactNode }) {
       borderRadius: '8px',
       marginTop: '16px',
       marginBottom: '16px',
+      maxWidth: '100%',
       overflowX: 'auto',
       overflowY: 'hidden'
     }}>
       <table style={{
         width: '100%',
-        minWidth: '920px',
+        minWidth: 'min(920px, 100%)',
         borderCollapse: 'collapse',
-        fontSize: '14px'
+        fontSize: '14px',
+        tableLayout: 'fixed'
       }}>
         {children}
       </table>
@@ -142,7 +144,8 @@ export function BlogTableCell({ children, isHeader = false }: { children: ReactN
       textAlign: 'left',
       fontWeight: isHeader ? '600' : 'normal',
       color: isHeader ? '#374151' : '#6b7280',
-      verticalAlign: 'top'
+      verticalAlign: 'top',
+      wordBreak: 'break-word'
     }}>
       {children}
     </Tag>

@@ -60,7 +60,7 @@ export const blogStyles: Record<string, CSSProperties> = {
   content: {
     backgroundColor: 'white',
     borderRadius: '12px',
-    padding: '50px',
+    padding: 'clamp(24px, 6vw, 50px)',
     boxSizing: 'border-box',
     boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
     lineHeight: '1.6',

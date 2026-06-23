@@ -189,8 +189,8 @@ export default function PcDbArticle({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
         />
       )}
-      <BlogArticle title={title} date={date} variant="wide">
-        <BlogContent variant="wide">
+      <BlogArticle title={title} date={date}>
+        <BlogContent>
           <BlogParagraph>{lead}</BlogParagraph>
           {secondaryLead !== null && (
             <BlogParagraph>
