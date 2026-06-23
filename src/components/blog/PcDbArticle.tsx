@@ -71,6 +71,24 @@ function getCurrentArticleId(articlePath: string) {
   return match ? Number(match[1]) : null
 }
 
+const comparisonCategoryLinks = [
+  { href: '/pc-list/cafe', label: 'ノートPC（新品）', category: 'notebook-new' },
+  { href: '/pc-list/used', label: 'ノートPC（中古）', category: 'notebook-used' },
+  { href: '/pc-list/desktop', label: 'デスクトップ', category: 'desktop' },
+  { href: '/pc-list/mini-pc', label: 'ミニPC', category: 'mini-pc' },
+  { href: '/tablet-list', label: 'タブレット', category: 'tablet' },
+  { href: '/monitor-list', label: 'モニター', category: 'monitor' },
+]
+
+function getActiveComparisonCategory(listHref: string) {
+  if (listHref.startsWith('/pc-list/used')) return 'notebook-used'
+  if (listHref.startsWith('/pc-list/desktop')) return 'desktop'
+  if (listHref.startsWith('/pc-list/mini-pc')) return 'mini-pc'
+  if (listHref.startsWith('/tablet-list')) return 'tablet'
+  if (listHref.startsWith('/monitor-list')) return 'monitor'
+  return 'notebook-new'
+}
+
 export default function PcDbArticle({
   articlePath,
   title,
@@ -101,6 +119,7 @@ export default function PcDbArticle({
   const relatedArticles = listedBlogArticles
     .filter((article) => article.id !== currentArticleId)
     .slice(0, 4)
+  const activeComparisonCategory = getActiveComparisonCategory(listHref)
   const articleJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Article',
@@ -307,10 +326,51 @@ export default function PcDbArticle({
             ))}
           </BlogSection>
 
-          <BlogSection title="フル機能のPC比較リスト">
-            <BlogParagraph>
+        </BlogContent>
+      </BlogArticle>
+
+      <section
+        aria-labelledby="full-pc-comparison-list"
+        style={{
+          maxWidth: 'min(1760px, calc(100vw - 24px))',
+          width: '100%',
+          boxSizing: 'border-box',
+          margin: '0 auto',
+          padding: '0 12px',
+        }}
+      >
+        <div style={{
+          backgroundColor: '#ffffff',
+          border: '1px solid #e2e8f0',
+          borderRadius: '12px',
+          boxShadow: '0 2px 8px rgba(15, 23, 42, 0.08)',
+          color: '#1f2937',
+          padding: '32px clamp(16px, 2.4vw, 32px)',
+        }}>
+          <div style={{
+            maxWidth: '960px',
+            marginBottom: '22px',
+          }}>
+            <h2
+              id="full-pc-comparison-list"
+              style={{
+                color: '#0f172a',
+                fontSize: '24px',
+                fontWeight: 800,
+                lineHeight: 1.35,
+                margin: '0 0 12px',
+              }}
+            >
+              フル機能のPC比較リスト
+            </h2>
+            <p style={{
+              color: '#475569',
+              fontSize: '15px',
+              lineHeight: 1.8,
+              margin: '0 0 16px',
+            }}>
               記事内の表は要点確認用です。最後に、同じ候補をフィルター、並び替え、価格、CPU/GPU、メモリ、SSD、推定駆動時間まで含めて比較できます。
-            </BlogParagraph>
+            </p>
             <Link href={listHref} style={{
               display: 'inline-flex',
               alignItems: 'center',
@@ -321,20 +381,58 @@ export default function PcDbArticle({
               color: '#ffffff',
               fontWeight: 800,
               textDecoration: 'none',
-              marginBottom: '16px',
             }}>
               {listLabel}
             </Link>
-            <div style={{
-              marginTop: '14px',
-              marginLeft: 'calc(clamp(18px, 2.5vw, 34px) * -1)',
-              marginRight: 'calc(clamp(18px, 2.5vw, 34px) * -1)',
-            }}>
-              <ClientPcList pcs={pcs} initialUsage={usage} urlBasedUsage embeddedInArticle />
-            </div>
-          </BlogSection>
-        </BlogContent>
-      </BlogArticle>
+          </div>
+
+          <nav
+            aria-label="比較カテゴリ"
+            style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: '8px',
+              margin: '0 0 18px',
+              padding: '8px',
+              border: '1px solid #e2e8f0',
+              borderRadius: '10px',
+              backgroundColor: '#f8fafc',
+            }}
+          >
+            {comparisonCategoryLinks.map((item) => {
+              const isActive = item.category === activeComparisonCategory
+
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  aria-current={isActive ? 'page' : undefined}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    minHeight: '34px',
+                    padding: '0 11px',
+                    borderRadius: '7px',
+                    backgroundColor: isActive ? '#ffffff' : 'transparent',
+                    boxShadow: isActive ? '0 1px 3px rgba(15, 23, 42, 0.12)' : 'none',
+                    color: isActive ? '#2563eb' : '#475569',
+                    fontSize: '13px',
+                    fontWeight: 800,
+                    lineHeight: 1.35,
+                    textDecoration: 'none',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {item.label}
+                </Link>
+              )
+            })}
+          </nav>
+
+          <ClientPcList pcs={pcs} initialUsage={usage} urlBasedUsage embeddedInArticle />
+        </div>
+      </section>
     </BlogLayout>
   )
 }
