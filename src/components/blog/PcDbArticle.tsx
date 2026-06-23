@@ -298,9 +298,18 @@ export default function PcDbArticle({
             </div>
           </BlogSection>
 
-          <BlogSection title="最新ランキングで確認">
+          <BlogSection title="よくある質問">
+            {faq.map((item) => (
+              <div key={item.question} style={{ marginBottom: '18px' }}>
+                <h3 style={{ fontSize: '17px', margin: '0 0 6px', color: '#0f172a' }}>{item.question}</h3>
+                <BlogParagraph>{item.answer}</BlogParagraph>
+              </div>
+            ))}
+          </BlogSection>
+
+          <BlogSection title="フル機能のPC比較リスト">
             <BlogParagraph>
-              記事内の表は要点確認用です。全候補の並び替え、CPU/GPU確認、価格比較は専用ランキングで確認できます。
+              記事内の表は要点確認用です。最後に、同じ候補をフィルター、並び替え、価格、CPU/GPU、メモリ、SSD、推定駆動時間まで含めて比較できます。
             </BlogParagraph>
             <Link href={listHref} style={{
               display: 'inline-flex',
@@ -323,15 +332,6 @@ export default function PcDbArticle({
             }}>
               <ClientPcList pcs={pcs} initialUsage={usage} urlBasedUsage embeddedInArticle />
             </div>
-          </BlogSection>
-
-          <BlogSection title="よくある質問">
-            {faq.map((item) => (
-              <div key={item.question} style={{ marginBottom: '18px' }}>
-                <h3 style={{ fontSize: '17px', margin: '0 0 6px', color: '#0f172a' }}>{item.question}</h3>
-                <BlogParagraph>{item.answer}</BlogParagraph>
-              </div>
-            ))}
           </BlogSection>
         </BlogContent>
       </BlogArticle>
