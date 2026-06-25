@@ -43,7 +43,7 @@
   background: #eff6ff;
 }
 
-.specsy-blog-content :is(h2, .wp-block-heading:is(h2)) {
+.specsy-blog-content > :is(h2, .wp-block-heading:is(h2)) {
   position: relative;
   box-sizing: border-box;
   margin: 44px 0 18px;
@@ -59,7 +59,7 @@
   letter-spacing: 0;
 }
 
-.specsy-blog-content :is(h2, .wp-block-heading:is(h2))::after {
+.specsy-blog-content > :is(h2, .wp-block-heading:is(h2))::after {
   content: "";
   position: absolute;
   right: 14px;
@@ -69,7 +69,7 @@
   background: linear-gradient(90deg, rgba(37, 99, 235, 0.22), rgba(20, 184, 166, 0));
 }
 
-.specsy-blog-content :is(h3, .wp-block-heading:is(h3)) {
+.specsy-blog-content > :is(h3, .wp-block-heading:is(h3)) {
   box-sizing: border-box;
   display: inline-block;
   max-width: 100%;
@@ -127,7 +127,7 @@
 }
 
 @media (max-width: 767px) {
-  .specsy-blog-content :is(h2, .wp-block-heading:is(h2)) {
+  .specsy-blog-content > :is(h2, .wp-block-heading:is(h2)) {
     margin: 34px 0 16px;
     padding: 12px 13px;
     border-left-width: 4px;
@@ -135,7 +135,7 @@
     line-height: 1.45;
   }
 
-  .specsy-blog-content :is(h3, .wp-block-heading:is(h3)) {
+  .specsy-blog-content > :is(h3, .wp-block-heading:is(h3)) {
     display: block;
     width: fit-content;
     max-width: 100%;

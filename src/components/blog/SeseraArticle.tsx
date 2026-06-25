@@ -105,12 +105,22 @@ export default function SeseraArticle({
         dangerouslySetInnerHTML={{
           __html: `
             .sesera-body h2 {
+              background: transparent;
+              border: 0;
+              border-radius: 0;
+              box-sizing: border-box;
               color: #333;
               font-size: 24px;
               font-weight: 600;
               line-height: 1.35;
               margin: 40px 0 20px;
               max-width: 920px;
+              padding: 0;
+              position: static;
+            }
+
+            .sesera-body h2::after {
+              content: none;
             }
 
             .sesera-body p {
