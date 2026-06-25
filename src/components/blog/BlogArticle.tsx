@@ -49,7 +49,7 @@ export function BlogContent({ children, variant = 'standard' }: BlogContentProps
     : blogStyles.content
 
   return (
-    <div style={contentStyle}>
+    <div className="specsy-blog-content" style={contentStyle}>
       {children}
     </div>
   )

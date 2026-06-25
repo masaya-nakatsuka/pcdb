@@ -2,7 +2,7 @@ import Link from 'next/link'
 import ClientPcList from '@/app/pc-list/ClientPcList'
 import { listedBlogArticles } from '@/lib/blogMetadata'
 import { BlogArticle, BlogContent, BlogList, BlogParagraph, BlogSection, BlogTable, BlogTableBody, BlogTableCell, BlogTableHeader, BlogTableRow } from './BlogArticle'
-import BlogLayout from './BlogLayout'
+import BlogLayout, { blogStyles } from './BlogLayout'
 import type { ClientPcWithCpuSpec, ClientUsageCategory } from '../types'
 
 interface PcDbArticleProps {
@@ -320,7 +320,7 @@ export default function PcDbArticle({
           <BlogSection title="よくある質問">
             {faq.map((item) => (
               <div key={item.question} style={{ marginBottom: '18px' }}>
-                <h3 style={{ fontSize: '17px', margin: '0 0 6px', color: '#0f172a' }}>{item.question}</h3>
+                <h3 style={blogStyles.h3}>{item.question}</h3>
                 <BlogParagraph>{item.answer}</BlogParagraph>
               </div>
             ))}

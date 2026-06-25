@@ -43,7 +43,105 @@
   background: #eff6ff;
 }
 
+.specsy-blog-content :is(h2, .wp-block-heading:is(h2)) {
+  position: relative;
+  box-sizing: border-box;
+  margin: 44px 0 18px;
+  padding: 14px 16px;
+  border: 1px solid #dbe5f2;
+  border-left: 5px solid #2563eb;
+  border-radius: 8px;
+  background: #f8fafc;
+  color: #0f172a;
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 1.35;
+  letter-spacing: 0;
+}
+
+.specsy-blog-content :is(h2, .wp-block-heading:is(h2))::after {
+  content: "";
+  position: absolute;
+  right: 14px;
+  bottom: -1px;
+  left: 16px;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(37, 99, 235, 0.22), rgba(20, 184, 166, 0));
+}
+
+.specsy-blog-content :is(h3, .wp-block-heading:is(h3)) {
+  box-sizing: border-box;
+  display: inline-block;
+  max-width: 100%;
+  margin: 12px 0 8px;
+  padding: 6px 10px;
+  border: 1px solid #e2e8f0;
+  border-left: 3px solid #14b8a6;
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.035);
+  color: #0f172a;
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 1.45;
+  letter-spacing: 0;
+}
+
+.specsy-blog-content p {
+  color: #334155;
+  line-height: 1.9;
+}
+
+.specsy-blog-content ul,
+.specsy-blog-content ol {
+  color: #334155;
+  line-height: 1.85;
+}
+
+.specsy-blog-content li {
+  margin: 0 0 8px;
+  padding-left: 2px;
+}
+
+.specsy-blog-content strong {
+  color: #0f172a;
+  font-weight: 800;
+}
+
+.specsy-blog-content a {
+  color: #1d4ed8;
+  font-weight: 700;
+  text-underline-offset: 0.18em;
+}
+
+.specsy-blog-content table {
+  border-color: #e2e8f0;
+}
+
+.specsy-blog-content th {
+  background: #f8fafc;
+  color: #0f172a;
+}
+
+.specsy-blog-content td {
+  color: #475569;
+}
+
 @media (max-width: 767px) {
+  .specsy-blog-content :is(h2, .wp-block-heading:is(h2)) {
+    margin: 34px 0 16px;
+    padding: 12px 13px;
+    border-left-width: 4px;
+    font-size: 20px;
+    line-height: 1.45;
+  }
+
+  .specsy-blog-content :is(h3, .wp-block-heading:is(h3)) {
+    display: block;
+    width: fit-content;
+    max-width: 100%;
+    font-size: 15px;
+  }
+
   .pc-list-page-intro {
     padding: 20px 16px 0 !important;
   }

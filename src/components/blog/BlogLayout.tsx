@@ -73,11 +73,31 @@ export const blogStyles: Record<string, CSSProperties> = {
   },
   h2: {
     fontSize: '24px',
-    fontWeight: '600',
-    marginTop: '40px',
-    marginBottom: '20px',
-    color: '#333',
-    maxWidth: '920px'
+    fontWeight: '800',
+    lineHeight: '1.35',
+    marginTop: '44px',
+    marginBottom: '18px',
+    color: '#0f172a',
+    maxWidth: '920px',
+    padding: '14px 16px',
+    border: '1px solid #dbe5f2',
+    borderLeft: '5px solid #2563eb',
+    borderRadius: '8px',
+    backgroundColor: '#f8fafc'
+  },
+  h3: {
+    display: 'inline-block',
+    maxWidth: '920px',
+    margin: '10px 0 8px',
+    padding: '6px 10px',
+    border: '1px solid #e2e8f0',
+    borderLeft: '3px solid #14b8a6',
+    borderRadius: '8px',
+    backgroundColor: 'rgba(15, 23, 42, 0.035)',
+    color: '#0f172a',
+    fontSize: '17px',
+    fontWeight: '800',
+    lineHeight: '1.45'
   },
   paragraph: {
     marginBottom: '20px',
