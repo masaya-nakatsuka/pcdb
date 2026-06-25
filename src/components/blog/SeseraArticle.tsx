@@ -2,7 +2,7 @@ import Link from 'next/link'
 import ClientPcList from '@/app/pc-list/ClientPcList'
 import { listedBlogArticles } from '@/lib/blogMetadata'
 import BlogLayout from './BlogLayout'
-import { BlogArticle, BlogContent, BlogParagraph } from './BlogArticle'
+import { BlogArticle, BlogContent, BlogParagraph, BlogSection } from './BlogArticle'
 import type { ClientPcWithCpuSpec, ClientUsageCategory } from '../types'
 
 interface SeseraArticleProps {
@@ -105,66 +105,30 @@ export default function SeseraArticle({
         dangerouslySetInnerHTML={{
           __html: `
             .sesera-body h2 {
-              background: transparent;
-              border: 0;
-              border-radius: 0;
+              background: #f8fafc;
+              border: 1px solid #dbe5f2;
+              border-left: 5px solid #2563eb;
+              border-radius: 8px;
               box-sizing: border-box;
-              color: #111827;
-              font-size: 26px;
+              color: #0f172a;
+              font-size: 24px;
               font-weight: 800;
               letter-spacing: 0;
-              line-height: 1.42;
-              margin: 48px 0 18px;
+              line-height: 1.35;
+              margin: 44px 0 18px;
               max-width: 920px;
-              padding: 18px 0 0;
+              padding: 14px 16px;
               position: relative;
-            }
-
-            .sesera-body h2::before {
-              content: "";
-              position: absolute;
-              left: 0;
-              top: 0;
-              width: 34px;
-              height: 2px;
-              border-radius: 999px;
-              background: #111827;
             }
 
             .sesera-body h2::after {
-              content: none;
-            }
-
-            .specsy-blog-content > h2.sesera-section-heading {
-              background: transparent !important;
-              border: 0 !important;
-              border-radius: 0 !important;
-              box-sizing: border-box;
-              color: #111827 !important;
-              font-size: 26px !important;
-              font-weight: 800 !important;
-              letter-spacing: 0 !important;
-              line-height: 1.42 !important;
-              margin: 48px 0 18px !important;
-              max-width: 920px;
-              padding: 18px 0 0 !important;
-              position: relative;
-            }
-
-            .specsy-blog-content > h2.sesera-section-heading::before {
               content: "";
               position: absolute;
-              left: 0;
-              top: 0;
-              width: 34px;
-              height: 2px;
-              border-radius: 999px;
-              background: #111827;
-            }
-
-            .specsy-blog-content > h2.sesera-section-heading::after {
-              content: none !important;
-              background: transparent !important;
+              right: 14px;
+              bottom: -1px;
+              left: 16px;
+              height: 1px;
+              background: linear-gradient(90deg, rgba(37, 99, 235, 0.22), rgba(20, 184, 166, 0));
             }
 
             .sesera-body p {
@@ -220,9 +184,8 @@ export default function SeseraArticle({
             }
 
             .sesera-body .sesera-point {
-              background: #f8fafc;
-              border: 1px solid #cbd5e1;
-              border-left: 4px solid #2563eb;
+              background: transparent;
+              border: 1px solid #d7dde7;
               border-radius: 8px;
               box-sizing: border-box;
               margin: 18px 0 22px;
@@ -242,22 +205,11 @@ export default function SeseraArticle({
 
             @media (max-width: 767px) {
               .sesera-body h2 {
-                font-size: 22px;
+                border-left-width: 4px;
+                font-size: 20px;
                 line-height: 1.45;
-                margin: 40px 0 16px;
-                padding-top: 16px;
-              }
-
-              .specsy-blog-content > h2.sesera-section-heading {
-                font-size: 22px !important;
-                line-height: 1.45 !important;
-                margin: 40px 0 16px !important;
-                padding-top: 16px !important;
-              }
-
-              .sesera-body h2::before,
-              .specsy-blog-content > h2.sesera-section-heading::before {
-                width: 28px;
+                margin: 34px 0 16px;
+                padding: 12px 13px;
               }
             }
           `,
@@ -282,7 +234,7 @@ export default function SeseraArticle({
         <BlogContent>
           <div className="sesera-body" dangerouslySetInnerHTML={{ __html: bodyHtml }} />
 
-          <h2 className="sesera-section-heading">PC-DB関連記事</h2>
+          <BlogSection title="PC-DB関連記事">
             <div style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
@@ -311,14 +263,16 @@ export default function SeseraArticle({
                 </Link>
               ))}
             </div>
+          </BlogSection>
 
-          <h2 className="sesera-section-heading">よくある質問</h2>
+          <BlogSection title="よくある質問">
             {faq.map((item) => (
               <div key={item.question} style={{ marginBottom: '18px' }}>
                 <h3 style={{ fontSize: '17px', margin: '0 0 6px', color: '#0f172a' }}>{item.question}</h3>
                 <BlogParagraph>{item.answer}</BlogParagraph>
               </div>
             ))}
+          </BlogSection>
         </BlogContent>
       </BlogArticle>
 
