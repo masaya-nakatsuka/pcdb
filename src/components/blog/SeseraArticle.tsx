@@ -107,20 +107,28 @@ export default function SeseraArticle({
             .sesera-body h2 {
               background: transparent;
               border: 0;
+              border-bottom: 1px solid #dbe5f2;
               border-radius: 0;
               box-sizing: border-box;
-              color: #333;
+              color: #0f172a;
               font-size: 24px;
-              font-weight: 600;
-              line-height: 1.35;
-              margin: 40px 0 20px;
+              font-weight: 800;
+              line-height: 1.38;
+              margin: 42px 0 18px;
               max-width: 920px;
-              padding: 0;
-              position: static;
+              padding: 0 0 10px;
+              position: relative;
             }
 
             .sesera-body h2::after {
-              content: none;
+              content: "";
+              position: absolute;
+              bottom: -1px;
+              left: 0;
+              width: 72px;
+              height: 3px;
+              border-radius: 999px;
+              background: linear-gradient(90deg, #2563eb, #14b8a6);
             }
 
             .sesera-body p {
@@ -194,6 +202,19 @@ export default function SeseraArticle({
             .sesera-body .sesera-related {
               color: #475569;
               font-size: 14px;
+            }
+
+            @media (max-width: 767px) {
+              .sesera-body h2 {
+                font-size: 21px;
+                line-height: 1.45;
+                margin: 36px 0 16px;
+                padding-bottom: 9px;
+              }
+
+              .sesera-body h2::after {
+                width: 58px;
+              }
             }
           `,
         }}
