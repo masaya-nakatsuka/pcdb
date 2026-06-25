@@ -12,6 +12,12 @@ export interface ArticleMetadata {
 
 export const blogArticles: ArticleMetadata[] = [
   {
+    id: 63,
+    title: 'PassMarkスコアの目安はどれくらい？用途別のざっくり早見 2026',
+    description: 'PassMarkスコアの目安を、ネット閲覧、Office、写真編集、動画編集、ゲームなど用途別にざっくり整理し、実際のPC候補もSpecsyのPC-DBで確認する記事。',
+    date: '2026-06-25',
+  },
+  {
     id: 33,
     title: 'AmazonコスパPCの予算目安 2026｜いくら出せばいいかPC-DB比較',
     description: 'Amazonでコスパの良いPCを選ぶために、SpecsyのPC-DBで5万円以下・6万円以下・7万円以下・10万円以上の価格分布と実用構成を比較する記事。',
