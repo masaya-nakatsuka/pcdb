@@ -13,10 +13,13 @@ export async function fetchPcList(
   usageCategory: UsageCategory = 'cafe',
   listing: PcListingType = 'new',
   device: PcDeviceCategory = 'notebook_pc',
-  searchQuery = ''
+  searchQuery = '',
+  includeInactive = false
 ): Promise<PcWithCpuSpec[]> {
+  const allPcs = await fetchAllPcs()
+  const activePcs = includeInactive ? allPcs : allPcs.filter((pc) => pc.is_active === true)
   const basePcs = filterPcsBySearchQuery(
-    filterPcsByDeviceCategory(filterPcsByListing(await fetchAllPcs(), listing), device),
+    filterPcsByDeviceCategory(filterPcsByListing(activePcs, listing), device),
     searchQuery
   )
   const supabasePcs = applyUsageIntentFilter(basePcs, usageCategory)

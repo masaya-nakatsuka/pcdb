@@ -9,6 +9,7 @@ export interface ServerPc {
   product_condition?: string | null
   condition_label?: string | null
   availability?: string | null
+  is_active: boolean | null
   is_used?: boolean | null
   is_refurbished?: boolean | null
   price: number | null

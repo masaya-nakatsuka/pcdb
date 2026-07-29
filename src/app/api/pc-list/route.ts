@@ -19,8 +19,9 @@ export async function GET(request: NextRequest) {
     const listing = parsePcListingType(searchParams.get('listing') ?? searchParams.get('condition'))
     const device = parsePcDeviceCategory(searchParams.get('device') ?? searchParams.get('form_factor'))
     const query = (searchParams.get('q') ?? searchParams.get('query') ?? '').trim()
+    const includeInactive = searchParams.get('include_inactive') === '1'
     
-    const pcs = await fetchPcList(category, listing, device, query)
+    const pcs = await fetchPcList(category, listing, device, query, includeInactive)
     
     const response = Response.json(pcs, {
       headers: {

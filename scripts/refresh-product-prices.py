@@ -2,9 +2,9 @@
 """
 Generate price refresh SQL for Specsy products using Amazon Creators API.
 
-The script reads currently visible product rows from the production APIs by
-default, fetches current Amazon offer prices by ASIN, and writes UPDATE SQL for
-Supabase. It does not print PA-API credential values.
+The script reads product rows from the production APIs by default, fetches
+current Amazon offer prices by ASIN, and writes UPDATE SQL for Supabase. It
+does not print PA-API credential values.
 """
 
 from __future__ import annotations
@@ -30,7 +30,7 @@ MARKETPLACE = "www.amazon.co.jp"
 ASIN_RE = re.compile(r"(?:/dp/|%2Fdp%2F)([A-Z0-9]{10})(?:[/?&%'#]|%|$)", re.I)
 
 SOURCE_APIS = {
-    "pc": "/api/pc-list?listing=all&device=all",
+    "pc": "/api/pc-list?listing=all&device=all&include_inactive=1",
     "monitor": "/api/monitor-list",
 }
 
@@ -39,6 +39,11 @@ RESOURCES = [
     "offersV2.listings.price",
     "offersV2.listings.availability",
 ]
+
+CONFIRMED_UNAVAILABLE_STATUSES = {
+    "NO_OFFER",
+    "OUT_OF_STOCK",
+}
 
 
 @dataclass(frozen=True)
@@ -223,7 +228,11 @@ def build_update_sql(refs: list[ProductRef], offers: dict[str, Offer], *, deacti
             set_parts = [f"fetched_at = {sql_string(TODAY)}"]
             if ref.table == "am_pc_data":
                 set_parts.append(f"availability = {sql_string(status)}")
-            if deactivate_unavailable:
+            if (
+                deactivate_unavailable
+                and offer is not None
+                and offer.availability.upper() in CONFIRMED_UNAVAILABLE_STATUSES
+            ):
                 set_parts.append("is_active = false")
             lines.append(f"UPDATE {ref.table} SET {', '.join(set_parts)} WHERE {update_where(ref)};")
             continue
@@ -234,7 +243,6 @@ def build_update_sql(refs: list[ProductRef], offers: dict[str, Offer], *, deacti
             f"price = {offer.price}",
             f"real_price = {offer.price}",
             f"fetched_at = {sql_string(TODAY)}",
-            "is_active = true",
         ]
         if ref.table == "am_pc_data":
             set_parts.append(f"availability = {sql_string(offer.availability)}")
