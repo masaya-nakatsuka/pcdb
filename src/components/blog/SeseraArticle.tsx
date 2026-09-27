@@ -133,6 +133,20 @@ export default function SeseraArticle({
               text-underline-offset: 2px;
             }
 
+            .sesera-body ul,
+            .sesera-body ol {
+              color: #374151;
+              line-height: 1.85;
+              margin: 20px 0 24px;
+              max-width: 920px;
+              padding-left: 28px;
+            }
+
+            .sesera-body li {
+              margin-bottom: 12px;
+              padding-left: 8px;
+            }
+
             .sesera-body table {
               border-collapse: collapse;
               font-size: 14px;
