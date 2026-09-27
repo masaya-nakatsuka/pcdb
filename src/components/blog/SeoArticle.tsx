@@ -41,7 +41,29 @@ interface ProductPickProps {
   amazonUrl: string
 }
 
+function addAffiliateTag(url: string): string {
+  const AMAZON_TAG = 'nmsuteado2-22'
+  
+  try {
+    const urlObj = new URL(url)
+    if (!urlObj.hostname.includes('amazon.co.jp') && urlObj.hostname !== 'amzn.to') {
+      return url
+    }
+    
+    if (!urlObj.searchParams.has('tag')) {
+      urlObj.searchParams.set('tag', AMAZON_TAG)
+    }
+    
+    return urlObj.toString()
+  } catch {
+    const separator = url.includes('?') ? '&' : '?'
+    return `${url}${separator}tag=${AMAZON_TAG}`
+  }
+}
+
 export function ProductPick({ name, specs, amazonUrl }: ProductPickProps) {
+  const taggedUrl = addAffiliateTag(amazonUrl)
+  
   return (
     <div style={{
       border: '1px solid #e2e8f0',
@@ -68,7 +90,7 @@ export function ProductPick({ name, specs, amazonUrl }: ProductPickProps) {
         </div>
       )}
       <a
-        href={amazonUrl}
+        href={taggedUrl}
         target="_blank"
         rel="noopener noreferrer"
         style={{

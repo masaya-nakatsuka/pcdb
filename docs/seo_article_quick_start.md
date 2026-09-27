@@ -2,31 +2,30 @@
 
 PC-DBを使わない一般SEO記事（ゲーム×デバイス選び系）の作成手順。
 
-## この記事フレームの対象
+## 対象と制約
 
-- **対象**: 「〇〇ゲーム × スマホ/PC/タブレット × おすすめ選び」形式
-- **非対象**: PC-DB記事（article28-63の形式）は従来の `PcDbArticle` を使用
+- **対象**: 「ゲーム名 × スマホ/PC/タブレット × おすすめ選び」形式
+- **非対象**: PC-DB記事（article28-63）は `PcDbArticle` を使用
+- **制約**: インラインスタイル禁止、`'use client'` 禁止、3デバイス固定
 
-## ステップ1: ID確認
+## 5ステップで作成
 
-`src/lib/blogMetadata.ts` で次の記事ID番号を確認（最新ID + 1）
+### 1. ID確認とメタデータ追加
 
-## ステップ2: メタデータ追加
-
-`blogArticles` 配列の**先頭**に追加：
+`src/lib/blogMetadata.ts` で次のID番号を確認し、配列**先頭**に追加：
 
 ```typescript
 {
   id: 65,
   title: 'ゲーム名におすすめのスマホ・PC・タブレット選び 2026｜デバイス比較',
-  description: 'ゲーム名をプレイするスマホ、PC、タブレットそれぞれの選び方とおすすめをデバイス別に比較。',
+  description: 'ゲーム名をプレイするスマホ、PC、タブレットの選び方とおすすめ。',
   date: '2026-09-27',
 },
 ```
 
-## ステップ3: 記事ファイル作成
+### 2. 記事ファイル作成
 
-`src/app/blog/article65/page.tsx` を作成し、以下のテンプレートをコピー：
+`src/app/blog/article65/page.tsx` を作成：
 
 ```typescript
 import SeoArticle, { DeviceSection, ProductPick } from '@/components/blog/SeoArticle'
@@ -45,76 +44,17 @@ export default function Article65Page() {
       lead="ゲーム名は、スマホ・PC・タブレットのどのデバイスでもプレイできますが、それぞれ向き不向きがあります。この記事では、デバイスごとの選び方とおすすめをまとめます。"
     >
       <DeviceSection deviceName="スマホでゲーム名をプレイする場合">
-        <BlogParagraph>
-          スマホで快適にプレイするための選び方を書く（80-150文字程度）。
-        </BlogParagraph>
+        <BlogParagraph>選び方の概要（80-150文字）</BlogParagraph>
         <BlogList>
-          <li>基準1: 具体的な判断ポイント</li>
-          <li>基準2: 具体的な判断ポイント</li>
-          <li>基準3: 具体的な判断ポイント</li>
+          <li>基準1</li>
+          <li>基準2</li>
+          <li>基準3</li>
         </BlogList>
-        <BlogParagraph>
-          おすすめモデル例（2026年時点）：
-        </BlogParagraph>
-        <ProductPick
-          name="製品名"
-          specs="スペック概要"
-          amazonUrl="https://www.amazon.co.jp/s?k=検索キーワード"
-        />
-        <ProductPick
-          name="製品名2"
-          specs="スペック概要2"
-          amazonUrl="https://www.amazon.co.jp/s?k=検索キーワード2"
-        />
+        <BlogParagraph>おすすめモデル例（2026年時点）：</BlogParagraph>
+        <ProductPick name="製品名" specs="スペック" amazonUrl="https://www.amazon.co.jp/s?k=検索" />
       </DeviceSection>
 
-      <DeviceSection deviceName="PCでゲーム名をプレイする場合">
-        <BlogParagraph>
-          PCで快適にプレイするための選び方を書く（80-150文字程度）。
-        </BlogParagraph>
-        <BlogList>
-          <li>基準1: 具体的な判断ポイント</li>
-          <li>基準2: 具体的な判断ポイント</li>
-          <li>基準3: 具体的な判断ポイント</li>
-        </BlogList>
-        <BlogParagraph>
-          おすすめモデル例（2026年時点）：
-        </BlogParagraph>
-        <ProductPick
-          name="製品名"
-          specs="スペック概要"
-          amazonUrl="https://www.amazon.co.jp/s?k=検索キーワード"
-        />
-        <ProductPick
-          name="製品名2"
-          specs="スペック概要2"
-          amazonUrl="https://www.amazon.co.jp/s?k=検索キーワード2"
-        />
-      </DeviceSection>
-
-      <DeviceSection deviceName="タブレットでゲーム名をプレイする場合">
-        <BlogParagraph>
-          タブレットで快適にプレイするための選び方を書く（80-150文字程度）。
-        </BlogParagraph>
-        <BlogList>
-          <li>基準1: 具体的な判断ポイント</li>
-          <li>基準2: 具体的な判断ポイント</li>
-          <li>基準3: 具体的な判断ポイント</li>
-        </BlogList>
-        <BlogParagraph>
-          おすすめモデル例（2026年時点）：
-        </BlogParagraph>
-        <ProductPick
-          name="製品名"
-          specs="スペック概要"
-          amazonUrl="https://www.amazon.co.jp/s?k=検索キーワード"
-        />
-        <ProductPick
-          name="製品名2"
-          specs="スペック概要2"
-          amazonUrl="https://www.amazon.co.jp/s?k=検索キーワード2"
-        />
-      </DeviceSection>
+      {/* PC・タブレットも同じ構造で繰り返す */}
 
       <AmazonCta />
     </SeoArticle>
@@ -122,62 +62,27 @@ export default function Article65Page() {
 }
 ```
 
-## ステップ4: カスタマイズのポイント
+### 3. デバイスセクション記入
 
-### 必ず変更する項目
+スマホ・PC・タブレットの3セクションを記入：
+- 導入段落（選び方概要）
+- 判断基準リスト（3-5項目）
+- 製品例2-3個（`ProductPick`）
 
-- **ID番号**: `metadata`, `articlePath`, ファイル名すべて一致させる
-- **title**: SEO用。「ゲーム名」と「2026」を含める
-- **date**: 今日の日付
-- **lead**: 記事の概要（100-150文字）
-- **デバイスセクション**: スマホ/PC/タブレット各セクションの中身
+`ProductPick` の `amazonUrl` はAmazon検索URL（`/s?k=製品名`）または商品URL（`/dp/ASIN`）を指定。アフィリエイトタグは自動付与。
 
-### ProductPick の書き方
+### 4. 記事64を参照
 
-```typescript
-<ProductPick
-  name="実在する製品名"
-  specs="CPU型番やGPU、メモリ容量など"
-  amazonUrl="https://www.amazon.co.jp/s?k=製品名+型番"
-/>
-```
+詳細は `src/app/blog/article64/page.tsx` の実装を参照。
 
-- `name`: 正確な製品名
-- `specs`: 重要スペックのみ（20-40文字）
-- `amazonUrl`: Amazon検索URL（`/s?k=検索語`形式推奨）
-
-### 各デバイスセクションの構成
-
-1. 導入段落（`BlogParagraph`）: 選び方の概要
-2. 判断基準リスト（`BlogList`）: 3-5項目
-3. おすすめ例の導入（`BlogParagraph`）
-4. 製品例2-3個（`ProductPick`）
-
-## ステップ5: 確認
-
-```bash
-npm run dev
-```
-
-ブラウザで `http://localhost:3000/blog/article65` にアクセスして確認。
-
-## ステップ6: ビルドチェック
+### 5. ビルド確認
 
 ```bash
 npm run build
 ```
 
-型エラーがないことを確認してコミット。
+型エラーなしで完了すればOK。
 
 ---
 
-## 重要な制約
-
-1. **PcDbArticle は使わない**: この記事形式はPC-DB不使用
-2. **インラインスタイル禁止**: すべて共有CSS（既にコンポーネントに組み込み済み）
-3. **クライアントフック禁止**: `'use client'`、`useState`、`useEffect` 不要
-4. **3デバイス固定**: スマホ・PC・タブレットの順で統一
-
-## 完了
-
-たった50-80行で記事完成。次の記事も同じテンプレートで量産可能。
+**完了**: 50-80行で記事完成。同じパターンで量産可能。

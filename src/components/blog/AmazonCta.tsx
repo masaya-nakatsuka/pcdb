@@ -1,4 +1,7 @@
 export default function AmazonCta() {
+  const AMAZON_TAG = 'nmsuteado2-22'
+  const amazonUrl = `https://www.amazon.co.jp/?tag=${AMAZON_TAG}`
+  
   return (
     <div style={{
       border: '2px solid #ff9900',
@@ -25,7 +28,7 @@ export default function AmazonCta() {
         この記事で紹介した商品の最新価格・在庫状況・レビューは、各商品のAmazonページでご確認いただけます。
       </p>
       <a
-        href="https://www.amazon.co.jp/"
+        href={amazonUrl}
         target="_blank"
         rel="noopener noreferrer"
         style={{
