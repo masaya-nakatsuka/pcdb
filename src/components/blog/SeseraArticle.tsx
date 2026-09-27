@@ -105,30 +105,15 @@ export default function SeseraArticle({
         dangerouslySetInnerHTML={{
           __html: `
             .sesera-body h2 {
-              background: #f8fafc;
-              border: 1px solid #dbe5f2;
-              border-left: 5px solid #2563eb;
-              border-radius: 8px;
+              border-bottom: 1px solid #e5e7eb;
               box-sizing: border-box;
-              color: #0f172a;
+              color: #1a1a1a;
               font-size: 24px;
-              font-weight: 800;
-              letter-spacing: 0;
-              line-height: 1.35;
-              margin: 44px 0 18px;
+              font-weight: 700;
+              line-height: 1.5;
+              margin: 48px 0 20px;
               max-width: 920px;
-              padding: 14px 16px;
-              position: relative;
-            }
-
-            .sesera-body h2::after {
-              content: "";
-              position: absolute;
-              right: 14px;
-              bottom: -1px;
-              left: 16px;
-              height: 1px;
-              background: linear-gradient(90deg, rgba(37, 99, 235, 0.22), rgba(20, 184, 166, 0));
+              padding-bottom: 10px;
             }
 
             .sesera-body p {
@@ -205,11 +190,10 @@ export default function SeseraArticle({
 
             @media (max-width: 767px) {
               .sesera-body h2 {
-                border-left-width: 4px;
                 font-size: 20px;
-                line-height: 1.45;
-                margin: 34px 0 16px;
-                padding: 12px 13px;
+                line-height: 1.5;
+                margin: 36px 0 16px;
+                padding-bottom: 8px;
               }
             }
           `,

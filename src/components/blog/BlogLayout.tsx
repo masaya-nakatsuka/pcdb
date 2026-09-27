@@ -51,10 +51,10 @@ export const blogStyles: Record<string, CSSProperties> = {
     marginBottom: '16px'
   },
   title: {
-    fontSize: '36px',
-    fontWeight: 'bold',
-    lineHeight: '1.2',
-    color: '#333',
+    fontSize: '32px',
+    fontWeight: '700',
+    lineHeight: '1.4',
+    color: '#1a1a1a',
     margin: 0
   },
   content: {
@@ -73,31 +73,22 @@ export const blogStyles: Record<string, CSSProperties> = {
   },
   h2: {
     fontSize: '24px',
-    fontWeight: '800',
-    lineHeight: '1.35',
-    marginTop: '44px',
-    marginBottom: '18px',
-    color: '#0f172a',
+    fontWeight: '700',
+    lineHeight: '1.5',
+    marginTop: '48px',
+    marginBottom: '20px',
+    paddingBottom: '10px',
+    color: '#1a1a1a',
     maxWidth: '920px',
-    padding: '14px 16px',
-    border: '1px solid #dbe5f2',
-    borderLeft: '5px solid #2563eb',
-    borderRadius: '8px',
-    backgroundColor: '#f8fafc'
+    borderBottom: '1px solid #e5e7eb'
   },
   h3: {
-    display: 'inline-block',
     maxWidth: '920px',
-    margin: '10px 0 8px',
-    padding: '6px 10px',
-    border: '1px solid #e2e8f0',
-    borderLeft: '3px solid #14b8a6',
-    borderRadius: '8px',
-    backgroundColor: 'rgba(15, 23, 42, 0.035)',
-    color: '#0f172a',
-    fontSize: '17px',
-    fontWeight: '800',
-    lineHeight: '1.45'
+    margin: '32px 0 14px',
+    color: '#1a1a1a',
+    fontSize: '18px',
+    fontWeight: '600',
+    lineHeight: '1.6'
   },
   paragraph: {
     marginBottom: '20px',
