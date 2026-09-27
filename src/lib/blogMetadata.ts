@@ -12,6 +12,12 @@ export interface ArticleMetadata {
 
 export const blogArticles: ArticleMetadata[] = [
   {
+    id: 64,
+    title: '原神におすすめのスマホ・PC・タブレット選び 2026｜デバイス比較',
+    description: '原神をプレイするスマホ、PC、タブレットそれぞれの選び方とおすすめをデバイス別に比較。スペック、画質、操作性の違いを解説。',
+    date: '2026-09-27',
+  },
+  {
     id: 63,
     title: 'PassMarkスコアの目安はどれくらい？用途別のざっくり早見 2026',
     description: 'PassMarkスコアの目安を、ネット閲覧、Office、写真編集、動画編集、ゲームなど用途別にざっくり整理し、実際のPC候補もSpecsyのPC-DBで確認する記事。',
