@@ -29,14 +29,12 @@ export default function Article66Page() {
         <ProductPick
           name="Google Pixel 8"
           specs="Tensor G3、8GB RAM、6.2インチ OLED"
-          amazonUrl="https://www.amazon.co.jp/dp/B0CGTK6X2M"
-          asin="B0CGTK6X2M"
+          amazonUrl="https://www.amazon.co.jp/s?k=Google+Pixel+8"
         />
         <ProductPick
           name="OPPO Reno11 A"
           specs="Dimensity 7050、8GB RAM、6.7インチ"
-          amazonUrl="https://www.amazon.co.jp/dp/B0D5QZGFR7"
-          asin="B0D5QZGFR7"
+          amazonUrl="https://www.amazon.co.jp/s?k=OPPO+Reno11+A"
         />
       </DeviceSection>
 
@@ -56,14 +54,12 @@ export default function Article66Page() {
         <ProductPick
           name="Dell Inspiron 15"
           specs="Core i5-1335U、16GB RAM、512GB SSD"
-          amazonUrl="https://www.amazon.co.jp/dp/B0C2VFMQYH"
-          asin="B0C2VFMQYH"
+          amazonUrl="https://www.amazon.co.jp/s?k=Dell+Inspiron+15"
         />
         <ProductPick
           name="Lenovo IdeaPad Slim 5"
           specs="Ryzen 5 7530U、16GB RAM、512GB SSD"
-          amazonUrl="https://www.amazon.co.jp/dp/B0C8SHQN6C"
-          asin="B0C8SHQN6C"
+          amazonUrl="https://www.amazon.co.jp/s?k=Lenovo+IdeaPad+Slim+5"
         />
       </DeviceSection>
 
@@ -83,14 +79,12 @@ export default function Article66Page() {
         <ProductPick
           name="iPad Air 11インチ M2"
           specs="M2チップ、8GB RAM、11インチ Liquid Retina"
-          amazonUrl="https://www.amazon.co.jp/dp/B0D3J62Z1L"
-          asin="B0D3J62Z1L"
+          amazonUrl="https://www.amazon.co.jp/s?k=iPad+Air+11+M2"
         />
         <ProductPick
           name="iPad 第10世代"
           specs="A14 Bionic、4GB RAM、10.9インチ"
-          amazonUrl="https://www.amazon.co.jp/dp/B0BJLF2BRM"
-          asin="B0BJLF2BRM"
+          amazonUrl="https://www.amazon.co.jp/s?k=iPad+第10世代"
         />
       </DeviceSection>
 

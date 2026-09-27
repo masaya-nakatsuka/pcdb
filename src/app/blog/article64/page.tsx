@@ -29,14 +29,16 @@ export default function Article64Page() {
         <ProductPick
           name="ASUS ROG Phone 8"
           specs="Snapdragon 8 Gen 3、12GB RAM、165Hz"
-          amazonUrl="https://www.amazon.co.jp/dp/B0D1QDFJL8"
-          asin="B0D1QDFJL8"
+          amazonUrl="https://www.amazon.co.jp/dp/B086ZT4GTG"
+          asin="B086ZT4GTG"
+          imageUrl="https://m.media-amazon.com/images/I/31MBnY+qPLL._SL240_.jpg"
         />
         <ProductPick
           name="Google Pixel 9 Pro"
           specs="Tensor G4、12GB RAM、120Hz"
-          amazonUrl="https://www.amazon.co.jp/dp/B0D91TKCRJ"
-          asin="B0D91TKCRJ"
+          amazonUrl="https://www.amazon.co.jp/dp/B0DG2VCJRH"
+          asin="B0DG2VCJRH"
+          imageUrl="https://m.media-amazon.com/images/I/31iiS+ibQCL._SL240_.jpg"
         />
       </DeviceSection>
 
@@ -56,14 +58,14 @@ export default function Article64Page() {
         <ProductPick
           name="ASUS TUF Gaming A15"
           specs="RTX 4060、Ryzen 7 7735HS、16GB RAM、512GB SSD"
-          amazonUrl="https://www.amazon.co.jp/dp/B0CYRXD6QX"
-          asin="B0CYRXD6QX"
+          amazonUrl="https://www.amazon.co.jp/dp/B0CWVCYZC5"
+          asin="B0CWVCYZC5"
+          imageUrl="https://m.media-amazon.com/images/I/51-jo+zbYOL._SL240_.jpg"
         />
         <ProductPick
           name="MSI Katana 15"
           specs="RTX 4050、Core i7-13620H、16GB RAM、512GB SSD"
-          amazonUrl="https://www.amazon.co.jp/dp/B0C2VD6P4F"
-          asin="B0C2VD6P4F"
+          amazonUrl="https://www.amazon.co.jp/s?k=MSI+Katana+15+RTX+4050"
         />
       </DeviceSection>
 
@@ -83,14 +85,12 @@ export default function Article64Page() {
         <ProductPick
           name="iPad Pro 11インチ M4"
           specs="M4チップ、8GB RAM、ProMotion 120Hz"
-          amazonUrl="https://www.amazon.co.jp/dp/B0D3J7ZQQY"
-          asin="B0D3J7ZQQY"
+          amazonUrl="https://www.amazon.co.jp/s?k=iPad+Pro+11+M4"
         />
         <ProductPick
           name="iPad Air 11インチ M2"
           specs="M2チップ、8GB RAM、60Hz"
-          amazonUrl="https://www.amazon.co.jp/dp/B0D3J62Z1L"
-          asin="B0D3J62Z1L"
+          amazonUrl="https://www.amazon.co.jp/s?k=iPad+Air+11+M2"
         />
       </DeviceSection>
 

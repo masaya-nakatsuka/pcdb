@@ -29,14 +29,14 @@ export default function Article69Page() {
         <ProductPick
           name="Google Pixel 8a"
           specs="Tensor G3、8GB RAM、6.1インチ OLED"
-          amazonUrl="https://www.amazon.co.jp/dp/B0D3J5ZWQR"
-          asin="B0D3J5ZWQR"
+          amazonUrl="https://www.amazon.co.jp/dp/B0D45BQY62"
+          asin="B0D45BQY62"
+          imageUrl="https://m.media-amazon.com/images/I/21plK3rfSJL._SL240_.jpg"
         />
         <ProductPick
           name="OPPO Reno11 A"
           specs="Dimensity 7050、8GB RAM、6.7インチ AMOLED"
-          amazonUrl="https://www.amazon.co.jp/dp/B0D5QZGFR7"
-          asin="B0D5QZGFR7"
+          amazonUrl="https://www.amazon.co.jp/s?k=OPPO+Reno11+A"
         />
       </DeviceSection>
 
@@ -56,14 +56,12 @@ export default function Article69Page() {
         <ProductPick
           name="Dell Inspiron 15"
           specs="Core i5-1335U、16GB RAM、512GB SSD"
-          amazonUrl="https://www.amazon.co.jp/dp/B0C2VFMQYH"
-          asin="B0C2VFMQYH"
+          amazonUrl="https://www.amazon.co.jp/s?k=Dell+Inspiron+15"
         />
         <ProductPick
           name="Lenovo IdeaPad Slim 5"
           specs="Ryzen 5 7530U、16GB RAM、512GB SSD"
-          amazonUrl="https://www.amazon.co.jp/dp/B0C8SHQN6C"
-          asin="B0C8SHQN6C"
+          amazonUrl="https://www.amazon.co.jp/s?k=Lenovo+IdeaPad+Slim+5"
         />
       </DeviceSection>
 
@@ -83,14 +81,14 @@ export default function Article69Page() {
         <ProductPick
           name="iPad mini 第6世代"
           specs="A15 Bionic、4GB RAM、8.3インチ"
-          amazonUrl="https://www.amazon.co.jp/dp/B09G91LXFP"
-          asin="B09G91LXFP"
+          amazonUrl="https://www.amazon.co.jp/dp/B09G9JG4V5"
+          asin="B09G9JG4V5"
+          imageUrl="https://m.media-amazon.com/images/I/41F8caJ7BvL._SL240_.jpg"
         />
         <ProductPick
           name="iPad Air 11インチ M2"
           specs="M2チップ、8GB RAM、11インチ Liquid Retina"
-          amazonUrl="https://www.amazon.co.jp/dp/B0D3J62Z1L"
-          asin="B0D3J62Z1L"
+          amazonUrl="https://www.amazon.co.jp/s?k=iPad+Air+11+M2"
         />
       </DeviceSection>
 
