@@ -1,17 +1,13 @@
 import PcDbArticle from '@/components/blog/PcDbArticle'
 import { createBlogArticleMetadata } from '@/lib/blogMetadata'
 import { fetchPcList } from '@/server/usecase/fetchPcList'
-import type { ServerPcWithCpuSpec } from '@/server/types'
+import { filterByRam } from '@/lib/articleHelpers'
 
 export const dynamic = 'force-dynamic'
 export const metadata = createBlogArticleMetadata(41)
 
-function filterRamPcs(pcs: ServerPcWithCpuSpec[], minRamGb: number) {
-  return pcs.filter((pc) => (pc.ram ?? 0) >= minRamGb)
-}
-
 export default async function Article41Page() {
-  const pcs = filterRamPcs(await fetchPcList('cost_performance'), 16)
+  const pcs = filterByRam(await fetchPcList('cost_performance'), 16)
 
   return (
     <PcDbArticle

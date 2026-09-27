@@ -1,22 +1,14 @@
 import PcDbArticle from '@/components/blog/PcDbArticle'
 import { createBlogArticleMetadata } from '@/lib/blogMetadata'
 import { fetchPcList } from '@/server/usecase/fetchPcList'
-import type { ServerPcWithCpuSpec } from '@/server/types'
+import { compose, filterLightweight, filterPracticalSpec } from '@/lib/articleHelpers'
 
 export const dynamic = 'force-dynamic'
 export const metadata = createBlogArticleMetadata(57)
 
-function filterPracticalLightweightPcs(pcs: ServerPcWithCpuSpec[]) {
-  return pcs.filter((pc) => (
-    pc.weight !== null &&
-    pc.weight <= 1300 &&
-    (pc.ram ?? 0) >= 16 &&
-    (pc.rom ?? 0) >= 512
-  ))
-}
-
 export default async function Article57Page() {
-  const pcs = filterPracticalLightweightPcs(await fetchPcList('mobile'))
+  const filter = compose(filterLightweight, filterPracticalSpec)
+  const pcs = filter(await fetchPcList('mobile'))
 
   return (
     <PcDbArticle
