@@ -29,14 +29,14 @@ export default function Article67Page() {
         <ProductPick
           name="Google Pixel 8a"
           specs="Tensor G3、8GB RAM、6.1インチ OLED"
-          amazonUrl="https://www.amazon.co.jp/dp/B0D3J5ZWQR"
-          asin="B0D3J5ZWQR"
+          amazonUrl="https://www.amazon.co.jp/dp/B0D45BQY62"
+          asin="B0D45BQY62"
+          imageUrl="https://m.media-amazon.com/images/I/21plK3rfSJL._SL240_.jpg"
         />
         <ProductPick
           name="Xiaomi Redmi Note 13 Pro"
           specs="Snapdragon 7s Gen 2、8GB RAM、6.67インチ"
-          amazonUrl="https://www.amazon.co.jp/dp/B0CW7JT9WR"
-          asin="B0CW7JT9WR"
+          amazonUrl="https://www.amazon.co.jp/s?k=Redmi+Note+13+Pro"
         />
       </DeviceSection>
 
@@ -56,14 +56,12 @@ export default function Article67Page() {
         <ProductPick
           name="HP Pavilion 15"
           specs="Core i5-1335U、16GB RAM、512GB SSD"
-          amazonUrl="https://www.amazon.co.jp/dp/B0C5FMKNRM"
-          asin="B0C5FMKNRM"
+          amazonUrl="https://www.amazon.co.jp/s?k=HP+Pavilion+15"
         />
         <ProductPick
           name="ASUS Vivobook 14"
           specs="Ryzen 5 7530U、16GB RAM、512GB SSD"
-          amazonUrl="https://www.amazon.co.jp/dp/B0BYTM9G2F"
-          asin="B0BYTM9G2F"
+          amazonUrl="https://www.amazon.co.jp/s?k=ASUS+Vivobook+14"
         />
       </DeviceSection>
 
@@ -83,14 +81,12 @@ export default function Article67Page() {
         <ProductPick
           name="iPad Air 11インチ M2"
           specs="M2チップ、8GB RAM、11インチ Liquid Retina"
-          amazonUrl="https://www.amazon.co.jp/dp/B0D3J62Z1L"
-          asin="B0D3J62Z1L"
+          amazonUrl="https://www.amazon.co.jp/s?k=iPad+Air+11+M2"
         />
         <ProductPick
           name="iPad 第10世代"
           specs="A14 Bionic、4GB RAM、10.9インチ"
-          amazonUrl="https://www.amazon.co.jp/dp/B0BJLF2BRM"
-          asin="B0BJLF2BRM"
+          amazonUrl="https://www.amazon.co.jp/s?k=iPad+第10世代"
         />
       </DeviceSection>
 
