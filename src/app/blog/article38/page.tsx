@@ -1,24 +1,13 @@
 import PcDbArticle from '@/components/blog/PcDbArticle'
 import { createBlogArticleMetadata } from '@/lib/blogMetadata'
 import { fetchPcList } from '@/server/usecase/fetchPcList'
-import type { ServerPcWithCpuSpec } from '@/server/types'
+import { filterByPrice } from '@/lib/articleHelpers'
 
 export const dynamic = 'force-dynamic'
 export const metadata = createBlogArticleMetadata(38)
 
-function priceOf(pc: ServerPcWithCpuSpec) {
-  return pc.real_price || pc.price || null
-}
-
-function filterUnderPrice(pcs: ServerPcWithCpuSpec[], maxPrice: number) {
-  return pcs.filter((pc) => {
-    const price = priceOf(pc)
-    return price !== null && price <= maxPrice
-  })
-}
-
 export default async function Article38Page() {
-  const pcs = filterUnderPrice(await fetchPcList('cost_performance'), 100000)
+  const pcs = filterByPrice(await fetchPcList('cost_performance'), { max: 100000 })
 
   return (
     <PcDbArticle

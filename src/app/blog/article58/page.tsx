@@ -1,23 +1,14 @@
 import PcDbArticle from '@/components/blog/PcDbArticle'
 import { createBlogArticleMetadata } from '@/lib/blogMetadata'
 import { fetchPcList } from '@/server/usecase/fetchPcList'
-import type { ServerPcWithCpuSpec } from '@/server/types'
+import { compose, filterMediumScreen, filterPracticalSpec } from '@/lib/articleHelpers'
 
 export const dynamic = 'force-dynamic'
 export const metadata = createBlogArticleMetadata(58)
 
-function filterPracticalFourteenInchPcs(pcs: ServerPcWithCpuSpec[]) {
-  return pcs.filter((pc) => (
-    pc.display_size !== null &&
-    pc.display_size >= 13.8 &&
-    pc.display_size <= 14.5 &&
-    (pc.ram ?? 0) >= 16 &&
-    (pc.rom ?? 0) >= 512
-  ))
-}
-
 export default async function Article58Page() {
-  const pcs = filterPracticalFourteenInchPcs(await fetchPcList('cafe'))
+  const filter = compose(filterMediumScreen, filterPracticalSpec)
+  const pcs = filter(await fetchPcList('cafe'))
 
   return (
     <PcDbArticle

@@ -7,35 +7,38 @@
 - 記事の構成・トーン・データ制約・題材の適否をここから俯瞰して整合性を取ります。
 
 ## ドキュメント一覧
-- [記事作成プロンプト（SEO最適化・ブロガー調）](./article_prompt.md)
+- **[記事作成クイックスタート](./article_quick_start.md)** ← 最初に読む（5分で記事作成）
+- [記事作成プロンプト（PcDbArticleパターン）](./article_prompt.md) ← 詳細ガイド
 - [記事計画 TODO（データ準拠：サイズ/重量/価格/CPU/メモリ/ストレージ/スコア）](./article_todo.md)
 - [Specsy Next Tasks（次にやるべきこと）](./specsy-next-tasks.md)
 - [口調・トーン参考（抜粋）](./article_tone_reference.md)
 - [pc-list でできること／できないこと（データ基準のガイド）](./pc-list.md)
 
-## 記事運用フロー（確認ゲートつき）
-1. 題材選定・ターゲット定義（作業1）
-   - [article_todo.md](./article_todo.md) の未チェックの最上段の題材を取得
+## 記事運用フロー（簡易版）
+
+**初めての場合は [article_quick_start.md](./article_quick_start.md) を参照**してください。
+
+1. 題材選定・構成設計（作業1）
+   - [article_todo.md](./article_todo.md) の未チェックの題材を取得
    - ターゲット読者を定義（誰/どの状況/何に困っているか）
-   - pc-list までの到達ストーリーを簡潔に定義（検索意図→比較→判断→次のアクション）
-   - 上記ストーリーをもとに H2 のみを設計
-   - H2 設計時は [article_tone_reference.md](./article_tone_reference.md) を必ず参照し、見出しの書き方をトレース
-   - 確認: 「作業1 完了しました。作業2（各H2の要点定義）に進めますか？」
-2. 各H2の要点定義（作業2）
-   - [article_prompt.md](./article_prompt.md) を参照し、各H2で何を書くかを箇条書きで定義
-   - 記事全体の前後関係が自然になるよう流れを調整
-   - 必要に応じて要素配分（Paragraph/List/Table）をラフ指定
-   - 確認: 「作業2 完了しました。作業3（本文執筆）に進めますか？」
-3. 本文執筆（作業3）
-   - [article_tone_reference.md](./article_tone_reference.md) を参照し、各H2内の文章を執筆
-   - Blog系コンポーネントのみ使用（生HTML禁止）
-   - 技術要件（state 管理/ローディング/エラー表示、`fetchPcList('<category>')` の適切な選択）を満たす
-   - 確認: 「作業3 完了しました。作業4（配置・登録）に進めますか？」
-4. 配置・登録・記録（作業4）
-   - 記事末に pc-list を配置（`ClientPcList` 埋め込み）。詳細は [article_prompt.md](./article_prompt.md) の「CTA実装チェック」
-   - ブログ記事一覧に該当記事がない場合は新規追加
-   - [article_todo.md](./article_todo.md) を更新（チェックと補足メモ：タイトル/URL等）
-   - 確認: 「作業4 完了しました。」
+   - 記事構成を設計：リード → 結論 → 選び方 → データ活用 → FAQ
+   - [article_tone_reference.md](./article_tone_reference.md) を参照してトーン確認
+   - 確認: 「作業1 完了。作業2に進みますか？」
+
+2. コンテンツ執筆（作業2）
+   - PcDbArticleテンプレートにコンテンツを記入
+   - 適切な `usage` と `fetchPcList` カテゴリを選択
+   - 必要に応じて `src/lib/articleHelpers.ts` のフィルタ関数を使用
+   - [article_prompt.md](./article_prompt.md) の禁止事項を確認
+   - 確認: 「作業2 完了。作業3に進みますか？」
+
+3. 配置・登録・確認（作業3）
+   - `src/lib/blogMetadata.ts` にメタデータ登録
+   - `src/app/blog/article<ID>/page.tsx` に記事ファイル配置
+   - `npm run build` で型チェック・ビルド確認
+   - `npm run dev` でブラウザ表示確認
+   - [article_todo.md](./article_todo.md) を更新
+   - 確認: 「作業3 完了しました。」
 
 ## 対話プロトコル（確認ゲート）
 - 各作業の終了時に、必ず「作業N完了しました。作業N+1を開始しますか？」と確認する
