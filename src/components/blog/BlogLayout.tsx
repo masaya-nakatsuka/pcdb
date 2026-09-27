@@ -104,10 +104,16 @@ export const blogStyles: Record<string, CSSProperties> = {
     maxWidth: '920px'
   },
   list: {
-    paddingLeft: '20px',
+    paddingLeft: '28px',
     marginTop: '20px',
     marginBottom: '24px',
-    maxWidth: '920px'
+    maxWidth: '920px',
+    lineHeight: '1.85',
+    color: '#374151'
+  },
+  listItem: {
+    marginBottom: '12px',
+    paddingLeft: '8px'
   }
 }
 
