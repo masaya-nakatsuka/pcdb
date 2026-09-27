@@ -12,6 +12,12 @@ export interface ArticleMetadata {
 
 export const blogArticles: ArticleMetadata[] = [
   {
+    id: 64,
+    title: 'AmazonノートPCでリモート会議向けを選ぶ 2026｜カメラ・バッテリー・静音をPC-DB比較',
+    description: 'リモート会議向けのAmazon PCを、推定駆動時間7時間以上、メモリ16GB以上、SSD512GB以上、重量1.5kg以下の条件でPC-DBから抽出して比較する記事。',
+    date: '2026-06-27',
+  },
+  {
     id: 63,
     title: 'PassMarkスコアの目安はどれくらい？用途別のざっくり早見 2026',
     description: 'PassMarkスコアの目安を、ネット閲覧、Office、写真編集、動画編集、ゲームなど用途別にざっくり整理し、実際のPC候補もSpecsyのPC-DBで確認する記事。',
