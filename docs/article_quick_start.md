@@ -120,7 +120,7 @@ export default async function Article64Page() {
 
 // サイズ・重量
 (pc.display_size ?? 0) <= 14    // 14インチ以下
-(pc.weight ?? 0) <= 1.3         // 1.3kg以下
+(pc.weight ?? 0) <= 1300        // 1.3kg以下（グラム）
 
 // CPU
 pc.cpu?.includes('N100')        // N100搭載
