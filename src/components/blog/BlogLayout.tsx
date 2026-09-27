@@ -109,6 +109,16 @@ export default function BlogLayout({ children }: BlogLayoutProps) {
     <div style={blogStyles.container}>
       <style dangerouslySetInnerHTML={{
         __html: `
+          .specsy-blog-content ul {
+            list-style-type: disc;
+            list-style-position: outside;
+          }
+
+          .specsy-blog-content ol {
+            list-style-type: decimal;
+            list-style-position: outside;
+          }
+
           .specsy-blog-content ul li,
           .specsy-blog-content ol li {
             margin-bottom: 12px;
