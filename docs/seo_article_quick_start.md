@@ -71,6 +71,27 @@ export default function Article65Page() {
 
 `ProductPick` の `amazonUrl` はAmazon検索URL（`/s?k=製品名`）または商品URL（`/dp/ASIN`）を指定。アフィリエイトタグは自動付与。
 
+#### ProductPick プロパティ
+
+- `name` (必須): 製品名
+- `specs` (オプション): スペック概要
+- `amazonUrl` (必須): Amazon URL（検索URL `/s?k=製品名` または商品URL `/dp/ASIN`）
+- `asin` (オプション): Amazon ASIN（商品画像を表示する場合に指定）
+- `imageUrl` (オプション): カスタム画像URL（ASIN の代わりに独自の画像を使う場合）
+
+**画像表示**: `asin` または `imageUrl` を指定すると、120×120pxの商品画像が左側に表示されます。両方未指定の場合はテキストのみのカードになります。
+
+例:
+
+```typescript
+<ProductPick
+  name="製品名"
+  specs="スペック"
+  amazonUrl="https://www.amazon.co.jp/dp/B0D3J5ZWQR"
+  asin="B0D3J5ZWQR"
+/>
+```
+
 ### 4. 記事64を参照
 
 詳細は `src/app/blog/article64/page.tsx` の実装を参照。

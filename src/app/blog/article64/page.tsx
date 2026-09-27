@@ -29,12 +29,14 @@ export default function Article64Page() {
         <ProductPick
           name="ASUS ROG Phone 8"
           specs="Snapdragon 8 Gen 3、12GB RAM、165Hz"
-          amazonUrl="https://www.amazon.co.jp/s?k=ROG+Phone+8"
+          amazonUrl="https://www.amazon.co.jp/dp/B0D1QDFJL8"
+          asin="B0D1QDFJL8"
         />
         <ProductPick
           name="Google Pixel 9 Pro"
           specs="Tensor G4、12GB RAM、120Hz"
-          amazonUrl="https://www.amazon.co.jp/s?k=Pixel+9+Pro"
+          amazonUrl="https://www.amazon.co.jp/dp/B0D91TKCRJ"
+          asin="B0D91TKCRJ"
         />
       </DeviceSection>
 
@@ -54,12 +56,14 @@ export default function Article64Page() {
         <ProductPick
           name="ASUS TUF Gaming A15"
           specs="RTX 4060、Ryzen 7 7735HS、16GB RAM、512GB SSD"
-          amazonUrl="https://www.amazon.co.jp/s?k=ASUS+TUF+Gaming+A15"
+          amazonUrl="https://www.amazon.co.jp/dp/B0CYRXD6QX"
+          asin="B0CYRXD6QX"
         />
         <ProductPick
           name="MSI Katana 15"
           specs="RTX 4050、Core i7-13620H、16GB RAM、512GB SSD"
-          amazonUrl="https://www.amazon.co.jp/s?k=MSI+Katana+15"
+          amazonUrl="https://www.amazon.co.jp/dp/B0C2VD6P4F"
+          asin="B0C2VD6P4F"
         />
       </DeviceSection>
 
@@ -79,12 +83,14 @@ export default function Article64Page() {
         <ProductPick
           name="iPad Pro 11インチ M4"
           specs="M4チップ、8GB RAM、ProMotion 120Hz"
-          amazonUrl="https://www.amazon.co.jp/s?k=iPad+Pro+11+M4"
+          amazonUrl="https://www.amazon.co.jp/dp/B0D3J7ZQQY"
+          asin="B0D3J7ZQQY"
         />
         <ProductPick
           name="iPad Air 11インチ M2"
           specs="M2チップ、8GB RAM、60Hz"
-          amazonUrl="https://www.amazon.co.jp/s?k=iPad+Air+11+M2"
+          amazonUrl="https://www.amazon.co.jp/dp/B0D3J62Z1L"
+          asin="B0D3J62Z1L"
         />
       </DeviceSection>
 

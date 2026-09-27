@@ -29,12 +29,14 @@ export default function Article68Page() {
         <ProductPick
           name="Google Pixel 8a"
           specs="Tensor G3、8GB RAM、6.1インチ OLED"
-          amazonUrl="https://www.amazon.co.jp/s?k=Pixel+8a"
+          amazonUrl="https://www.amazon.co.jp/dp/B0D3J5ZWQR"
+          asin="B0D3J5ZWQR"
         />
         <ProductPick
           name="Xiaomi Redmi Note 13 Pro+"
           specs="Dimensity 7200-Ultra、8GB RAM、6.67インチ"
-          amazonUrl="https://www.amazon.co.jp/s?k=Redmi+Note+13+Pro"
+          amazonUrl="https://www.amazon.co.jp/dp/B0CYR9ZG3H"
+          asin="B0CYR9ZG3H"
         />
       </DeviceSection>
 
@@ -54,12 +56,14 @@ export default function Article68Page() {
         <ProductPick
           name="HP Pavilion Aero 13"
           specs="Ryzen 5 7535U、16GB RAM、512GB SSD"
-          amazonUrl="https://www.amazon.co.jp/s?k=HP+Pavilion+Aero+13"
+          amazonUrl="https://www.amazon.co.jp/dp/B0C7KR5FXV"
+          asin="B0C7KR5FXV"
         />
         <ProductPick
           name="ASUS Vivobook 15"
           specs="Core i5-1335U、16GB RAM、512GB SSD"
-          amazonUrl="https://www.amazon.co.jp/s?k=ASUS+Vivobook+15"
+          amazonUrl="https://www.amazon.co.jp/dp/B0BXZP6RK9"
+          asin="B0BXZP6RK9"
         />
       </DeviceSection>
 
@@ -79,12 +83,14 @@ export default function Article68Page() {
         <ProductPick
           name="iPad Air 11インチ M2"
           specs="M2チップ、8GB RAM、11インチ Liquid Retina"
-          amazonUrl="https://www.amazon.co.jp/s?k=iPad+Air+11+M2"
+          amazonUrl="https://www.amazon.co.jp/dp/B0D3J62Z1L"
+          asin="B0D3J62Z1L"
         />
         <ProductPick
           name="Xiaomi Pad 6"
           specs="Snapdragon 870、8GB RAM、11インチ 144Hz"
-          amazonUrl="https://www.amazon.co.jp/s?k=Xiaomi+Pad+6"
+          amazonUrl="https://www.amazon.co.jp/dp/B0C5VFTYQG"
+          asin="B0C5VFTYQG"
         />
       </DeviceSection>
 

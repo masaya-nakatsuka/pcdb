@@ -39,6 +39,8 @@ interface ProductPickProps {
   name: string
   specs?: string
   amazonUrl: string
+  asin?: string
+  imageUrl?: string
 }
 
 function addAffiliateTag(url: string): string {
@@ -61,8 +63,10 @@ function addAffiliateTag(url: string): string {
   }
 }
 
-export function ProductPick({ name, specs, amazonUrl }: ProductPickProps) {
+export function ProductPick({ name, specs, amazonUrl, asin, imageUrl }: ProductPickProps) {
   const taggedUrl = addAffiliateTag(amazonUrl)
+  
+  const finalImageUrl = imageUrl || (asin ? `https://images-na.ssl-images-amazon.com/images/P/${asin}.01._AC_SL240_.jpg` : null)
   
   return (
     <div style={{
@@ -71,41 +75,69 @@ export function ProductPick({ name, specs, amazonUrl }: ProductPickProps) {
       padding: '16px',
       marginBottom: '12px',
       backgroundColor: '#f8fafc',
+      display: 'flex',
+      gap: '16px',
+      alignItems: 'flex-start',
     }}>
-      <div style={{
-        fontSize: '15px',
-        fontWeight: '700',
-        color: '#0f172a',
-        marginBottom: '8px',
-      }}>
-        {name}
-      </div>
-      {specs && (
+      {finalImageUrl && (
         <div style={{
-          fontSize: '13px',
-          color: '#64748b',
-          marginBottom: '10px',
+          flexShrink: 0,
+          width: '120px',
+          height: '120px',
+          backgroundColor: '#ffffff',
+          borderRadius: '6px',
+          overflow: 'hidden',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
         }}>
-          {specs}
+          <img
+            src={finalImageUrl}
+            alt={name}
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'contain',
+            }}
+          />
         </div>
       )}
-      <a
-        href={taggedUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        style={{
-          display: 'inline-block',
-          padding: '8px 16px',
-          borderRadius: '6px',
-          backgroundColor: '#2563eb',
-          color: '#ffffff',
-          fontSize: '14px',
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{
+          fontSize: '15px',
           fontWeight: '700',
-          textDecoration: 'none',
-        }}
-      >
-        Amazonで見る
-      </a>
+          color: '#0f172a',
+          marginBottom: '8px',
+        }}>
+          {name}
+        </div>
+        {specs && (
+          <div style={{
+            fontSize: '13px',
+            color: '#64748b',
+            marginBottom: '10px',
+          }}>
+            {specs}
+          </div>
+        )}
+        <a
+          href={taggedUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            display: 'inline-block',
+            padding: '8px 16px',
+            borderRadius: '6px',
+            backgroundColor: '#2563eb',
+            color: '#ffffff',
+            fontSize: '14px',
+            fontWeight: '700',
+            textDecoration: 'none',
+          }}
+        >
+          Amazonで見る
+        </a>
+      </div>
     </div>
   )
 }
