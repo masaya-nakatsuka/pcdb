@@ -31,7 +31,7 @@ export default function Article64Page() {
           specs="Snapdragon 8 Gen 3、12GB RAM、165Hz"
           amazonUrl="https://www.amazon.co.jp/dp/B086ZT4GTG"
           asin="B086ZT4GTG"
-          imageUrl="https://m.media-amazon.com/images/I/31MBnY+qPLL._SL240_.jpg"
+          imageUrl="https://m.media-amazon.com/images/I/615XPUxWUhL._SL240_.jpg"
         />
         <ProductPick
           name="Google Pixel 9 Pro"

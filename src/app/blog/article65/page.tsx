@@ -31,7 +31,7 @@ export default function Article65Page() {
           specs="Tensor G3、8GB RAM、6.1インチ OLED"
           amazonUrl="https://www.amazon.co.jp/dp/B0D45BQY62"
           asin="B0D45BQY62"
-          imageUrl="https://m.media-amazon.com/images/I/21plK3rfSJL._SL240_.jpg"
+          imageUrl="https://m.media-amazon.com/images/I/51C-citaNmL._SL240_.jpg"
         />
         <ProductPick
           name="Xiaomi Redmi Note 13 Pro+"
