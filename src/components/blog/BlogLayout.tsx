@@ -110,16 +110,21 @@ export const blogStyles: Record<string, CSSProperties> = {
     maxWidth: '920px',
     lineHeight: '1.85',
     color: '#374151'
-  },
-  listItem: {
-    marginBottom: '12px',
-    paddingLeft: '8px'
   }
 }
 
 export default function BlogLayout({ children }: BlogLayoutProps) {
   return (
     <div style={blogStyles.container}>
+      <style dangerouslySetInnerHTML={{
+        __html: `
+          .specsy-blog-content ul li,
+          .specsy-blog-content ol li {
+            margin-bottom: 12px;
+            padding-left: 8px;
+          }
+        `
+      }} />
       {/* ヘッダー */}
       <div style={blogStyles.header}>
         <div style={blogStyles.headerInner}>
