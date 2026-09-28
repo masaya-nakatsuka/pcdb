@@ -142,6 +142,16 @@ export default function SeseraArticle({
               padding-left: 28px;
             }
 
+            .sesera-body ul {
+              list-style-type: disc;
+              list-style-position: outside;
+            }
+
+            .sesera-body ol {
+              list-style-type: decimal;
+              list-style-position: outside;
+            }
+
             .sesera-body li {
               margin-bottom: 12px;
               padding-left: 8px;
