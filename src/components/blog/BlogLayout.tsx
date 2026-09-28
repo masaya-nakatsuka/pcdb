@@ -100,7 +100,9 @@ export const blogStyles: Record<string, CSSProperties> = {
     marginBottom: '24px',
     maxWidth: '920px',
     lineHeight: '1.85',
-    color: '#374151'
+    color: '#374151',
+    listStyleType: 'disc',
+    listStylePosition: 'outside'
   }
 }
 
