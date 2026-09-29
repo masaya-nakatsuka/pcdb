@@ -29,7 +29,7 @@ export function BlogArticle({ title, date, children, variant = 'standard' }: Blo
     : blogStyles.articleHeader
 
   return (
-    <article style={articleStyle}>
+    <article className="blog-article" style={articleStyle}>
       <header style={headerStyle}>
         <div style={blogStyles.date}>
           {date}
@@ -49,7 +49,7 @@ export function BlogContent({ children, variant = 'standard' }: BlogContentProps
     : blogStyles.content
 
   return (
-    <div className="specsy-blog-content" style={contentStyle}>
+    <div className="specsy-blog-content blog-content" style={contentStyle}>
       {children}
     </div>
   )

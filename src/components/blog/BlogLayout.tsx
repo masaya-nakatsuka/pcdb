@@ -35,6 +35,9 @@ export const blogStyles: Record<string, CSSProperties> = {
     margin: '0 auto',
     padding: '60px 30px'
   },
+  articleMobile: {
+    padding: '40px 8px'
+  },
   articleWide: {
     maxWidth: 'min(1760px, calc(100vw - 24px))',
     padding: '48px 12px'
@@ -66,6 +69,9 @@ export const blogStyles: Record<string, CSSProperties> = {
     lineHeight: '1.6',
     fontSize: '16px',
     color: '#333'
+  },
+  contentMobile: {
+    padding: '16px'
   },
   contentWide: {
     width: '100%',
@@ -125,6 +131,16 @@ export default function BlogLayout({ children }: BlogLayoutProps) {
           .specsy-blog-content ol li {
             margin-bottom: 12px;
             padding-left: 8px;
+          }
+
+          @media (max-width: 640px) {
+            .blog-article {
+              padding: 40px 8px !important;
+            }
+
+            .blog-content {
+              padding: 16px !important;
+            }
           }
         `
       }} />
