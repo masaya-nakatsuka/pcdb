@@ -31,6 +31,8 @@ const staticRoutes = [
   '/about',
   '/blog',
   '/pc-check',
+  '/diagnosis/ai-coding-pc',
+  '/sakaedo-map',
   '/privacy',
   ...pcListRoutes,
   ...monitorRoutes,
@@ -40,9 +42,9 @@ const staticRoutes = [
 export default function sitemap(): MetadataRoute.Sitemap {
   const staticEntries = staticRoutes.map((path) => ({
     url: `${SITE_URL}${path}`,
-    lastModified: new Date('2026-06-17'),
+    lastModified: new Date(path === '/diagnosis/ai-coding-pc' ? '2026-07-08' : '2026-06-17'),
     changeFrequency: 'weekly' as const,
-    priority: path === '/' ? 1 : path.startsWith('/pc-list') ? 0.9 : 0.7,
+    priority: path === '/' ? 1 : path.startsWith('/pc-list') ? 0.9 : path.startsWith('/diagnosis') ? 0.85 : 0.7,
   }))
 
   const blogEntries = listedBlogArticles.map((article) => ({

@@ -234,7 +234,7 @@ export default function SeseraArticle({
         <BlogContent>
           <div className="sesera-body" dangerouslySetInnerHTML={{ __html: bodyHtml }} />
 
-          <BlogSection title="PC-DB関連記事">
+          <BlogSection title="関連記事">
             <div style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',

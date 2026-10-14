@@ -1,4 +1,5 @@
 import { Tablet } from '../domain/models/tablet'
+import { normalizeAffiliateUrls } from './affiliateUrl'
 import { getSupabase } from './supabaseClient'
 
 export async function fetchActiveTablets(): Promise<Tablet[]> {
@@ -15,5 +16,5 @@ export async function fetchActiveTablets(): Promise<Tablet[]> {
     throw new Error(`Failed to fetch tablets: ${error.message}`)
   }
 
-  return (data ?? []) as unknown as Tablet[]
+  return normalizeAffiliateUrls((data ?? []) as unknown as Tablet[])
 }

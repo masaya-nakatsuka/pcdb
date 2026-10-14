@@ -35,3 +35,12 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 .aider*
+
+# local credentials and generated work files
+.env
+.env.*
+!.env.example
+!.env.*.example
+/scratchpad/
+__pycache__/
+*.py[cod]

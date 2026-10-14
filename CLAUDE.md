@@ -2,6 +2,20 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Knowledge Base Gate
+
+This app lives under the shared knowledge workspace at `../../..`.
+
+Before non-trivial planning, implementation, article/content work, investigation, or rule-sensitive work:
+
+- Read `../../../wiki/index.md` first.
+- Do not rely on the index alone. Search `../../../wiki/` with `rg` for the user's words, synonyms, target names, and failure/rule terms such as `失敗`, `教訓`, `禁止`, `一気`, `大量`, `一括`, `品質`, and `やらない`.
+- If the user says they mentioned or recorded something before, also search `../../../wiki/log.md`.
+- Before editing or executing, briefly state which knowledge pages were applied and what rule is being followed.
+- If the user expresses clear dissatisfaction, rebukes the AI's work, or points out a repeated failure, do not stop at an apology. In the same response, immediately save the failed action, cause, prevention rule, scope, and verification method to the relevant parent wiki; update the parent `wiki/index.md` and `wiki/log.md`; and promote cross-session rules to the shared root entry files. Apply the prevention rule to the current work before continuing.
+- Requests containing `全部`, `全パターン`, `一気`, `まとめて`, `大量`, or `横展開` must be split into a scope, quality gate, and current work unit before implementation.
+- Before doing work, asking the next question, or proposing a next step, internally lock the user's current `objective`, `phase`, `in-scope work`, `out-of-scope work`, and `deliverable`. Treat `まず`, `だけ`, `実装せず`, `次は`, `レビューして`, `計画して`, and `1記事ずつ` as hard boundaries. Do not execute, ask about, or optimize for a later phase until the user explicitly moves the work there.
+
 ## Development Commands
 
 - **Development server**: `npm run dev`

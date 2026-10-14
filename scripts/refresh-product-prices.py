@@ -32,6 +32,13 @@ ASIN_RE = re.compile(r"(?:/dp/|%2Fdp%2F)([A-Z0-9]{10})(?:[/?&%'#]|%|$)", re.I)
 SOURCE_APIS = {
     "pc": "/api/pc-list?listing=all&device=all&include_inactive=1",
     "monitor": "/api/monitor-list",
+    "tablet": "/api/tablet-list",
+}
+
+SOURCE_TABLES = {
+    "pc": "am_pc_data",
+    "monitor": "am_monitor_data",
+    "tablet": "am_tablet_data",
 }
 
 RESOURCES = [
@@ -118,7 +125,7 @@ def product_refs_from_api(base_url: str, profiles: list[str]) -> list[ProductRef
         if not isinstance(payload, list):
             raise SystemExit(f"{path}: expected JSON array")
 
-        table = "am_pc_data" if profile == "pc" else "am_monitor_data"
+        table = SOURCE_TABLES[profile]
         for row in payload:
             if not isinstance(row, dict):
                 continue
@@ -285,7 +292,7 @@ def write_summary(refs: list[ProductRef], offers: dict[str, Offer]) -> None:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--profile", choices=["pc", "monitor", "all"], default="all", help="Product group to refresh")
+    parser.add_argument("--profile", choices=["pc", "monitor", "tablet", "all"], default="all", help="Product group to refresh")
     parser.add_argument("--base-url", default=DEFAULT_BASE_URL, help="Production or local base URL for API source")
     parser.add_argument("--env-file", default=".env.amazon", help="Optional env file with PAAPI_* keys")
     parser.add_argument("--asin-file", type=Path, help="Optional ASIN list source instead of production APIs")
@@ -307,7 +314,7 @@ def main() -> int:
     if args.asin_file:
         refs = product_refs_from_asin_file(args.asin_file, args.asin_file_table)
     else:
-        profiles = ["pc", "monitor"] if args.profile == "all" else [args.profile]
+        profiles = ["pc", "monitor", "tablet"] if args.profile == "all" else [args.profile]
         refs = product_refs_from_api(args.base_url, profiles)
 
     if not refs:

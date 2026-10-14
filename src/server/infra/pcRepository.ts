@@ -1,5 +1,6 @@
 import { getSupabase } from './supabaseClient'
 import { Pc } from '../domain/models/pc'
+import { normalizeAffiliateUrls } from './affiliateUrl'
 
 export async function fetchAllPcs(): Promise<Pc[]> {
   const { data, error } = await getSupabase()
@@ -14,5 +15,5 @@ export async function fetchAllPcs(): Promise<Pc[]> {
     throw new Error('No PCs found')
   }
 
-  return data as unknown as Pc[]
+  return normalizeAffiliateUrls(data as unknown as Pc[])
 }

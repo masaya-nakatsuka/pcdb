@@ -27,6 +27,7 @@ import sys
 import time
 import unicodedata
 import urllib.error
+import urllib.parse
 import urllib.request
 from pathlib import Path
 from typing import Any
@@ -36,6 +37,10 @@ MARKETPLACE = "www.amazon.co.jp"
 TOKEN_URL = "https://api.amazon.co.jp/auth/o2/token"
 SEARCH_URL = "https://creatorsapi.amazon/catalog/v1/searchItems"
 ASIN_TOKEN_RE = re.compile(r"\b[A-Z0-9]{10}\b", re.I)
+MOSHIMO_AMAZON_A_ID = "5146445"
+MOSHIMO_AMAZON_P_ID = "170"
+MOSHIMO_AMAZON_PC_ID = "185"
+MOSHIMO_AMAZON_PL_ID = "4062"
 
 RESOURCES = [
     "itemInfo.title",
@@ -423,6 +428,23 @@ def to_candidate(item: dict[str, Any]) -> Candidate | None:
         detail_url=str(detail_url),
         image_url=image_url,
         text=f"{title} {text}",
+    )
+
+
+def amazon_product_url(asin: str) -> str:
+    return f"https://www.amazon.co.jp/dp/{asin}"
+
+
+def moshimo_amazon_url(asin: str) -> str:
+    product_url = amazon_product_url(asin)
+    encoded_url = urllib.parse.quote(product_url, safe="")
+    return (
+        "https://af.moshimo.com/af/c/click?"
+        f"a_id={MOSHIMO_AMAZON_A_ID}"
+        f"&p_id={MOSHIMO_AMAZON_P_ID}"
+        f"&pc_id={MOSHIMO_AMAZON_PC_ID}"
+        f"&pl_id={MOSHIMO_AMAZON_PL_ID}"
+        f"&url={encoded_url}"
     )
 
 
@@ -937,8 +959,8 @@ def pc_insert_sql(profile: str, candidates: list[Candidate]) -> str:
             "battery": "",
             "battery_wh_normalized": None,
             "weight": None,
-            "url": f"https://www.amazon.co.jp/dp/{candidate.asin}",
-            "af_url": candidate.detail_url,
+            "url": amazon_product_url(candidate.asin),
+            "af_url": moshimo_amazon_url(candidate.asin),
             "img_url": candidate.image_url,
             "imp_img_url": "",
             "fetched_at": TODAY,
@@ -996,8 +1018,8 @@ def monitor_insert_sql(candidates: list[Candidate]) -> str:
             "usb_c_power_delivery_w": usb_c_power,
             "price": candidate.price,
             "real_price": candidate.price,
-            "url": f"https://www.amazon.co.jp/dp/{candidate.asin}",
-            "af_url": candidate.detail_url,
+            "url": amazon_product_url(candidate.asin),
+            "af_url": moshimo_amazon_url(candidate.asin),
             "img_url": candidate.image_url,
             "fetched_at": TODAY,
             "is_active": True,
@@ -1073,8 +1095,8 @@ def tablet_insert_sql(candidates: list[Candidate]) -> str:
             "has_cellular": infer_has_cellular(candidate.text),
             "price": candidate.price,
             "real_price": candidate.price,
-            "url": f"https://www.amazon.co.jp/dp/{candidate.asin}",
-            "af_url": candidate.detail_url,
+            "url": amazon_product_url(candidate.asin),
+            "af_url": moshimo_amazon_url(candidate.asin),
             "img_url": candidate.image_url,
             "fetched_at": TODAY,
             "is_active": True,
@@ -1139,7 +1161,7 @@ def candidate_review_row(profile: str, candidate: Candidate) -> dict[str, str | 
             "battery_capacity_mah": infer_battery_capacity_mah(candidate.text),
             "weight_g": infer_weight_g(candidate.text),
             "has_cellular": infer_has_cellular(candidate.text),
-            "detail_url": candidate.detail_url,
+            "detail_url": moshimo_amazon_url(candidate.asin),
         }
 
     if profile == "monitor":
@@ -1172,7 +1194,7 @@ def candidate_review_row(profile: str, candidate: Candidate) -> dict[str, str | 
             "battery_capacity_mah": "",
             "weight_g": "",
             "has_cellular": "",
-            "detail_url": candidate.detail_url,
+            "detail_url": moshimo_amazon_url(candidate.asin),
         }
 
     gpu, gpu_class, _gpu_score, has_dgpu = infer_gpu(candidate.text)
@@ -1204,7 +1226,7 @@ def candidate_review_row(profile: str, candidate: Candidate) -> dict[str, str | 
         "battery_capacity_mah": "",
         "weight_g": "",
         "has_cellular": "",
-        "detail_url": candidate.detail_url,
+        "detail_url": moshimo_amazon_url(candidate.asin),
     }
 
 

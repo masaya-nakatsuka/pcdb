@@ -86,6 +86,7 @@ const heroLinks = [
 ]
 
 const quickLinks = [
+  { href: '/diagnosis/ai-coding-pc', label: 'AIコーディング診断' },
   { href: '/pc-check', label: '購入診断' },
   ...heroLinks,
 ]

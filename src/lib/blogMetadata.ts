@@ -18,6 +18,12 @@ export const blogArticles: ArticleMetadata[] = [
     date: '2026-06-25',
   },
   {
+    id: 64,
+    title: 'binhenglonのノートPCって大丈夫？評判と買う前のチェック 2026',
+    description: 'binhenglonのノートPCを、無名中華PCとして買っていい人、避けた方がいい人、保証やスペック確認の注意点から整理する記事。',
+    date: '2026-06-25',
+  },
+  {
     id: 33,
     title: 'AmazonコスパPCの予算目安 2026｜いくら出せばいいかPC-DB比較',
     description: 'Amazonでコスパの良いPCを選ぶために、SpecsyのPC-DBで5万円以下・6万円以下・7万円以下・10万円以上の価格分布と実用構成を比較する記事。',

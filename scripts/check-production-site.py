@@ -23,6 +23,7 @@ DEFAULT_BASE_URL = "https://specsy-hub.com"
 
 PAGE_MARKERS = [
     ("/", "Specsy"),
+    ("/diagnosis/ai-coding-pc", "AIコーディング用PCを、作業内容から決める"),
     ("/pc-list/cafe", "PCランキング"),
     ("/tablet-list", "タブレット比較"),
     ("/pc-list/mini-pc", "Mini PCランキング"),

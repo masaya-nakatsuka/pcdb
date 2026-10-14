@@ -51,7 +51,7 @@ def amazon_item(
 ) -> dict[str, Any]:
     return {
         "asin": asin,
-        "detailPageURL": detail_url or f"https://www.amazon.co.jp/dp/{asin}?tag=nmsuteado2-22",
+        "detailPageURL": detail_url or generator.moshimo_amazon_url(asin),
         "itemInfo": {
             "title": {"displayValue": title},
             "features": {"displayValues": features},
@@ -101,6 +101,8 @@ class CategoryProductGenerationTest(unittest.TestCase):
         self.assertIn("'MiniPC'", sql)
         self.assertIn("url ILIKE '%B0MINIPC01%'", sql)
         self.assertIn("af_url ILIKE '%B0MINIPC01%'", sql)
+        self.assertIn("https://af.moshimo.com/af/c/click?a_id=5146445", sql)
+        self.assertNotIn("?tag=", sql)
         self.assert_sql_valid(sql)
 
         with tempfile.TemporaryDirectory() as tmp_dir:

@@ -1,4 +1,5 @@
 import { Monitor } from '../domain/models/monitor'
+import { normalizeAffiliateUrls } from './affiliateUrl'
 import { getSupabase } from './supabaseClient'
 
 export async function fetchActiveMonitors(): Promise<Monitor[]> {
@@ -15,5 +16,5 @@ export async function fetchActiveMonitors(): Promise<Monitor[]> {
     throw new Error(`Failed to fetch monitors: ${error.message}`)
   }
 
-  return (data ?? []) as unknown as Monitor[]
+  return normalizeAffiliateUrls((data ?? []) as unknown as Monitor[])
 }
