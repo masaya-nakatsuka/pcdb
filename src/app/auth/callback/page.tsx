@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { supabaseTodo } from '@/lib/supabaseTodoClient'
 import { supabaseNotes } from '@/lib/supabaseNotesClient'
 import LoadingOverlay from '@/components/LoadingOverlay'
+import { normalizeAuthRedirect } from '@/lib/authRedirect'
 
 export default function AuthCallback() {
   const router = useRouter()
@@ -13,37 +14,30 @@ export default function AuthCallback() {
   useEffect(() => {
     const handleAuthCallback = async () => {
       try {
-        console.log('Auth callback page loaded')
-        console.log('Current URL:', window.location.href)
-        console.log('Hash:', window.location.hash)
-        console.log('Search:', window.location.search)
-
         // URLパラメータから元のページを判定
         const urlParams = new URLSearchParams(window.location.search)
-        const redirectTo = urlParams.get('redirect') || '/todo'
-        console.log('Redirect destination:', redirectTo)
+        const redirectTo = normalizeAuthRedirect(urlParams.get('redirect'))
 
         // リダイレクト先に応じて適切なSupabaseクライアントを選択
-        const supabaseClient = redirectTo.includes('/note') ? supabaseNotes : supabaseTodo
+        const supabaseClient = redirectTo.split(/[?#]/, 1)[0].replace(/\/$/, '') === '/note' ? supabaseNotes : supabaseTodo
 
         // Supabaseの認証コールバックを処理
         // URLのハッシュフラグメントまたはクエリパラメータから認証情報を取得
-        const { data, error } = await supabaseClient.auth.getSession()
+        const { data } = await supabaseClient.auth.getSession()
 
         // 認証情報が既に存在する場合
         if (data.session) {
-          console.log('Existing session found, redirecting to:', redirectTo)
-          router.push(redirectTo)
+          router.replace(redirectTo)
           return
         }
 
         // URLにエラーパラメータがある場合
         const authError = urlParams.get('error')
         if (authError) {
-          console.error('OAuth error:', authError)
-          setError(`認証エラー: ${authError}`)
+          console.error('OAuth authentication failed')
+          setError('認証エラーが発生しました')
           setTimeout(() => {
-            router.push(redirectTo)
+            router.replace(redirectTo)
           }, 5000)
           return
         }
@@ -54,7 +48,6 @@ export default function AuthCallback() {
         const refreshToken = hashParams.get('refresh_token')
 
         if (accessToken) {
-          console.log('Processing OAuth callback with hash fragment tokens')
           try {
             const { data: sessionData, error: sessionError } = await supabaseClient.auth.setSession({
               access_token: accessToken,
@@ -62,35 +55,32 @@ export default function AuthCallback() {
             })
 
             if (sessionError) {
-              console.error('Session error:', sessionError.message)
-              setError(sessionError.message)
+              console.error('OAuth session could not be established')
+              setError('認証処理中にエラーが発生しました')
               setTimeout(() => {
-                router.push(redirectTo)
+                router.replace(redirectTo)
               }, 5000)
             } else if (sessionData.session) {
-              console.log('Session established successfully, redirecting to:', redirectTo)
-              router.push(redirectTo)
+              router.replace(redirectTo)
             } else {
-              console.log('No session created, redirecting to:', redirectTo)
-              router.push(redirectTo)
+              router.replace(redirectTo)
             }
-          } catch (sessionError) {
-            console.error('Set session error:', sessionError)
+          } catch {
+            console.error('OAuth session could not be established')
             setError('認証処理中にエラーが発生しました')
             setTimeout(() => {
-              router.push(redirectTo)
+              router.replace(redirectTo)
             }, 5000)
           }
         } else {
           // 認証情報が見つからない場合
-          console.log('No authentication data found, redirecting to:', redirectTo)
-          router.push(redirectTo)
+          router.replace(redirectTo)
         }
-      } catch (err) {
-        console.error('Auth callback unexpected error:', err)
+      } catch {
+        console.error('OAuth authentication failed unexpectedly')
         setError('認証処理中に予期しないエラーが発生しました')
         setTimeout(() => {
-          router.push('/todo')
+          router.replace('/todo')
         }, 5000)
       }
     }

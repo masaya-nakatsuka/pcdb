@@ -7,6 +7,7 @@ import type { ChangeEvent } from 'react'
 import LoginPromptCard from '../../_components/Layout/_shared/LoginPromptCard.client'
 import LoadingOverlay from '@/components/LoadingOverlay'
 import { supabaseTodo } from '@/lib/supabaseTodoClient'
+import { buildAuthCallbackUrl } from '@/lib/authRedirect'
 
 type DoneTimelineLayoutProps = {
   listId: string
@@ -145,7 +146,10 @@ export default function DoneTimelineLayout({ listId }: DoneTimelineLayoutProps) 
 
   const redirectTo = useMemo(() => {
     if (typeof window === 'undefined') return undefined
-    return window.location.href
+    return buildAuthCallbackUrl(
+      window.location.origin,
+      `${window.location.pathname}${window.location.search}${window.location.hash}`
+    )
   }, [])
 
   const loadEntries = useCallback(async (uid: string, lId: string, baseDate: Date) => {

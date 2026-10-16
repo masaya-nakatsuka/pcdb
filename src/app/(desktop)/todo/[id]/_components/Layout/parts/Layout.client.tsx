@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import LoadingOverlay from '@/components/LoadingOverlay'
 import { supabaseTodo } from '@/lib/supabaseTodoClient'
+import { buildAuthCallbackUrl } from '@/lib/authRedirect'
 import type { TodoGroup, TodoItem } from '@/lib/todoTypes'
 import type { LevelProgress } from '@/lib/todoXp'
 import { rollXpReward, summarizeLevelProgress } from '@/lib/todoXp'
@@ -87,8 +88,7 @@ export default function LayoutClient({ listId }: LayoutProps) {
 
   const redirectTo = useMemo(() => {
     if (typeof window === 'undefined') return undefined
-    const baseUrl = window.location.origin
-    return `${baseUrl}/todo`
+    return buildAuthCallbackUrl(window.location.origin, '/todo')
   }, [])
 
   const groupsById = useMemo(() => {

@@ -4,16 +4,20 @@ import { createClient } from '@supabase/supabase-js'
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SupabaseClient = ReturnType<typeof createClient<any>>
 
-export function createLazySupabaseClient(urlEnvName: string, keyEnvName: string): SupabaseClient {
+type PublicSupabaseConfig = {
+  url: string | undefined
+  anonKey: string | undefined
+}
+
+export function createLazySupabaseClient(readConfig: () => PublicSupabaseConfig): SupabaseClient {
   let client: SupabaseClient | null = null
 
   function getClient(): SupabaseClient {
     if (!client) {
-      const supabaseUrl = process.env[urlEnvName]
-      const supabaseAnonKey = process.env[keyEnvName]
+      const { url: supabaseUrl, anonKey: supabaseAnonKey } = readConfig()
 
       if (!supabaseUrl || !supabaseAnonKey) {
-        throw new Error(`${urlEnvName} または ${keyEnvName} が設定されていません`)
+        throw new Error('Supabaseの公開接続設定がありません')
       }
 
       client = createClient(supabaseUrl, supabaseAnonKey)
