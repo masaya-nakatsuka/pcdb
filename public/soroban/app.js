@@ -58,8 +58,27 @@ const cellResult = key => {
   return evaluateCellResult(key, sheet().cells, cache, undefined, {sheetId:sheet().id,sheets:book().sheets});
 };
 const val = key => cellResult(key).value;
+// Row selections are bound to the exact anchor/end objects and sheet identity.
+// Existing navigation, imports, undo and agent commits replace those objects,
+// automatically invalidating this transient UI state without persisting it.
+let rowSelection=null;
+function selectedRows(){return rowSelection&&rowSelection.anchor===anchor&&rowSelection.end===end&&rowSelection.bookId===book().id&&rowSelection.sheetId===sheet().id?rowSelection.rows:null;}
+function sparseRows(){const rows=selectedRows();return !!rows&&Math.max(...rows)-Math.min(...rows)+1!==rows.size;}
+function rowSelected(r){const rows=selectedRows();return !rows||rows.has(r);}
+function rectangularSelectionReady(){if(!sparseRows())return true;toast('この操作は連続した範囲を選択してから実行してください。',true);return false;}
+function selectRow(r,{shiftKey=false,ctrlKey=false,metaKey=false}={}){
+  const previous=selectedRows(),pivot=previous?rowSelection.pivot:selected.r;
+  let rows;
+  if(shiftKey){rows=ctrlKey||metaKey?new Set(previous||[]):new Set();for(let i=Math.min(pivot,r);i<=Math.max(pivot,r);i++)if(renderedRows.includes(i))rows.add(i);}
+  else if((ctrlKey||metaKey)&&previous){rows=new Set(previous);if(rows.has(r)){if(rows.size===1)return;rows.delete(r);}else rows.add(r);}
+  else rows=new Set([r]);
+  const first=Math.min(...rows),last=Math.max(...rows),active=rows.has(r)?r:first;
+  selected={r:active,c:0};anchor={r:first,c:0};end={r:last,c:sheet().cols-1};
+  rowSelection={rows,pivot:shiftKey?pivot:active,anchor,end,bookId:book().id,sheetId:sheet().id};
+  renderSelection();
+}
 const bounds = () => ({r1:Math.min(anchor.r,end.r),r2:Math.max(anchor.r,end.r),c1:Math.min(anchor.c,end.c),c2:Math.max(anchor.c,end.c)});
-const selectionRange = () => {const b=bounds();return b.r1===b.r2&&b.c1===b.c2?keyAt(b.r1,b.c1):areaText(b);};
+const selectionRange = () => {if(sparseRows())return [...selectedRows()].sort((a,b)=>a-b).map(r=>areaText({r1:r,r2:r,c1:0,c2:sheet().cols-1})).join(',');const b=bounds();return b.r1===b.r2&&b.c1===b.c2?keyAt(b.r1,b.c1):areaText(b);};
 
 function blankSheet(name='シート1') { return {id:uid(),name,rows:40,cols:12,widths:[...defaultWidths],cells:{},kind:'blank',freezeRows:0,freezeCols:0}; }
 function put(s,r,c,raw,style={}) { s.cells[keyAt(r,c)]={raw:String(raw),...style}; }
@@ -278,7 +297,7 @@ function renderGrid(){
   const body=document.createDocumentFragment();
   for(const [visibleIndex,r] of renderedRows.entries()){
     const rowTables=tableAreas.filter(({area})=>r>=area.r1&&r<=area.r2);
-    const tr=document.createElement('tr');tr.setAttribute('role','row');tr.setAttribute('aria-rowindex',r+2);if(r>u.r)tr.className='print-empty';const rn=document.createElement('th');rn.textContent=r+1;rn.dataset.row=r;rn.setAttribute('scope','row');rn.setAttribute('aria-label',(r+1)+'行目');tr.append(rn);
+    const tr=document.createElement('tr');tr.setAttribute('role','row');tr.setAttribute('aria-rowindex',r+2);if(r>u.r)tr.className='print-empty';const rn=document.createElement('th');rn.textContent=r+1;rn.dataset.row=r;rn.setAttribute('scope','row');rn.setAttribute('aria-label',(r+1)+'行目');rn.title='クリックで行を選択 / Shift＋クリックで範囲選択 / Ctrl・⌘＋クリックで追加・解除';tr.append(rn);
     if(r<freezeRows){rn.classList.add('frozen-row');rn.style.top=`calc(26px + var(--row-height) * ${visibleIndex})`;}
     if(r===lastFrozen)tr.classList.add('frozen-row-edge');
     for(let c=0;c<s.cols;c++){
@@ -304,16 +323,16 @@ function clampSelection(){selected={r:Math.min(selected.r,sheet().rows-1),c:Math
 function select(r,c,extend=false,scroll=false){
   r=Math.max(0,Math.min(sheet().rows-1,r));c=Math.max(0,Math.min(sheet().cols-1,c));
   if(!renderedRows.includes(r)){toast('このセルはフィルターで非表示です。フィルターを解除して選択してください。');return;}
-  if(!extend){selected={r,c};anchor={r,c};}end={r,c};renderSelection();
+  if(selectedRows())extend=false;rowSelection=null;if(!extend){selected={r,c};anchor={r,c};}end={r,c};renderSelection();
   if(scroll)$('#cell-'+keyAt(r,c))?.scrollIntoView({block:'nearest',inline:'nearest'});
 }
 function renderSelection(){
   $$('.selected-cell,.active-cell,.selected-head,.cut-cell').forEach(x=>{x.classList.remove('selected-cell','active-cell','selected-head','cut-cell');x.removeAttribute('aria-selected');});
   const b=bounds();
-  for(let r=b.r1;r<=b.r2;r++)for(let c=b.c1;c<=b.c2;c++){const td=$('#cell-'+keyAt(r,c));td?.classList.add('selected-cell');td?.setAttribute('aria-selected','true');}
+  for(let r=b.r1;r<=b.r2;r++)if(rowSelected(r))for(let c=b.c1;c<=b.c2;c++){const td=$('#cell-'+keyAt(r,c));td?.classList.add('selected-cell');td?.setAttribute('aria-selected','true');}
   const key=keyAt(selected.r,selected.c);$('#cell-'+key)?.classList.add('active-cell');gridWrap.setAttribute('aria-activedescendant','cell-'+key);
   for(let c=b.c1;c<=b.c2;c++)$(`#grid-head th[data-col="${c}"]`)?.classList.add('selected-head');
-  for(let r=b.r1;r<=b.r2;r++)$(`#grid-body th[data-row="${r}"]`)?.classList.add('selected-head');
+  for(let r=b.r1;r<=b.r2;r++)if(rowSelected(r))$(`#grid-body th[data-row="${r}"]`)?.classList.add('selected-head');
   const address=displayRange(selectionRange());$('#cell-address').value=address;$('#cell-address').style.width=address.includes(':')?`calc(${address.length}ch + 26px)`:'';
   if(document.activeElement!==$('#formula-input')||!formulaTarget)$('#formula-input').value=cell(key).raw;
   const errorHelp={'#DIV/0!':'0で割ることはできません','#REF!':'セルの参照を確認してください','#VALUE!':'計算する値や数式を確認してください','#NAME?':'関数名を確認してください','#CYCLE!':'数式が循環参照しています','#NUM!':'計算できる数値の範囲を超えています','#LIMIT!':'計算を中断しました。参照範囲やデータ量を小さくしてください。','#SCOPE!':'許可された範囲の外を参照しています'};
@@ -327,7 +346,7 @@ function renderSelection(){
   $$('[data-align]').forEach(el=>el.classList.toggle('active',el.dataset.align===(current.align||(typeof val(key)==='number'?'right':'left'))));
   $('#font-family').value=current.font||'sans';$('#font-size').value=current.fontSize||13;$('#text-color-bar').style.background=current.color||'#5b7560';$('#fill-color-bar').style.background=current.background||'#e7d995';updateFillHandle();syncAgentDOM();
 }
-function eachSelected(fn){const b=bounds();for(let r=b.r1;r<=b.r2;r++){if(!renderedRows.includes(r))continue;for(let c=b.c1;c<=b.c2;c++)fn(keyAt(r,c),r,c);}}
+function eachSelected(fn){const b=bounds();for(let r=b.r1;r<=b.r2;r++){if(!renderedRows.includes(r)||!rowSelected(r))continue;for(let c=b.c1;c<=b.c2;c++)fn(keyAt(r,c),r,c);}}
 function writeRaw(key,raw){const current=sheet().cells[key]||{raw:''};sheet().cells[key]={...current,raw:String(raw)};}
 function commitCellEntries(changes,{after=null}={}){
   try{
@@ -387,7 +406,7 @@ function showTemplates(){
   $$('[data-template]').forEach(b=>b.onclick=()=>addBook(b.dataset.template));
 }
 function showHelp(){
-  if(!openModal('操作方法',`<p>セルを選択して入力します。既存の値はダブルクリックで編集します。Excelなどから複数セルを貼り付けられます。切り取りは、同じブック内へ貼り付けた時に移動を確定します。外部のアプリへはコピーを使ってください。</p><h3>よく使う操作</h3><div class="keyboard-list">${[['編集をはじめる','ダブルクリック / F2'],['確定して下の行へ','Enter'],['確定して右の列へ','Tab'],['編集を取り消す','Esc'],['範囲を選択','ドラッグ / Shift ＋ 矢印'],['コピー / 貼り付け','Ctrl・⌘ C / V'],['元に戻す','Ctrl・⌘ Z'],['ブックを保存','Ctrl・⌘ S'],['名前を付けて保存','Ctrl・⌘ Shift S'],['セルの内容を消す','Delete / Backspace']].map(([a,b])=>`<div class="keyboard-row"><span>${a}</span><kbd>${b}</kbd></div>`).join('')}</div><h3>使える数式</h3><div class="formula-help"><div class="formula-example"><code>=D2*E2</code><span>かけ算</span></div><div class="formula-example"><code>=SUM(F2:F11)</code><span>範囲の合計</span></div><div class="formula-example"><code>=AVERAGE(A1:A10)</code><span>平均</span></div><div class="formula-example"><code>=IF(A1>1000,"多い","少ない")</code><span>条件による表示</span></div></div><p style="font-size:10px">${FUNCTION_HELP.length}種類の関数と、同じブック内のシート間参照に対応します。関数一覧は「挿入 → 使える関数」から確認できます。1シートは最大500行 × 52列、1ブックは最大15シートです。</p><h3>テーブル</h3><p>範囲を選んで「テーブル → 選択範囲をテーブルにする」。先頭行が見出しになります。見出しの右隣に入力すると列が増え、表のすぐ下に入力すると行が増えます。見出しのボタンで絞り込み、テーブルメニューから範囲変更・並べ替え・通常の範囲への変換ができます。</p><h3>保存とファイル</h3><div class="storage-callout">セルを確定すると、このブラウザに自動保存されます。「保存」または Ctrl / ⌘ ＋ S でファイルにも保存できます。対応ブラウザでは、保存先を選んだ後は同じファイルにも自動保存します。保存・自動保存の設定は、上部の保存状態から開けます。<br><br>CSV：現在のシートの計算結果と値<br>バックアップ（JSON）：全シート・数式・書式<br>Excel（.xlsx）：複数シート・数式・基本書式の読み込みと書き出し。互換性に制限がある項目は実行前に表示します。</div>`))return false;
+  if(!openModal('操作方法',`<p>セルを選択して入力します。既存の値はダブルクリックで編集します。Excelなどから複数セルを貼り付けられます。切り取りは、同じブック内へ貼り付けた時に移動を確定します。外部のアプリへはコピーを使ってください。</p><h3>よく使う操作</h3><div class="keyboard-list">${[['編集をはじめる','ダブルクリック / F2'],['確定して下の行へ','Enter'],['確定して右の列へ','Tab'],['編集を取り消す','Esc'],['範囲を選択','ドラッグ / Shift ＋ 矢印'],['コピー / 貼り付け','Ctrl・⌘ C / V'],['元に戻す','Ctrl・⌘ Z'],['ブックを保存','Ctrl・⌘ S'],['名前を付けて保存','Ctrl・⌘ Shift S'],['セルの内容を消す','Delete / Backspace']].map(([a,b])=>`<div class="keyboard-row"><span>${a}</span><kbd>${b}</kbd></div>`).join('')}</div><h3>使える数式</h3><div class="formula-help"><div class="formula-example"><code>=D2*E2</code><span>かけ算</span></div><div class="formula-example"><code>=SUM(F2:F11)</code><span>範囲の合計</span></div><div class="formula-example"><code>=AVERAGE(A1:A10)</code><span>平均</span></div><div class="formula-example"><code>=IF(A1>1000,"多い","少ない")</code><span>条件による表示</span></div></div><p style="font-size:10px">${FUNCTION_HELP.length}種類の関数と、同じブック内のシート間参照に対応します。関数一覧は「挿入 → 使える関数」から確認できます。1シートは最大500行 × 52列、1ブックは最大15シートです。</p><h3>テーブル</h3><p>範囲を選んで「テーブル → 選択範囲をテーブルにする」。先頭行が見出しになります。見出しの右隣に入力すると列が増え、表のすぐ下に入力すると行が増えます。見出しのボタンで絞り込み、テーブルメニューから範囲変更・並べ替え・通常の範囲への変換ができます。</p><h3>行の選択</h3><p>行番号をクリックすると行全体を選択します。Shift＋クリックで連続する行、Ctrl（Macは⌘）＋クリックで離れた行を追加・解除できます。選択した行の内容消去・書式変更・コピー・行削除ができます。離れた行のコピーは値・数式のテキストを上から順に詰めてコピーします。切り取り・貼り付け・並べ替え・オートフィルは連続した範囲で実行してください。</p><h3>保存とファイル</h3><div class="storage-callout">セルを確定すると、このブラウザに自動保存されます。「保存」または Ctrl / ⌘ ＋ S でファイルにも保存できます。対応ブラウザでは、保存先を選んだ後は同じファイルにも自動保存します。保存・自動保存の設定は、上部の保存状態から開けます。<br><br>CSV：現在のシートの計算結果と値<br>バックアップ（JSON）：全シート・数式・書式<br>Excel（.xlsx）：複数シート・数式・基本書式の読み込みと書き出し。互換性に制限がある項目は実行前に表示します。</div>`))return false;
 }
 function initializeFileSaver(){
   fileSaver=createFileSaver({
@@ -522,7 +541,7 @@ function openMenu(type,target){
     sheet:[['rename-sheet','シート名を変更','file',''],['duplicate-sheet','シートを複製','copy',''],['add-sheet','シートを追加','plus',''],'-', ['delete-sheet','シートを削除','trash','']],
     book:[['rename-book','名前を変更','file',''],['duplicate-book','ブックを複製','copy',''],['backup','バックアップ','download',''],'-', ['delete-book','ブックを削除','trash','']]
   };
-  const b=bounds(),rows=b.r2-b.r1+1,cols=b.c2-b.c1+1;
+  const b=bounds(),rows=selectedRows()?.size||b.r2-b.r1+1,cols=b.c2-b.c1+1;
   const rowActions=[['insert-rows-before',`上に${rows}行を挿入`,'plus',''],['insert-rows-after',`下に${rows}行を挿入`,'plus',''],['delete-rows',`${rows}行を削除`,'trash','']];
   const columnActions=[['insert-columns-before',`左に${cols}列を挿入`,'plus',''],['insert-columns-after',`右に${cols}列を挿入`,'plus',''],['delete-columns',`${cols}列を削除`,'trash','']];
   menus.file.splice(2,1,['import','ファイルを読み込む','upload','XLSX / CSV / JSON']);
@@ -565,6 +584,7 @@ function suggestedTableRange(){
   return areaText(area);
 }
 function showTable(resize=false){
+  if(!rectangularSelectionReady())return false;
   if(!finishEdit()||!commitFormula())return false;const current=resize?tableAt(sheet(),selected.r,selected.c):null;
   if(resize&&!current){toast('変更するテーブル内のセルを選択してください。');return;}
   const initial=current?.range||suggestedTableRange();
@@ -610,6 +630,13 @@ function applySheetOp(operation,{selection=null,message='変更しました'}={}
 function changeStructure(axis,action,after=false){
   if(!finishEdit()||!commitFormula()||!selectionOperationReady())return false;
   if(hasHiddenRows()){toast('フィルターを解除してから行・列を挿入、削除してください。',true);return;}
+  if(sparseRows()){
+    if(axis!=='row'||action!=='delete')return rectangularSelectionReady();
+    const rows=[...selectedRows()].sort((a,b)=>b-a);let draft=clone(book());
+    try{for(const index of rows)draft=applySheetOperation(draft,{sheet_id:sheet().id,type:'delete_rows',index,count:1}).book;
+      if(mutate(()=>{state.books[state.books.findIndex(b=>b.id===draft.id)]=draft;clampSelection();}))toast(`${rows.length}行を削除しました`);
+    }catch(error){toast(error.message||'行を削除できませんでした。',true);}return;
+  }
   const b=bounds(),row=axis==='row',index=row?b.r1:b.c1,count=row?b.r2-b.r1+1:b.c2-b.c1+1;
   const start=action==='insert'&&after?index+count:index;
   const type=action+'_'+(row?'rows':'columns');
@@ -622,6 +649,7 @@ function showFreeze(){
   $('#freeze-cancel').onclick=closeModal;$('#freeze-form').onsubmit=e=>{e.preventDefault();const r=Number($('#freeze-rows').value),c=Number($('#freeze-columns').value);if(applySheetOp({type:'set_freeze',rows:r,columns:c},{message:'固定位置を変更しました'}))closeModal();};
 }
 function showAutofill(){
+  if(!rectangularSelectionReady())return false;
   if(!finishEdit()||!commitFormula()||!selectionOperationReady())return false;
   if(hasHiddenRows()){toast('フィルターを解除してからオートフィルしてください。',true);return;}
   const source=areaText(bounds()),b=bounds(),target=areaText({...b,r2:Math.min(MAX_ROWS-1,b.r2+10)});
@@ -630,6 +658,7 @@ function showAutofill(){
   $('#fill-form').onsubmit=e=>{e.preventDefault();try{const target=rangeBounds($('#fill-target').value);if(applySheetOp({type:'autofill',source:compactRange($('#fill-source').value),target:areaText(target),mode:$('#fill-mode').value},{selection:target,message:'オートフィルしました'}))closeModal();}catch(error){toast(error.message,true);}};
 }
 function fillSelection(direction){
+  if(!rectangularSelectionReady())return false;
   if(!finishEdit()||!commitFormula()||!selectionOperationReady())return false;
   if(hasHiddenRows()){toast('フィルターを解除してから範囲をコピーしてください。',true);return;}
   const b=bounds();if((direction==='down'&&b.r1===b.r2)||(direction==='right'&&b.c1===b.c2)){toast('コピー先も含めた範囲を選択してください。');return;}
@@ -639,7 +668,7 @@ function fillSelection(direction){
 function updateFillHandle(){
   if(!state||!$('#cell-address'))return;
   const b=bounds(),td=$('#cell-'+keyAt(b.r2,b.c2));
-  if(!td||editing||hasHiddenRows()){fillHandle.hidden=true;return;}
+  if(!td||editing||hasHiddenRows()||sparseRows()){fillHandle.hidden=true;return;}
   const rect=td.getBoundingClientRect(),wrap=gridWrap.getBoundingClientRect();
   fillHandle.hidden=rect.bottom<wrap.top+26||rect.top>wrap.bottom||rect.right<wrap.left+40||rect.left>wrap.right;
   fillHandle.style.left=(rect.right-wrap.left+gridWrap.scrollLeft-5)+'px';fillHandle.style.top=(rect.bottom-wrap.top+gridWrap.scrollTop-5)+'px';
@@ -701,6 +730,7 @@ function rememberTableSort(table,keys){
   tableSortChoices.set(identity.key,{signature:identity.signature,keys:clone(keys)});
 }
 function showTableSort(column=selected.c,tableId=null){
+  if(!rectangularSelectionReady())return false;
   if(isComposing){toast('日本語の変換を確定してから並べ替えてください。',true);return;}
   if(!finishEdit()||!commitFormula())return false;
   const currentTable=tableId?(sheet().tables||[]).find(table=>table.id===tableId):tableAt(sheet(),selected.r,selected.c);
@@ -735,6 +765,7 @@ function showTableSort(column=selected.c,tableId=null){
   renderLevels(0);
 }
 function showFilter(column=selected.c,tableId=null){
+  if(!rectangularSelectionReady())return false;
   if(!finishEdit()||!commitFormula()||!requireCalculation())return false;
   const currentTable=tableId?(sheet().tables||[]).find(table=>table.id===tableId):tableAt(sheet(),selected.r,selected.c);
   const existing=clone(currentTable?{range:currentTable.range,criteria:currentTable.criteria}:sheet().filter||null),b=bounds(),used=usedRange();
@@ -764,12 +795,14 @@ function showFunctionHelp(){if(!openModal('使える関数',`<div class="functio
 function addRows(){if(!finishEdit()||!commitFormula())return false;if(sheet().rows>=MAX_ROWS){toast('最大500行まで追加できます',true);return;}if(!mutate(()=>sheet().rows=Math.min(MAX_ROWS,sheet().rows+50)))return false;toast('行を追加しました');}
 function addColumn(){if(!finishEdit()||!commitFormula())return false;if(sheet().cols>=MAX_COLS){toast('最大52列まで追加できます',true);return;}if(!mutate(()=>{sheet().widths[sheet().cols]=108;sheet().cols++;}))return false;toast('右端に列を追加しました');}
 function autoSum(){
+  if(!rectangularSelectionReady())return false;
   if(!finishEdit()||!commitFormula()||!requireCalculation())return false;let b=bounds(),start=b.r1,stop=b.r2,c=selected.c;
   if(b.r1===b.r2){stop=selected.r-1;start=stop;while(start>=0&&typeof val(keyAt(start,c))==='number')start--;start++;if(stop<start){toast('数値の下にある空のセルを選ぶか、数値の範囲を選択してください。',true);return;}}
   const dest=keyAt(stop+1,c);if(stop+1>=MAX_ROWS){toast('合計を置く行がありません',true);return;}if(cell(dest).raw!==''){toast('合計を入れるセル '+dest+' を空にしてください。',true);return;}
   if(!mutate(()=>{sheet().rows=Math.max(sheet().rows,stop+2);writeRaw(dest,`=SUM(${keyAt(start,c)}:${keyAt(stop,c)})`);if(cell(keyAt(stop,c)).format)sheet().cells[dest].format=cell(keyAt(stop,c)).format;}))return false;select(stop+1,c,false,true);toast('SUM関数で合計を挿入しました');
 }
 function sortSelection(desc=false,{tableId=null,column=selected.c}={}){
+  if(!rectangularSelectionReady())return false;
   if(!finishEdit()||!commitFormula()||!requireCalculation())return false;const explicitTable=tableId!==null,currentTable=explicitTable?(sheet().tables||[]).find(table=>table.id===tableId):tableAt(sheet(),selected.r,selected.c);let b=bounds();
   if(explicitTable&&!currentTable){toast('対象のテーブルが見つかりません。見出しから選び直してください。',true);return;}
   if(currentTable){const area=rangeBounds(currentTable.range);if(!Number.isInteger(column)||column<area.c1||column>area.c2){toast('テーブル内の列を選択してください。',true);return;}if(!explicitTable&&(b.r1<area.r1||b.r2>area.r2||b.c1<area.c1||b.c2>area.c2)){toast('並べ替えるテーブル内のセルを1つ選択してください。',true);return;}if(area.r2-area.r1<2){toast('並べ替えるデータが2行以上必要です。');return;}const keys=[{column,direction:desc?'desc':'asc'}],revision=book().revision||0;if(applySheetOp({type:'sort_table',table_id:currentTable.id,keys},{message:currentTable.name+'を'+(desc?'降順':'昇順')+'に並べ替えました'})){rememberTableSort(currentTable,keys);if((book().revision||0)===revision)toast('すでに'+(desc?'降順':'昇順')+'に並んでいます');}return;}
@@ -780,22 +813,25 @@ function sortSelection(desc=false,{tableId=null,column=selected.c}={}){
   const changes=[];for(const [i,row] of rows.entries())for(const [j,entry] of row.entries.entries()){entry.raw=shiftFormula(entry.raw,b.r1+i-row.r,0);if(entry.raw.length>8192){toast('参照更新で数式が8,192文字を超えるため、並べ替えできません。',true);return;}changes.push([keyAt(b.r1+i,b.c1+j),entry]);}
   if(!mutate(()=>{for(const [key,entry] of changes)sheet().cells[key]=entry;}))return false;toast((currentTable?currentTable.name:'選択範囲')+'を'+(desc?'降順':'昇順')+'に並べ替えました');
 }
-function selectionText(){if(!selectionOperationReady())return '';const b=bounds(),rows=[];for(let r=b.r1;r<=b.r2;r++){if(!renderedRows.includes(r))continue;const row=[];for(let c=b.c1;c<=b.c2;c++)row.push(cell(keyAt(r,c)).raw);rows.push(row);}return stringifyDelimited(rows,'\t');}
+function selectionText(){if(!selectionOperationReady())return '';const b=bounds(),rows=[];for(let r=b.r1;r<=b.r2;r++){if(!renderedRows.includes(r)||!rowSelected(r))continue;const row=[];for(let c=b.c1;c<=b.c2;c++)row.push(cell(keyAt(r,c)).raw);rows.push(row);}return stringifyDelimited(rows,'\t');}
 function rememberClipboard(text,{cut=false}={}){
   clipboardEpoch++;
+  if(cut&&!rectangularSelectionReady())return false;
   if(cut&&hasHiddenRows()){toast('フィルターを解除してから切り取ってください。表示中の行だけを取り出す場合はコピーを使えます。',true);return false;}
-  internalClipboard=hasHiddenRows()?null:{text,bounds:bounds(),cells:clone(sheet().cells),sheetId:sheet().id,bookId:book().id,revision:book().revision||0,mode:cut?'cut':'copy'};
+  internalClipboard=hasHiddenRows()||sparseRows()?null:{text,bounds:bounds(),cells:clone(sheet().cells),sheetId:sheet().id,bookId:book().id,revision:book().revision||0,mode:cut?'cut':'copy'};
   renderSelection();return true;
 }
 function cancelClipboard(){clipboardEpoch++;if(internalClipboard?.mode==='cut'){internalClipboard=null;renderSelection();toast('切り取りを取り消しました');}}
 async function copySelection(cut=false){
+  if(cut&&!rectangularSelectionReady())return false;
   if(!selectionOperationReady())return false;
   const epoch=++clipboardEpoch;
   if(cut&&hasHiddenRows()){toast('フィルターを解除してから切り取ってください。表示中の行だけを取り出す場合はコピーを使えます。',true);return;}
-  const text=selectionText(),source={bookId:book().id,sheetId:sheet().id,revision:book().revision||0,bounds:bounds(),cells:clone(sheet().cells),filtered:hasHiddenRows()};
-  try{await navigator.clipboard.writeText(text);if(epoch!==clipboardEpoch)return;internalClipboard=source.filtered?null:{...source,text,mode:'copy'};if(cut){if(book().id!==source.bookId||sheet().id!==source.sheetId||(book().revision||0)!==source.revision||JSON.stringify(bounds())!==JSON.stringify(source.bounds)||hasPendingEdit()){toast('表や選択範囲が変わったため、コピーだけ行いました。');renderSelection();return;}internalClipboard.mode='cut';}renderSelection();toast(cut?'移動先を選んで貼り付けてください。Escで取消できます。':'コピーしました');}catch{if(epoch!==clipboardEpoch)return;toast('キーボードの Ctrl / ⌘ ＋ '+(cut?'X':'C')+' で'+(cut?'切り取って':'コピーして')+'ください。',true);gridWrap.focus({preventScroll:true});}
+  const text=selectionText(),source={bookId:book().id,sheetId:sheet().id,revision:book().revision||0,bounds:bounds(),cells:clone(sheet().cells),filtered:hasHiddenRows()||sparseRows(),selection:selectionRange()};
+  try{await navigator.clipboard.writeText(text);if(epoch!==clipboardEpoch)return;internalClipboard=source.filtered?null:{...source,text,mode:'copy'};if(cut){if(book().id!==source.bookId||sheet().id!==source.sheetId||(book().revision||0)!==source.revision||JSON.stringify(bounds())!==JSON.stringify(source.bounds)||selectionRange()!==source.selection||hasPendingEdit()){toast('表や選択範囲が変わったため、コピーだけ行いました。');renderSelection();return;}internalClipboard.mode='cut';}renderSelection();toast(cut?'移動先を選んで貼り付けてください。Escで取消できます。':'コピーしました');}catch{if(epoch!==clipboardEpoch)return;toast('キーボードの Ctrl / ⌘ ＋ '+(cut?'X':'C')+' で'+(cut?'切り取って':'コピーして')+'ください。',true);gridWrap.focus({preventScroll:true});}
 }
 function pasteText(text){
+  if(!rectangularSelectionReady())return false;
   if(vaultLocked||vaultBusy||!state||!selectionOperationReady())return false;
   const remembered=internalClipboard?.text===text?internalClipboard:null;
   if(remembered?.mode==='cut'){
@@ -813,8 +849,8 @@ function pasteText(text){
   if(commitCellEntries(changes,{after:()=>{anchor={...start};end={r:start.r+rows.length-1,c:start.c+Math.max(...rows.map(r=>r.length))-1};}}))toast('セルに貼り付けました');
 }
 async function pasteFromClipboard(){
-  const target={bookId:book().id,sheetId:sheet().id,revision:book().revision||0,bounds:JSON.stringify(bounds()),selected:JSON.stringify(selected),clipboardEpoch};
-  try{const text=await navigator.clipboard.readText();if(book().id!==target.bookId||sheet().id!==target.sheetId||(book().revision||0)!==target.revision||JSON.stringify(bounds())!==target.bounds||JSON.stringify(selected)!==target.selected||clipboardEpoch!==target.clipboardEpoch||hasPendingEdit()){toast('表や選択範囲が変わったため、貼り付けを中止しました。',true);return;}pasteText(text);gridWrap.focus({preventScroll:true});}catch{toast('セルを選び、Ctrl / ⌘ ＋ V で貼り付けてください。',true);gridWrap.focus({preventScroll:true});}
+  const target={bookId:book().id,sheetId:sheet().id,revision:book().revision||0,range:selectionRange(),bounds:JSON.stringify(bounds()),selected:JSON.stringify(selected),clipboardEpoch};
+  try{const text=await navigator.clipboard.readText();if(book().id!==target.bookId||sheet().id!==target.sheetId||(book().revision||0)!==target.revision||selectionRange()!==target.range||JSON.stringify(bounds())!==target.bounds||JSON.stringify(selected)!==target.selected||clipboardEpoch!==target.clipboardEpoch||hasPendingEdit()){toast('表や選択範囲が変わったため、貼り付けを中止しました。',true);return;}pasteText(text);gridWrap.focus({preventScroll:true});}catch{toast('セルを選び、Ctrl / ⌘ ＋ V で貼り付けてください。',true);gridWrap.focus({preventScroll:true});}
 }
 function download(content,name,type){const url=URL.createObjectURL(new Blob([content],{type}));activeDownloadUrls.add(url);const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>{URL.revokeObjectURL(url);activeDownloadUrls.delete(url);},5000);}
 async function confirmPlainExport(kind){
@@ -1050,6 +1086,7 @@ function renderAIScopeSettings(){
   const card=document.createElement('section');card.className='ai-scope-card';card.innerHTML=`<strong>AIの操作範囲</strong><p class="ai-scope-summary" id="ai-scope-summary">${esc(target?.name||'対象なし')}${policy.scope!=='book'?' / '+esc(targetSheet?.name||'対象なし'):''}${policy.scope==='selection'?' / '+esc(displayRange(policy.range)):''}</p><div class="security-fields"><div><label class="field-label" for="ai-scope">対象</label><select class="text-input" id="ai-scope"><option value="selection">選択した範囲</option><option value="sheet">このシート</option><option value="book">このブック全体</option></select></div><div><label class="field-label" for="ai-mode">操作</label><select class="text-input" id="ai-mode"><option value="read">読み取りのみ</option><option value="write">読み取り・編集</option></select></div></div><label class="security-check"><input type="checkbox" id="ai-include-hidden"><span>フィルターで非表示の行も対象にできるようにする</span></label><div class="security-actions"><button class="button subtle" id="ai-scope-apply">現在の対象に設定</button></div><p class="security-note">対象は設定時の範囲に固定されます。大量の上書き・削除は確認後に反映します。ブラウザ全体を操作するAIや拡張機能への機密保護ではありません。</p>`;
   $('#agent-connect').prepend(card);$('#ai-scope').value=policy.scope;$('#ai-mode').value=policy.mode;$('#ai-include-hidden').checked=policy.include_hidden;
   $('#ai-scope-apply').onclick=()=>{
+    if($('#ai-scope').value==='selection'&&!rectangularSelectionReady())return;
     aiPolicy={scope:$('#ai-scope').value,mode:$('#ai-mode').value,book_id:book().id,sheet_id:sheet().id,range:selectionRange(),include_hidden:$('#ai-include-hidden').checked};aiPolicyGeneration++;reviewedApprovalIds.clear();
     $('#ai-scope-summary').textContent=book().name+(aiPolicy.scope==='book'?'':' / '+sheet().name)+(aiPolicy.scope==='selection'?' / '+displayRange(aiPolicy.range):'');$('#agent-guide-text').textContent=agentGuideText();$('#agent-plan-input').dispatchEvent(new Event('input'));toast('AIの操作範囲を設定しました');
   };
@@ -1066,7 +1103,7 @@ function showAgentGuide(){
   renderAIScopeSettings();syncAgentDOM();$('#agent-guide-text').textContent=agentGuideText();let reviewedText=null,reviewedApprovalId=null;
   $$('[data-agent-tab]').forEach(tab=>tab.onclick=()=>{$$('[data-agent-tab]').forEach(t=>t.setAttribute('aria-selected',String(t===tab)));$('#agent-connect').hidden=tab.dataset.agentTab!=='connect';$('#agent-plan').hidden=tab.dataset.agentTab!=='plan';});
   $('#agent-copy-guide').onclick=async()=>{try{await navigator.clipboard.writeText(agentGuideText());toast('AIに渡すガイドをコピーしました');}catch{$('#agent-guide-text').textContent=agentGuideText();$('.agent-details').open=true;toast('操作仕様を選択してコピーしてください',true);}};
-  $('#agent-copy-data').onclick=async()=>{const data=await agentAPI.readRange({book_id:book().id,sheet_id:sheet().id,range:selectionRange(),include_hidden:currentAIPolicy().include_hidden});if(!data.ok){toast(data.error.code==='LIMIT_EXCEEDED'?'選択範囲を小さくしてください（2,000セル・応答5MiB以内）。':data.error.message,true);return;}const value=JSON.stringify(data,null,2);try{await navigator.clipboard.writeText(value);toast('入力値・計算結果・書式をJSONでコピーしました');}catch{$('#agent-guide-text').textContent=value;$('.agent-details').open=true;toast('表示したJSONを選択してコピーしてください',true);}};
+  $('#agent-copy-data').onclick=async()=>{if(!rectangularSelectionReady())return;const data=await agentAPI.readRange({book_id:book().id,sheet_id:sheet().id,range:selectionRange(),include_hidden:currentAIPolicy().include_hidden});if(!data.ok){toast(data.error.code==='LIMIT_EXCEEDED'?'選択範囲を小さくしてください（2,000セル・応答5MiB以内）。':data.error.message,true);return;}const value=JSON.stringify(data,null,2);try{await navigator.clipboard.writeText(value);toast('入力値・計算結果・書式をJSONでコピーしました');}catch{$('#agent-guide-text').textContent=value;$('.agent-details').open=true;toast('表示したJSONを選択してコピーしてください',true);}};
   const invalidate=()=>{reviewedText=null;reviewedApprovalId=null;reviewedApprovalIds.clear();$('#agent-apply').disabled=true;};$('#agent-plan-input').oninput=invalidate;
   $('#agent-example').onclick=()=>{const example=agentExample();if(!example){toast('このシートの末尾に操作例を置く空きがありません',true);return;}$('#agent-plan-input').value=JSON.stringify(example,null,2);invalidate();$('#agent-plan-result').textContent='表の下の空いている行に、緑茶の計算表を追加する例です。';};
   async function runPlan(dryRun){
@@ -1139,7 +1176,7 @@ gridWrap.addEventListener('pointerdown',e=>{
   if(!finishEdit()||!commitFormula())return false;closePopover();if(e.pointerType!=='touch')e.preventDefault();gridWrap.focus({preventScroll:true});
   if(td){select(Number(td.dataset.r),Number(td.dataset.c),e.shiftKey);dragging=e.pointerType!=='touch';}
   else if(th.dataset.col!==undefined){const c=Number(th.dataset.col);selected={r:0,c};anchor={r:0,c};end={r:sheet().rows-1,c};renderSelection();}
-  else if(th.dataset.row!==undefined){const r=Number(th.dataset.row);selected={r,c:0};anchor={r,c:0};end={r,c:sheet().cols-1};renderSelection();}
+  else if(th.dataset.row!==undefined){selectRow(Number(th.dataset.row),e);}
   else if(th.dataset.corner){selected={r:0,c:0};anchor={r:0,c:0};end={r:sheet().rows-1,c:sheet().cols-1};renderSelection();}
 });
 gridWrap.addEventListener('pointerover',e=>{if(!dragging)return;const td=e.target.closest('td[data-key]');if(td)select(Number(td.dataset.r),Number(td.dataset.c),true);});document.addEventListener('pointerup',()=>dragging=false);
@@ -1147,9 +1184,9 @@ gridWrap.addEventListener('dblclick',e=>{if(e.target.closest('[data-filter-colum
 gridWrap.addEventListener('contextmenu',e=>{
   if(e.target===editor)return;e.preventDefault();if(!finishEdit()||!commitFormula())return false;
   const td=e.target.closest('td[data-key]'),th=e.target.closest('th'),b=bounds();let menu='cell';
-  if(th?.dataset.row!==undefined){menu='row';const r=Number(th.dataset.row);if(r<b.r1||r>b.r2||b.c1!==0||b.c2!==sheet().cols-1){selected={r,c:0};anchor={...selected};end={r,c:sheet().cols-1};renderSelection();}}
+  if(th?.dataset.row!==undefined){menu='row';const r=Number(th.dataset.row);if(!rowSelected(r)||r<b.r1||r>b.r2||b.c1!==0||b.c2!==sheet().cols-1)selectRow(r);}
   else if(th?.dataset.col!==undefined){menu='column';const c=Number(th.dataset.col);if(c<b.c1||c>b.c2||b.r1!==0||b.r2!==sheet().rows-1){selected={r:0,c};anchor={...selected};end={r:sheet().rows-1,c};renderSelection();}}
-  else if(td){const r=Number(td.dataset.r),c=Number(td.dataset.c);if(r<b.r1||r>b.r2||c<b.c1||c>b.c2)select(r,c);}
+  else if(td){const r=Number(td.dataset.r),c=Number(td.dataset.c);if(!rowSelected(r)||r<b.r1||r>b.r2||c<b.c1||c>b.c2)select(r,c);}
   closePopover();openMenu(menu,{getBoundingClientRect:()=>({left:e.clientX,bottom:e.clientY})});
 });
 gridWrap.addEventListener('click',e=>{const button=e.target.closest('[data-filter-column]');if(button){e.stopPropagation();const column=Number(button.dataset.filterColumn);if(button.dataset.filterTable)showTableColumnMenu(column,button.dataset.filterTable,button);else showFilter(column);}});
