@@ -1,0 +1,42 @@
+/* AI assistance follows the quiet stationery palette of the workbook. */
+.ai-header-button{display:inline-flex;align-items:center;gap:7px;border:1px solid #dbe3d3;border-radius:5px;background:#f0f4e9;color:#506c46;padding:8px 11px;font-size:10px;white-space:nowrap}
+.ai-header-button:hover{background:#e5eddd;border-color:#9eb78e}
+.ai-header-button svg{width:14px;height:14px}
+.ai-header-button i{width:5px;height:5px;border:1px solid #8c9d80;border-radius:50%}
+.ai-header-button i.connected{background:#6d9460;border-color:#6d9460}
+.agent-intro{display:flex;justify-content:space-between;align-items:center;gap:15px;padding:5px 0 17px}
+.agent-badge{display:flex;align-items:center;gap:7px;font-size:9px;letter-spacing:1.5px;color:#72925e;background:#eef4e6;border:1px solid #d9e4ce;padding:11px 12px;border-radius:4px;white-space:nowrap}
+.agent-badge svg{width:17px;height:17px}
+.agent-intro p{font-family:var(--serif);font-size:13px;text-align:right;margin:0;line-height:1.9}
+.agent-tabs{display:flex;border-bottom:1px solid #dfe5d7;gap:25px;margin-bottom:20px}
+.agent-tabs button{padding:11px 3px;font-size:12px;color:#95a18a;border-bottom:2px solid transparent}
+.agent-tabs button[aria-selected=true]{border-color:#5f8050;color:#48693b;font-weight:600}
+.agent-status{font-size:10px;display:flex;align-items:center;gap:8px;background:#f2f6ed;border-radius:4px;padding:12px;color:#6b825d}
+.agent-steps{list-style:none;padding:0;margin:22px 0}
+.agent-steps li{display:flex;gap:15px;margin:19px 0}
+.agent-steps li>span{font-family:Georgia,serif;color:#b08068;font-size:16px;padding-top:1px}
+.agent-steps strong{font-size:12px;font-weight:600;color:#526c47}
+.agent-steps p{font-size:11px;line-height:1.9;margin:4px 0 0}
+.agent-copy{width:100%;margin:0 0 9px}.agent-data-copy{margin-bottom:12px}
+.agent-details{font-size:10px;color:#8b9a7e}
+.agent-details summary{cursor:pointer;padding:8px 0;width:fit-content}
+.agent-code{white-space:pre-wrap;overflow-wrap:anywhere;max-height:210px;overflow:auto;background:#f1f4ec;border:1px solid #e0e6d8;border-radius:5px;font-size:10px;line-height:1.8;padding:14px;font-family:ui-monospace,SFMono-Regular,monospace;user-select:text}
+.modal .agent-footnote{font-size:9px;line-height:1.9;color:#9aa58f;border-top:1px solid #e6ebdf;margin:15px 0 0;padding-top:13px}
+.agent-input-heading{display:flex;align-items:center;justify-content:space-between}
+.agent-input-heading .field-label{margin:8px 0 9px}
+.agent-text-button{font-size:10px;color:#7d946b;text-decoration:underline;text-underline-offset:3px}
+.agent-plan-input{resize:vertical;width:100%;min-height:185px;max-height:330px;border:1px solid #d6dfcc;border-radius:5px;background:#fff;padding:13px;color:#526b46;line-height:1.7;font-size:11px;font-family:ui-monospace,SFMono-Regular,monospace;tab-size:2}
+.agent-plan-input:focus{outline:2px solid #b0c5a2;outline-offset:1px}
+.agent-plan-actions{display:flex;gap:9px;justify-content:flex-end;margin-top:12px}
+.agent-plan-actions button:disabled{opacity:.4;cursor:not-allowed}
+.agent-plan-result{font-size:10px;color:#8e9b82;margin-top:18px;line-height:1.9;max-height:240px;overflow:auto;overflow-wrap:anywhere}
+.agent-plan-result>strong{display:block;color:#58724b;padding:10px 12px;background:#eef4e6;border-radius:4px;font-size:11px;font-weight:500;margin-bottom:8px}
+.agent-diff{display:grid;grid-template-columns:85px 1fr 20px 1fr;gap:8px;border-bottom:1px solid #e6ebdf;padding:9px 2px;align-items:start;color:#6e805f}
+.agent-diff code{font-size:10px;color:#4f713d}
+.agent-diff-arrow{color:#a5b098}
+.agent-diff small{display:block;font-size:9px;color:#98a38e}
+.agent-error{background:#faf0e8;color:#a56348;padding:12px;border-radius:4px}
+@media(max-width:720px){.brand-tagline{display:none}.ai-header-button{font-size:9px;padding:7px 8px;gap:4px}.header-right{gap:10px}.agent-intro p{font-size:11px}.agent-badge{padding:10px;font-size:8px}.agent-plan-input{min-height:160px}.agent-steps{margin:18px 0}.agent-steps li{gap:12px}}
+@media(max-width:380px){.no-login{display:none}.agent-intro{align-items:flex-start}.agent-badge{font-size:7px;padding:8px}.agent-intro p{font-size:10px}}
+
+.agent-target{display:block;color:#7f9073;margin-bottom:6px}.agent-diff code small{font-family:var(--sans);line-height:1.5;overflow-wrap:anywhere}

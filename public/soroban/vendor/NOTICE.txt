@@ -1,0 +1,44 @@
+SOFTWARE INCLUDED WITH SOROBAN XLSX IMPORT / EXPORT
+
+ExcelJS 4.4.0
+  Publisher/source: https://github.com/exceljs/exceljs
+  Download: https://registry.npmjs.org/exceljs/-/exceljs-4.4.0.tgz
+  License: MIT; complete text in LICENSE-exceljs.txt.
+  Base artifact: the official prebuilt browser distribution.
+  Local defensive change: deepMerge ignores __proto__, constructor and prototype
+  keys, and only reuses an own target property. This closes the reported unsafe
+  note-option merge behavior (GHSA-qwr4-7h29-chpf). It is a Soroban-maintained
+  patch, not an official upstream security release or an unofficial fork.
+  Reproducible patch: scripts/patch-exceljs.py checks the original artifact hash
+  and the exact replacement before applying the guard. Other library code is
+  unchanged. Regression tests cover legitimate rich-text notes and margins,
+  the excluded keys, inherited targets, and XLSX comment roundtrips.
+  Original exceljs-4.4.0.min.js SHA-256:
+    7e49da68588e250dbb8bba190d2caa8ab3787cc0284bda1d8b2f805c4df742c9
+  Patched exceljs-4.4.0.min.js SHA-256:
+    9d8c168fd4cdd45fc6dd08c42857c27eb35256e0a44614ebe153c29c2c03edf1
+  npm archive SHA-512 integrity verified before extraction:
+    XctvKaEMaj1Ii9oDOqbW/6e1gXknSY4g/aLCDicOXqBE4M0nRWkUu0PTp++UPNzoFY12BNHMfs/VadKIS6llvg==
+  Upstream browser-distribution license: LICENSE-exceljs-browser.txt.
+  Additional upstream dependency notices: NOTICE-exceljs-dependencies.txt.
+  Dependency license texts: LICENSE-exceljs-dependencies.txt.
+
+fflate 0.8.3
+  Publisher/source: https://github.com/101arrowz/fflate
+  Download: https://registry.npmjs.org/fflate/-/fflate-0.8.3.tgz
+  License: MIT; complete text in LICENSE-fflate.txt.
+  Source artifact: package/umd/index.js.
+  Local change: UMD global-object fallback checks globalThis before self/this,
+  permitting the same browser bundle to be loaded in the Node ESM test runner.
+  All compression/decompression implementation code is unchanged.
+  Original UMD SHA-256:
+    462ef8041fc970e3615a20a9dd2b2e3047a073b2da729ef4f02b634bba8b7b83
+  npm archive SHA-512 integrity verified before extraction:
+    tbZNuJrLwGUp3zshBtdy4W+ORxZuIh8a5ilyIEQDC5rY1f3U20JMry0Ll3WBzU58EZKsEuJFXhb5gwv8CsPvgA==
+
+Both libraries are bundled locally. The application's XLSX conversion does
+not load libraries from a CDN or send workbook content over the network.
+The published single-file build must retain these notices and license texts.
+
+Patched fflate UMD SHA-256:
+  6294a5f2286e57f3f2e184479f3150949112d537bcde397bab8b4de8b1369ea3

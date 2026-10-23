@@ -18,6 +18,7 @@ const nextConfig = {
   outputFileTracingRoot: __dirname,
   async redirects() {
     return [
+      { source: "/soroban", destination: "/soroban/index.html", permanent: false },
       ...blogRedirects(legacyCostPerformanceArticles, '/blog/article33'),
       ...blogRedirects(legacyCpuArticles, '/blog/article36'),
       ...blogRedirects(legacyGamingArticles, '/blog/article34'),
