@@ -16,8 +16,25 @@ function blogRedirects(ids, destination) {
 
 const nextConfig = {
   outputFileTracingRoot: __dirname,
+  async headers() {
+    return [{
+      source: "/fumi/:path*",
+      headers: [
+        { key: "Content-Security-Policy", value: "default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'none'; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'; frame-ancestors 'none'" },
+        { key: "X-Content-Type-Options", value: "nosniff" },
+        { key: "X-Frame-Options", value: "DENY" },
+        { key: "Referrer-Policy", value: "no-referrer" },
+        { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), payment=(), usb=(), serial=(), bluetooth=()" },
+        { key: "Cross-Origin-Resource-Policy", value: "same-origin" },
+        { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
+        { key: "Strict-Transport-Security", value: "max-age=31536000" },
+        { key: "Cache-Control", value: "no-cache" },
+      ],
+    }]
+  },
   async redirects() {
     return [
+      { source: "/fumi", destination: "/fumi/index.html", permanent: false },
       { source: "/soroban", destination: "/soroban/index.html", permanent: false },
       ...blogRedirects(legacyCostPerformanceArticles, '/blog/article33'),
       ...blogRedirects(legacyCpuArticles, '/blog/article36'),
