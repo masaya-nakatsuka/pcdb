@@ -18,6 +18,15 @@ const nextConfig = {
   outputFileTracingRoot: __dirname,
   async headers() {
     return [{
+      source: "/business/:path*",
+      headers: [
+        { key: "Content-Security-Policy", value: "default-src 'none'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'" },
+        { key: "X-Content-Type-Options", value: "nosniff" },
+        { key: "X-Frame-Options", value: "DENY" },
+        { key: "Referrer-Policy", value: "no-referrer" },
+        { key: "Cache-Control", value: "no-cache" },
+      ],
+    }, {
       source: "/fumi/:path*",
       headers: [
         { key: "Content-Security-Policy", value: "default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'none'; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'; frame-ancestors 'none'" },
@@ -31,6 +40,9 @@ const nextConfig = {
         { key: "Cache-Control", value: "no-cache" },
       ],
     }]
+  },
+  async rewrites() {
+    return [{ source: "/business", destination: "/business/index.html" }]
   },
   async redirects() {
     return [
